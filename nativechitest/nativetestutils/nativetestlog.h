@@ -89,12 +89,16 @@ public:
     verboseSeverity m_eLogLevel;
 
     NativeTestLog();
-    ~NativeTestLog() = default;
+    ~NativeTestLog();
 
     static void Log(verboseSeverity severity, const char* file, int line, const char* mFormat, ...);
     static std::string GetMSGPrefixString(verboseSeverity severity);
     int SetLogLevel(verboseSeverity level);
     void SetTestName(const char* suiteName, const char* caseName);
+    static void SetLogFile(const char* path);
+
+private:
+    static FILE* m_pLogFile;
 };
 
 extern NativeTestLog NTLog;

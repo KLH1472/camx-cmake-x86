@@ -46,6 +46,12 @@ set(NATIVEUTILS_SOURCES
     ${UTILS_DIR}/nativetestlog.cpp
 )
 
+# camera_metadata port (real implementation)
+set(METADATA_PORT_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/camera_metadata_port.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/camera_metadata_tag_info.cpp
+)
+
 # chiutils sources
 set(CHIUTILS_SOURCES
     ${CHIUTILS_LOCAL_DIR}/chxutils.cpp
@@ -66,6 +72,7 @@ add_executable(nativechitest
     ${NATIVEUTILS_SOURCES}
     ${CHIUTILS_SOURCES}
     ${COMPAT_SOURCES}
+    ${METADATA_PORT_SOURCES}
 )
 
 # Compile definitions
@@ -99,6 +106,11 @@ target_link_libraries(nativechitest PRIVATE
     pthread
     dl
     rt
+)
+
+# Export symbols so camera.qcom.so (loaded via dlopen) can resolve them
+set_target_properties(nativechitest PROPERTIES
+    ENABLE_EXPORTS ON
 )
 
 # NOTE: The test uses dlopen() to load camera.qcom.so at runtime.

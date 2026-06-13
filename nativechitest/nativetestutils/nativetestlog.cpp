@@ -11,7 +11,7 @@
 
 #include "nativetestlog.h"
 #include <stdarg.h>
-#include "log/log.h"
+#include <cstring>
 
 namespace tests {
 
@@ -19,13 +19,36 @@ namespace tests {
     const char* currentTestSuiteName;
     const char* currentTestCaseName;
 
+    FILE* NativeTestLog::m_pLogFile = nullptr;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// @brief Constructor for ChiFeature2Log
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     NativeTestLog::NativeTestLog()
     {
-        // Set default log level to debug and above messages
         m_eLogLevel = eDebug;
+        if (!m_pLogFile) {
+            m_pLogFile = fopen("nativechitest.log", "w");
+        }
+    }
+
+    NativeTestLog::~NativeTestLog()
+    {
+        if (m_pLogFile) {
+            fclose(m_pLogFile);
+            m_pLogFile = nullptr;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// @brief Set custom log file path (must call before any logging)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeTestLog::SetLogFile(const char* path)
+    {
+        if (m_pLogFile) {
+            fclose(m_pLogFile);
+        }
+        m_pLogFile = fopen(path, "w");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +113,7 @@ namespace tests {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// @brief Print the message to console and logcat
+    /// @brief Print the message to log file
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void NativeTestLog::Log(verboseSeverity severity, const char* file, int line, const char* mFormat, ...)
     {
@@ -106,6 +129,8 @@ namespace tests {
 
         fullMessage = GetMSGPrefixString(severity) + message;
 
-        fprintf(stdout, "%s:%d %s\n", pFileName, line, fullMessage.c_str());
+        FILE* fp = m_pLogFile ? m_pLogFile : stdout;
+        fprintf(fp, "%s:%d %s\n", pFileName, line, fullMessage.c_str());
+        if (m_pLogFile) fflush(m_pLogFile);
     }
 }
