@@ -1,0 +1,32 @@
+#ifndef _STUB_HARDWARE_GRALLOC_H
+#define _STUB_HARDWARE_GRALLOC_H
+
+#include <stdint.h>
+
+// Gralloc usage flags
+#define GRALLOC_USAGE_SW_READ_OFTEN        (1ULL << 0)
+#define GRALLOC_USAGE_SW_READ_RARELY       (1ULL << 1)
+#define GRALLOC_USAGE_SW_WRITE_OFTEN       (1ULL << 2)
+#define GRALLOC_USAGE_SW_WRITE_RARELY      (1ULL << 3)
+#define GRALLOC_USAGE_HW_TEXTURE           (1ULL << 8)
+#define GRALLOC_USAGE_HW_RENDER            (1ULL << 9)
+#define GRALLOC_USAGE_HW_2D                (1ULL << 10)
+#define GRALLOC_USAGE_HW_COMPOSER          (1ULL << 11)
+#define GRALLOC_USAGE_HW_VIDEO_ENCODER     (1ULL << 16)
+#define GRALLOC_USAGE_HW_CAMERA_WRITE      (1ULL << 17)
+#define GRALLOC_USAGE_HW_CAMERA_READ       (1ULL << 18)
+#define GRALLOC_USAGE_HW_CAMERA_ZSL        (1ULL << 24)
+
+#define GRALLOC_USAGE_EXTERNAL_DISP        0x00002000
+#define GRALLOC_USAGE_PRIVATE_0            (1ULL << 28)
+
+// Gralloc module version
+#define GRALLOC_MODULE_API_VERSION_0_2 2
+#define GRALLOC_MODULE_API_VERSION_0_3 3
+
+// Gralloc perform
+#define GRALLOC_MODULE_PERFORM_GET_STRIDE          19
+#define GRALLOC_MODULE_PERFORM_GET_CUSTOM_STRIDE   20
+#define GRALLOC_MODULE_PERFORM_GET_CUSTOM_FORMAT   21
+
+#endif // _STUB_HARDWARE_GRALLOC_H
