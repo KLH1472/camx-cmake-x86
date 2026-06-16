@@ -207,7 +207,7 @@ namespace tests
             streamIndex, requiredStreams[streamIndex].usage);
 
         requiredStreams[streamIndex].stream_type = streamInfo.directions[streamIndex];
-        requiredStreams[streamIndex].max_buffers = 0;
+        requiredStreams[streamIndex].max_buffers = 4;  // reasonable default for test
         requiredStreams[streamIndex].priv = nullptr;
         requiredStreams[streamIndex].rotation = CAMERA3_STREAM_ROTATION_0;
 

@@ -37,7 +37,7 @@ struct CameraMetadataProperties
 class Camera3Metadata
 {
 public:
-    const char* METADATA_LINUX_PATH = "/data/vendor/camera/meta.data";
+    const char* METADATA_LINUX_PATH = "./output/meta.data";
     //TODO: change this to sd card path, and add a windows path later
 
     vendor_tag_ops_t vTag;

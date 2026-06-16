@@ -48,8 +48,8 @@ static const uint16_t   kVersion3_0 = HARDWARE_MODULE_API_VERSION(3, 0);
     static const uint32_t   ICAMinHeightPixels = 26;
 
 #ifdef _LINUX
-    static const std::string ImageUpperPath = "/data/vendor/camera/";
-    static const std::string ImageRootPath = "/data/vendor/camera/nativechitest/";
+    static const std::string ImageUpperPath = "./output/";
+    static const std::string ImageRootPath = "./output/nativechitest/";
 #else
 static const std::string ImageRootPath = "./nativechitest/";
 static const std::string OverrideSettings = "camxoverridesettings.txt";

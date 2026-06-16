@@ -35,7 +35,7 @@ namespace tests {
 #endif
 
 #ifdef _LINUX
-    static const std::string RootPath = "/data/vendor/camera/";
+    static const std::string RootPath = "./output/";
 #define APPNAME "NATIVECHITEST"
 #else
     static const std::string RootPath = "./";
