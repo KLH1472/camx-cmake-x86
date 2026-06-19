@@ -366,12 +366,12 @@ VOID ChiMetadataManager::Destroy() {
 
 ChiMetadata* ChiMetadataManager::Get(UINT32 clientId, UINT32 frameNumber) {
     (void)clientId; (void)frameNumber;
-    return nullptr;
+    return ChiMetadata::Create(nullptr, 0, false, nullptr);
 }
 
 ChiMetadata* ChiMetadataManager::GetInput(const camera_metadata_t* pFrameworkInput, UINT32 frameNumber, bool bUseSticky, bool bReuseBuffers) {
     (void)pFrameworkInput; (void)frameNumber; (void)bUseSticky; (void)bReuseBuffers;
-    return nullptr;
+    return ChiMetadata::Create(nullptr, 0, false, nullptr);
 }
 
 CDKResult ChiMetadataManager::Release(ChiMetadata* pMetadata) {
@@ -391,7 +391,7 @@ CDKResult ChiMetadataManager::UnregisterClient(UINT32 clientId) {
 
 ChiMetadata* ChiMetadataManager::GetMetadataFromHandle(CHIMETADATAHANDLE hMetaHandle) {
     (void)hMetaHandle;
-    return nullptr;
+    return ChiMetadata::Create(nullptr, 0, false, nullptr);
 }
 
 CDKResult ChiMetadataManager::InitializeFrameworkInputClient(UINT32 bufferCount, bool bSupportMultipleInputs) {
