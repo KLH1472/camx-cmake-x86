@@ -11,14 +11,51 @@ enum class InputOutputType { NO_SPECIAL, YUV_OUT };
 class LightweightDoublyLinkedList
 {
 public:
-    VOID InsertToTail(LightweightDoublyLinkedListNode* pNodeToInsert) {}
-    VOID InsertToHead(LightweightDoublyLinkedListNode* pNodeToInsert) {}
-    LightweightDoublyLinkedListNode* RemoveFromHead() { return nullptr; }
-    VOID RemoveNode(LightweightDoublyLinkedListNode* pNode) {}
-    static LightweightDoublyLinkedListNode* NextNode(LightweightDoublyLinkedListNode* pNode) { return pNode ? pNode->pNext : nullptr; }
-    LightweightDoublyLinkedListNode* Head() const { return nullptr; }
-    LightweightDoublyLinkedListNode* Tail() const { return nullptr; }
-    UINT NumNodes() const { return 0; }
+    LightweightDoublyLinkedList() : m_pHead(nullptr), m_pTail(nullptr), m_count(0) {}
+    VOID InsertToTail(LightweightDoublyLinkedListNode* pNode) {
+        if (!pNode) return;
+        pNode->pNext = nullptr;
+        pNode->pPrev = m_pTail;
+        if (m_pTail) m_pTail->pNext = pNode;
+        m_pTail = pNode;
+        if (!m_pHead) m_pHead = pNode;
+        m_count++;
+    }
+    VOID InsertToHead(LightweightDoublyLinkedListNode* pNode) {
+        if (!pNode) return;
+        pNode->pPrev = nullptr;
+        pNode->pNext = m_pHead;
+        if (m_pHead) m_pHead->pPrev = pNode;
+        m_pHead = pNode;
+        if (!m_pTail) m_pTail = pNode;
+        m_count++;
+    }
+    LightweightDoublyLinkedListNode* RemoveFromHead() {
+        if (!m_pHead) return nullptr;
+        LightweightDoublyLinkedListNode* pNode = m_pHead;
+        RemoveNode(pNode);
+        return pNode;
+    }
+    VOID RemoveNode(LightweightDoublyLinkedListNode* pNode) {
+        if (!pNode) return;
+        if (pNode->pPrev) pNode->pPrev->pNext = pNode->pNext;
+        else m_pHead = pNode->pNext;
+        if (pNode->pNext) pNode->pNext->pPrev = pNode->pPrev;
+        else m_pTail = pNode->pPrev;
+        pNode->pPrev = nullptr;
+        pNode->pNext = nullptr;
+        m_count--;
+    }
+    static LightweightDoublyLinkedListNode* NextNode(LightweightDoublyLinkedListNode* pNode) {
+        return pNode ? pNode->pNext : nullptr;
+    }
+    LightweightDoublyLinkedListNode* Head() const { return m_pHead; }
+    LightweightDoublyLinkedListNode* Tail() const { return m_pTail; }
+    UINT NumNodes() const { return m_count; }
+private:
+    LightweightDoublyLinkedListNode* m_pHead;
+    LightweightDoublyLinkedListNode* m_pTail;
+    UINT m_count;
 };
 
 // ── ImageBuffer ──

@@ -31,11 +31,19 @@ public:
     GraphicBuffer() : mBuffer(nullptr), mBufSize(0) {}
     GraphicBuffer(uint32_t w, uint32_t h, int32_t fmt, uint32_t u)
         : width(w), height(h), format(fmt), usage(u), stride(w), mBuffer(nullptr), mBufSize(0) {
-        mBufSize = w * h * 4; // RGBA max
+        mBufSize = w * h * 4;
         mBuffer = malloc(mBufSize);
         memset(mBuffer, 0, mBufSize);
+        native_handle_t* pNH = (native_handle_t*)calloc(1, sizeof(native_handle_t) + sizeof(int) * 4);
+        pNH->version = sizeof(native_handle_t);
+        anwb.handle = pNH;
+        anwb.width = w;
+        anwb.height = h;
+        anwb.stride = w;
+        anwb.format = fmt;
+        anwb.usage = u;
     }
-    ~GraphicBuffer() { free(mBuffer); }
+    ~GraphicBuffer() { free((void*)anwb.handle); free(mBuffer); }
 
     uint32_t getWidth() const { return width; }
     uint32_t getHeight() const { return height; }

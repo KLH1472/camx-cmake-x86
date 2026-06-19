@@ -980,18 +980,21 @@ CDK_VISIBILITY_PUBLIC uint32_t CamxMemGetImageSize(uint32_t width, uint32_t heig
 }
 
 CDK_VISIBILITY_PUBLIC int CamxMemAlloc(CamxMemHandle* pphMem, uint32_t width, uint32_t height, uint32_t format, uint32_t usageFlags) {
-    // CamxMemAlloc is a pre-silicon/Windows path; on Linux, buffers come from GraphicBuffer.
-    // Return NULL so the caller falls back to the GraphicBuffer path.
-    (void)width; (void)height; (void)format; (void)usageFlags;
-    *pphMem = nullptr;
-    return -1;
+    (void)format; (void)usageFlags;
+    uint32_t size = (width * height * 3) / 2;
+    if (size == 0) size = 4096;
+    CamxMemHandle handle = new _CamxMemHandle();
+    handle->pData = calloc(1, size);
+    if (!handle->pData) { delete handle; *pphMem = nullptr; return -1; }
+    *pphMem = handle;
+    return 0;
 }
 
 CDK_VISIBILITY_PUBLIC void CamxMemRelease(CamxMemHandle pphMem) {
-    // The caller passes a native_handle_t* / ANativeWindowBuffer_t* cast to CamxMemHandle.
-    // Since CamxMemAlloc is not actually used on Linux (buffers come from GraphicBuffer),
-    // this is a no-op to avoid heap corruption from type mismatched free.
-    (void)pphMem;
+    if (pphMem) {
+        if (pphMem->pData) free(pphMem->pData);
+        delete pphMem;
+    }
 }
 
 } // extern "C"
