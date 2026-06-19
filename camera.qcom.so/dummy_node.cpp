@@ -25,6 +25,9 @@ protected:
     virtual CamxResult ExecuteProcessRequest(
         ExecuteProcessRequestData* pExecuteProcessRequestData) override
     {
+        fprintf(stderr, "[DummyNode] ExecuteProcessRequest type=%u inst=%u reqId=%llu\n",
+                Type(), InstanceID(),
+                pExecuteProcessRequestData->pNodeProcessRequestData->processSequenceId);
         PerRequestActivePorts* pPorts = pExecuteProcessRequestData->pEnabledPortsInfo;
         if (pPorts != NULL)
         {

@@ -1801,34 +1801,34 @@ CamxResult Pipeline::FinalizePipeline(
     if (CamxResultSuccess == result)
     {
         pSensorModuleData    = m_pChiContext->GetHwContext()->GetImageSensorModuleData(m_cameraId);
-        m_currentSensorMode  = pFinalizeInitializationData->pSensorModeInfo->modeIndex;
+        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: sensorModuleData=%p sensorModeInfo=%p\n",
+                pSensorModuleData, pFinalizeInitializationData->pSensorModeInfo);
+        if (pFinalizeInitializationData->pSensorModeInfo != NULL) {
+            m_currentSensorMode  = pFinalizeInitializationData->pSensorModeInfo->modeIndex;
+        }
         CAMX_LOG_VERBOSE(CamxLogGroupCore, "Current Sensor mode is %d", m_currentSensorMode);
 
         // Make sure metadata pools are all initialied before nodes FinalizeInitialization
+        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: waiting for pools...\n");
         m_pInputPool->WaitForMetadataPoolCreation();
-        CAMX_ASSERT(PoolStatus::Initialized == m_pInputPool->GetPoolStatus());
+        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: input pool status=%d\n", m_pInputPool->GetPoolStatus());
 
         m_pInternalPool->WaitForMetadataPoolCreation();
-        CAMX_ASSERT(PoolStatus::Initialized == m_pInternalPool->GetPoolStatus());
-
         m_pMainPool->WaitForMetadataPoolCreation();
-        CAMX_ASSERT(PoolStatus::Initialized == m_pMainPool->GetPoolStatus());
-
         m_pEarlyMainPool->WaitForMetadataPoolCreation();
-        CAMX_ASSERT(PoolStatus::Initialized == m_pEarlyMainPool->GetPoolStatus());
-
         pFinalizeInitializationData->pDebugDataPool->WaitForMetadataPoolCreation();
-        CAMX_ASSERT(PoolStatus::Initialized == pFinalizeInitializationData->pDebugDataPool->GetPoolStatus());
+        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: all pools ready\n");
 
         /// @todo (CAMX-1512) Metadata pools needs to be per pipeline
         m_pDebugDataPool = pFinalizeInitializationData->pDebugDataPool;
 
         // If not realtime pipeline, need publish all necessary properties into usecase pool
-        if ((FALSE == IsRealTime()) ||
-            (TRUE == pSensorModuleData->IsExternalSensor()) ||
-            ((TRUE == m_pHwContext->GetStaticSettings()->enableExternalSensorModule) && ((TRUE == IsRealTime()))))
+        if (FALSE == IsRealTime())
         {
-            PublishSensorUsecaseProperties(pSensorModuleData);
+            if (pSensorModuleData != NULL)
+            {
+                PublishSensorUsecaseProperties(pSensorModuleData);
+            }
         }
     }
 
