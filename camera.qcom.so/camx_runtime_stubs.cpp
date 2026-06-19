@@ -480,6 +480,7 @@ CAMX_NAMESPACE_END
 
 #include "camxchicontext.h"
 #include "camxdebugprint.h"
+#include "camxhal3metadatautil.h"
 
 static CamX::ChiContext* g_pChiContext = nullptr;
 
@@ -496,6 +497,12 @@ void* CamXAdapter_InitContext()
         g_pChiContext = CamX::ChiContext::Create();
         if (g_pChiContext != nullptr)
         {
+            if (FALSE == CamX::HAL3MetadataUtil::IsMetadataTableInitialized())
+            {
+                CamxResult metaResult = CamX::HAL3MetadataUtil::InitializeMetadataTable();
+                fprintf(stderr, "[CamXAdapter] InitializeMetadataTable: result=%d tags=%u\n",
+                        metaResult, CamX::HAL3MetadataUtil::GetTotalTagCount());
+            }
             fprintf(stderr, "[CamXAdapter] ChiContext initialized successfully\n");
         }
         else
@@ -514,6 +521,22 @@ void CamXAdapter_DestroyContext()
         g_pChiContext->Destroy();
         g_pChiContext = nullptr;
     }
+}
+
+void* CamXAdapter_CreatePipelineDescriptor(
+    const char* pPipelineName, void* pDescriptor,
+    unsigned int numOutputs, void* pOutputBufferDescriptors,
+    unsigned int numInputs, void* pInputBufferOptions)
+{
+    if (g_pChiContext == nullptr) return nullptr;
+    CamX::PipelineDescriptor* pDesc = g_pChiContext->CreatePipelineDescriptor(
+        pPipelineName,
+        static_cast<const ChiPipelineCreateDescriptor*>(pDescriptor),
+        numOutputs,
+        static_cast<ChiPortBufferDescriptor*>(pOutputBufferDescriptors),
+        numInputs,
+        static_cast<CHIPIPELINEINPUTOPTIONS*>(pInputBufferOptions));
+    return pDesc;
 }
 
 void* CamXAdapter_CreateSession(

@@ -20,6 +20,9 @@ extern "C" void* CamXAdapter_CreateSession(unsigned int numPipelines, void* pPip
     void* pCallbacks, void* pPrivateCallbackData, void* pFlags);
 extern "C" int   CamXAdapter_ActivatePipeline(void* pSession, void* hPipelineDescriptor);
 extern "C" int   CamXAdapter_SubmitRequest(void* pSession, void* pRequest);
+extern "C" void* CamXAdapter_CreatePipelineDescriptor(const char* pPipelineName, void* pDescriptor,
+    unsigned int numOutputs, void* pOutputBufferDescriptors,
+    unsigned int numInputs, void* pInputBufferOptions);
 extern "C" void  CamXAdapter_DestroySession(void* pSession);
 
 // =======================================================================
@@ -262,9 +265,19 @@ static CHIPIPELINEDESCRIPTOR ChiCreatePipelineDescriptor(
     UINT32 numOutputs, CHIPORTBUFFERDESCRIPTOR* pOutputBufferDescriptors,
     UINT32 numInputs, CHIPIPELINEINPUTOPTIONS* pInputBufferOptions)
 {
-    (void)hChiContext; (void)pPipelineName; (void)pDescriptor;
-    (void)numOutputs; (void)pOutputBufferDescriptors;
-    (void)numInputs; (void)pInputBufferOptions;
+    (void)hChiContext;
+
+    void* ctx = CamXAdapter_InitContext();
+    if (ctx != NULL) {
+        void* realDesc = CamXAdapter_CreatePipelineDescriptor(
+            pPipelineName, (void*)pDescriptor,
+            0, NULL,
+            0, NULL);
+        if (realDesc != NULL) {
+            return reinterpret_cast<CHIPIPELINEDESCRIPTOR>(realDesc);
+        }
+        fprintf(stderr, "[chi_stub] Real CamX pipeline descriptor failed, falling back to stub\n");
+    }
 
     StubPipelineDescriptor* desc = new StubPipelineDescriptor();
     desc->cameraId = pDescriptor ? pDescriptor->cameraId : 0;
