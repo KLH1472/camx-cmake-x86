@@ -43,12 +43,14 @@ set(CAMX_CHI_SOURCES
     ${CAMX_ROOT}/camx/src/core/chi/camxchisession.cpp
     ${CAMX_ROOT}/camx/src/core/chi/camxchicomponent.cpp
     ${CAMX_ROOT}/camx/src/core/chi/camxchi.cpp
+    ${CAMX_ROOT}/camx/src/core/chi/camxchicontext.cpp
 )
 
 set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxcmdbuffer.cpp
     ${CAMX_ROOT}/camx/src/core/camxcmdbuffermanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxdeferredrequestqueue.cpp
+    ${CAMX_ROOT}/camx/src/core/camxhwcontext.cpp
     ${CAMX_ROOT}/camx/src/core/camxhwfactory.cpp
     ${CAMX_ROOT}/camx/src/core/camximagebuffer.cpp
     ${CAMX_ROOT}/camx/src/core/camximagebuffermanager.cpp
@@ -60,10 +62,14 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxpacket.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacketbuilder.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacketresource.cpp
+    ${CAMX_ROOT}/camx/src/core/camxpipeline.cpp
     ${CAMX_ROOT}/camx/src/core/camxresourcemanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxsession.cpp
+    ${CAMX_ROOT}/camx/src/core/camxsettingsmanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxstatsparser.cpp
     ${CAMX_ROOT}/camx/src/core/camxtest.cpp
+    ${CAMX_ROOT}/camx/src/core/camxvendortags.cpp
+    ${CAMX_ROOT}/camx/src/core/camxerrorinducer.cpp
 )
 
 # ── CamX Core OBJECT library (separate compile flags from chi_stub) ──
