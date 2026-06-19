@@ -210,6 +210,23 @@ typedef struct camera_metadata_entry {
     } data;
 } camera_metadata_entry_t;
 
+typedef struct camera_metadata_ro_entry {
+    size_t   index;
+    uint32_t tag;
+    uint8_t  type;
+    uint32_t count;
+    union {
+        uint32_t offset;
+        uint8_t  value[4];
+        const uint8_t*  u8;
+        const int32_t*  i32;
+        const float*    f;
+        const int64_t*  i64;
+        const double*   d;
+        const camera_metadata_rational_t* r;
+    } data;
+} camera_metadata_ro_entry_t;
+
 // Metadata API function stubs
 
 // Internal metadata buffer entry (matches Android's libcamera_metadata layout)
@@ -252,6 +269,7 @@ size_t calculate_camera_metadata_size(size_t entry_count, size_t data_count);
 size_t calculate_camera_metadata_entry_data_size(uint8_t type, size_t data_count);
 int get_camera_metadata_tag_type(uint32_t tag);
 int get_camera_metadata_entry(camera_metadata_t* src, size_t index, camera_metadata_entry_t* entry);
+int get_camera_metadata_ro_entry(const camera_metadata_t* src, size_t index, camera_metadata_ro_entry_t* entry);
 int append_camera_metadata(camera_metadata_t* dst, const camera_metadata_t* src);
 int update_camera_metadata_entry(camera_metadata_t* dst, size_t index, const void* data, size_t data_count, camera_metadata_entry_t* updated_entry);
 int validate_camera_metadata_structure(const camera_metadata_t* metadata, const size_t* expected_size);

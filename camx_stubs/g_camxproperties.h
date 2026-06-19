@@ -438,6 +438,88 @@ struct MainPropertyBlob
     BYTE pad_LinkMetadata19[256];
 };
 
+struct InternalPropertyBlob
+{
+    BYTE pad_AECInternal[256];
+    BYTE pad_AFInternal[256];
+    BYTE pad_ASDInternal[256];
+    BYTE pad_AWBInternal[256];
+    BYTE pad_AFDInternal[256];
+    BYTE pad_BasePDInternal[256];
+    BYTE pad_ISPAECBG[256];
+    BYTE pad_ISPAWBBGConfig[256];
+    BYTE pad_ISPBFConfig[256];
+    BYTE pad_ISPCSConfig[256];
+    BYTE pad_ISPHDRBEConfig[256];
+    BYTE pad_ISPHDRBHistConfig[256];
+    BYTE pad_ISPIHistConfig[256];
+    BYTE pad_ISPRegionsStats[256];
+    BYTE pad_ISPROIStats[256];
+    BYTE pad_ISPRSConfig[256];
+    BYTE pad_FDInternalPerFrameSettings[256];
+    BYTE pad_SkipStatsParserTypeBF[256];
+    BYTE pad_SkipStatsParserTypeHDRBE[256];
+    BYTE pad_SkipStatsParserTypeBHist[256];
+    BYTE pad_SkipStatsParserTypeHDRBHist[256];
+    BYTE pad_SkipStatsParserTypeRS[256];
+    BYTE pad_SkipStatsParserTypeCS[256];
+    BYTE pad_SkipStatsParserTypeAWBBG[256];
+    BYTE pad_SkipStatsParserTypeTintlessBG[256];
+    BYTE pad_SkipStatsParserTypeIHist[256];
+    BYTE pad_SkipStatsParserTypeBPSAWBBG[256];
+};
+
+static const SIZE_T InternalPropertyOffsets[] = {
+    offsetof(InternalPropertyBlob, pad_AECInternal),
+    offsetof(InternalPropertyBlob, pad_AFInternal),
+    offsetof(InternalPropertyBlob, pad_ASDInternal),
+    offsetof(InternalPropertyBlob, pad_AWBInternal),
+    offsetof(InternalPropertyBlob, pad_AFDInternal),
+    offsetof(InternalPropertyBlob, pad_BasePDInternal),
+    offsetof(InternalPropertyBlob, pad_ISPAECBG),
+    offsetof(InternalPropertyBlob, pad_ISPAWBBGConfig),
+    offsetof(InternalPropertyBlob, pad_ISPBFConfig),
+    offsetof(InternalPropertyBlob, pad_ISPCSConfig),
+    offsetof(InternalPropertyBlob, pad_ISPHDRBEConfig),
+    offsetof(InternalPropertyBlob, pad_ISPHDRBHistConfig),
+    offsetof(InternalPropertyBlob, pad_ISPIHistConfig),
+    offsetof(InternalPropertyBlob, pad_ISPRegionsStats),
+    offsetof(InternalPropertyBlob, pad_ISPROIStats),
+    offsetof(InternalPropertyBlob, pad_ISPRSConfig),
+    offsetof(InternalPropertyBlob, pad_FDInternalPerFrameSettings),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeBF),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeHDRBE),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeBHist),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeHDRBHist),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeRS),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeCS),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeAWBBG),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeTintlessBG),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeIHist),
+    offsetof(InternalPropertyBlob, pad_SkipStatsParserTypeBPSAWBBG),
+};
+
+struct DebugDataPropertyBlob
+{
+    BYTE pad_DebugDataAll[256];
+    BYTE pad_DebugDataAEC[256];
+    BYTE pad_DebugDataAWB[256];
+    BYTE pad_DebugDataAF[256];
+    BYTE pad_TuningDataIFE[256];
+    BYTE pad_TuningDataIPE[256];
+    BYTE pad_TuningDataBPS[256];
+};
+
+static const SIZE_T DebugDataPropertyOffsets[] = {
+    offsetof(DebugDataPropertyBlob, pad_DebugDataAll),
+    offsetof(DebugDataPropertyBlob, pad_DebugDataAEC),
+    offsetof(DebugDataPropertyBlob, pad_DebugDataAWB),
+    offsetof(DebugDataPropertyBlob, pad_DebugDataAF),
+    offsetof(DebugDataPropertyBlob, pad_TuningDataIFE),
+    offsetof(DebugDataPropertyBlob, pad_TuningDataIPE),
+    offsetof(DebugDataPropertyBlob, pad_TuningDataBPS),
+};
+
 CAMX_NAMESPACE_END
 
 #endif

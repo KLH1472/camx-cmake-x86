@@ -127,6 +127,27 @@ int get_camera_metadata_entry(camera_metadata_t* src, size_t index, camera_metad
     return 0;
 }
 
+int get_camera_metadata_ro_entry(const camera_metadata_t* src, size_t index, camera_metadata_ro_entry_t* entry) {
+    if (src == nullptr || entry == nullptr) return -1;
+    if (index >= src->entry_count) return -1;
+
+    const camera_metadata_buffer_entry_t* buffer_entry =
+        reinterpret_cast<const camera_metadata_buffer_entry_t*>(
+            reinterpret_cast<const uint8_t*>(src) + src->entries_start) + index;
+    memset(entry, 0, sizeof(*entry));
+    entry->index = index;
+    entry->tag = buffer_entry->tag;
+    entry->type = buffer_entry->type;
+    entry->count = buffer_entry->count;
+
+    if (buffer_entry->count * camera_metadata_type_size[buffer_entry->type] > 4) {
+        entry->data.u8 = reinterpret_cast<const uint8_t*>(src) + src->data_start + buffer_entry->data.offset;
+    } else if (buffer_entry->count > 0) {
+        entry->data.u8 = buffer_entry->data.value;
+    }
+    return 0;
+}
+
 // --- Add entry ---
 
 int add_camera_metadata_entry_raw(camera_metadata_t* dst, uint32_t tag, uint8_t type, const void* data, size_t data_count) {

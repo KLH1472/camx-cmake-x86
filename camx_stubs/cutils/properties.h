@@ -7,4 +7,5 @@ static inline int property_get(const char* key, char* value, const char* def) {
     value[0]=0; return 0;
 }
 static inline int property_set(const char* key, const char* value) { (void)key; (void)value; return 0; }
+static inline int property_list(void (*fn)(const char*, const char*, void*), void* cookie) { (void)fn; (void)cookie; return 0; }
 #endif
