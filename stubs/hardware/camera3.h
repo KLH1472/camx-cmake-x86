@@ -143,9 +143,17 @@ typedef struct camera3_notify_msg {
     } message;
 } camera3_notify_msg_t;
 
+// Camera3 callback ops (HAL -> framework)
+typedef struct camera3_callback_ops {
+    void (*process_capture_result)(const struct camera3_callback_ops*, const camera3_capture_result_t*);
+    void (*notify)(const struct camera3_callback_ops*, const camera3_notify_msg_t*);
+    camera3_stream_buffer_t* (*request_stream_buffers)(const struct camera3_callback_ops*, uint32_t, uint32_t, uint32_t*, camera3_stream_buffer_t*);
+    void (*return_stream_buffers)(const struct camera3_callback_ops*, uint32_t, const camera3_stream_buffer_t*);
+} camera3_callback_ops_t;
+
 // Camera3 device ops (minimal stub)
 typedef struct camera3_device_ops {
-    int (*initialize)(const camera3_device_t*);
+    int (*initialize)(const camera3_device_t*, const camera3_callback_ops_t*);
     int (*configure_streams)(const camera3_device_t*, camera3_stream_configuration_t*);
     const camera_metadata_t* (*construct_default_request_settings)(const camera3_device_t*, int type);
     int (*process_capture_request)(const camera3_device_t*, camera3_capture_request_t*);

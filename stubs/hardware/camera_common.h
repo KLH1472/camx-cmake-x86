@@ -34,6 +34,11 @@ typedef struct camera_info {
     int*  sorted_children;
 } camera_info;
 
+typedef struct camera_module_callbacks {
+    void (*camera_device_status_change)(const struct camera_module_callbacks*, int camera_id, int new_status);
+    void (*torch_mode_status_change)(const struct camera_module_callbacks*, const char* camera_id, int new_status);
+} camera_module_callbacks_t;
+
 typedef struct camera_module {
     uint32_t common_version;
     uint32_t common_hal_api_version;
