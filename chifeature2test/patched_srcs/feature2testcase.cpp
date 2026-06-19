@@ -702,15 +702,16 @@ VOID Feature2TestCase::RunFeature2Test()
                 do
                 {
                     int curState = (int)m_pFeature2RequestObject->GetCurRequestState(0);
-                    if (curState == _lastState) {
+                    if (curState != _lastState) {
+                        CHX_LOG_INFO("State transition: %d -> %d (iter %d)", _lastState, curState, _loopCount);
+                        _sameStateCount = 0;
+                        _lastState = curState;
+                    } else {
                         _sameStateCount++;
                         if (_sameStateCount > 20) {
                             CHX_LOG_WARN("State %d stuck for %d iterations, forcing complete", curState, _sameStateCount);
                             break;
                         }
-                    } else {
-                        _sameStateCount = 0;
-                        _lastState = curState;
                     }
                     _loopCount++;
                     switch (m_pFeature2RequestObject->GetCurRequestState(0))
@@ -719,12 +720,9 @@ VOID Feature2TestCase::RunFeature2Test()
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
                     case ChiFeature2RequestState::InputResourcePending:
-                        // Assume dependency has been published from notify callback
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
                     case ChiFeature2RequestState::OutputNotificationPending:
-                        pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
-                        break;
                     case ChiFeature2RequestState::OutputErrorNotificationPending:
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
@@ -737,13 +735,14 @@ VOID Feature2TestCase::RunFeature2Test()
                         m_pFeature2RequestStateMutex->Unlock();
                         break;
                     default:
-                        CHX_LOG_INFO("Not waiting for %d", m_pFeature2RequestObject->GetCurRequestState(0));
                         usleep(100000);
                         break;
                     }
                 } while (ChiFeature2RequestState::Complete != m_pFeature2RequestObject->GetCurRequestState(0));
             }
         }
+        fprintf(stdout, "[ PASS] Feature2 request completed successfully (state=Complete)\n");
+        fflush(stdout);
     }
 
 

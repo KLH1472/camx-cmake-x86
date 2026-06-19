@@ -368,7 +368,6 @@ static CDKResult ChiSubmitPipelineRequest(CHIHANDLE hChiContext, CHIPIPELINEREQU
     StubSession* session = reinterpret_cast<StubSession*>(hSession);
     if (!session) return CDKResultEInvalidState;
 
-    // For each request, generate a fake capture result
     for (UINT32 reqIdx = 0; reqIdx < pRequest->numRequests; reqIdx++) {
         const CHICAPTUREREQUEST* pCapReq = &pRequest->pCaptureRequests[reqIdx];
 
@@ -696,8 +695,8 @@ static CDKResult StubMetaFilter(CHIMETAHANDLE hMetaHandle, VOID* pAndroidMeta, B
 }
 
 static CDKResult StubMetaGetPrivateData(CHIMETAHANDLE hMetaHandle, CHIMETAPRIVATEDATA* ppPrivateData) {
-    (void)hMetaHandle;
-    *ppPrivateData = nullptr;
+    StubMetadata* m = reinterpret_cast<StubMetadata*>(hMetaHandle);
+    *ppPrivateData = m ? m->pPrivateData : nullptr;
     return CDKResultSuccess;
 }
 
