@@ -5,10 +5,120 @@ set(CAMX_API_DIR "${CAMX_ROOT}/chi-cdk/api/common")
 set(STUBS_DIR "${CMAKE_SOURCE_DIR}/stubs")
 set(CAMX_STUBS_DIR "${CMAKE_SOURCE_DIR}/camx_stubs")
 set(CAMX_PATCHED_DIR "${CMAKE_SOURCE_DIR}/camx_patched_srcs")
-set(CAMX_GENERATED_DIR "${CMAKE_SOURCE_DIR}/generated")
+set(CAMX_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated")
 set(METADATA_PORT_DIR "${CMAKE_SOURCE_DIR}/nativechitest")
+set(TOOLS_DIR "${CMAKE_SOURCE_DIR}/tools")
 
-# ── CamX Core sources (36 files) ──
+file(MAKE_DIRECTORY ${CAMX_GENERATED_DIR})
+file(MAKE_DIRECTORY ${CAMX_GENERATED_DIR}/g_sensor)
+file(MAKE_DIRECTORY ${CAMX_GENERATED_DIR}/g_parser)
+
+# ══════════════════════════════════════════════════════════════════════
+# Code generators (props.pl, settingsgenerator.pl, version.pl, ParameterParser)
+# ══════════════════════════════════════════════════════════════════════
+
+# --- libxml2 compatibility symlink for ParameterParser ---
+find_file(LIBXML2_REAL NAMES libxml2.so.16 libxml2.so.2 libxml2.so
+    PATHS /usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib
+    NO_DEFAULT_PATH)
+if(NOT LIBXML2_REAL)
+    message(WARNING "libxml2.so not found — ParameterParser generation will fail")
+    set(LIBXML2_REAL "/usr/lib/x86_64-linux-gnu/libxml2.so.16")
+endif()
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/libxml2.so.2
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${LIBXML2_REAL} ${CMAKE_BINARY_DIR}/libxml2.so.2
+    COMMENT "Creating libxml2.so.2 compatibility symlink"
+)
+
+# --- props.pl → g_camxproperties.h/.cpp ---
+add_custom_command(
+    OUTPUT ${CAMX_GENERATED_DIR}/g_camxproperties.h
+           ${CAMX_GENERATED_DIR}/g_camxproperties.cpp
+    COMMAND perl ${TOOLS_DIR}/props.pl
+        ${CAMX_ROOT}/camx/src/core/camxproperties.xml
+        ${CAMX_GENERATED_DIR}/g_camxproperties
+    DEPENDS ${CAMX_ROOT}/camx/src/core/camxproperties.xml
+            ${TOOLS_DIR}/props.pl
+    COMMENT "Generating g_camxproperties.h/.cpp"
+)
+
+# --- version.pl → g_camxversion.h ---
+add_custom_command(
+    OUTPUT ${CAMX_GENERATED_DIR}/g_camxversion.h
+    COMMAND perl ${TOOLS_DIR}/version.pl ${CAMX_GENERATED_DIR}/g_camxversion.h
+    DEPENDS ${TOOLS_DIR}/version.pl
+    WORKING_DIRECTORY ${CAMX_ROOT}
+    COMMENT "Generating g_camxversion.h"
+)
+
+# --- settingsgenerator.pl → g_camxsettings.h/.cpp + g_camxtitan17xsettings.h/.cpp ---
+# settingsgenerator writes output next to input XMLs; symlink inputs to build dir
+add_custom_command(
+    OUTPUT ${CAMX_GENERATED_DIR}/g_camxsettings.h
+           ${CAMX_GENERATED_DIR}/g_camxsettings.cpp
+           ${CAMX_GENERATED_DIR}/g_camxtitan17xsettings.h
+           ${CAMX_GENERATED_DIR}/g_camxtitan17xsettings.cpp
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CAMX_ROOT}/camx/src/settings/g_camxsettings.xml
+        ${CAMX_GENERATED_DIR}/g_camxsettings.xml
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CAMX_ROOT}/camx/src/hwl/titan17x/camxtitan17xsettings.xml
+        ${CAMX_GENERATED_DIR}/camxtitan17xsettings.xml
+    COMMAND perl ${TOOLS_DIR}/settingsgenerator/settingsgenerator.pl
+        ${CAMX_GENERATED_DIR}/g_camxsettings.xml
+        ${CAMX_GENERATED_DIR}/camxtitan17xsettings.xml
+        ${CAMX_GENERATED_DIR}/camxoverridesettings.txt
+    COMMAND ${CMAKE_COMMAND} -E remove -f
+        ${CAMX_GENERATED_DIR}/g_camxsettings.xml
+        ${CAMX_GENERATED_DIR}/camxtitan17xsettings.xml
+        ${CAMX_GENERATED_DIR}/camxoverridesettings.txt
+        ${CAMX_GENERATED_DIR}/camxoverridesettingsprivate.txt
+    DEPENDS ${CAMX_ROOT}/camx/src/settings/g_camxsettings.xml
+            ${CAMX_ROOT}/camx/src/hwl/titan17x/camxtitan17xsettings.xml
+            ${TOOLS_DIR}/settingsgenerator/settingsgenerator.pl
+    COMMENT "Generating g_camxsettings + g_camxtitan17xsettings"
+)
+
+# --- ParameterParser → sensor XSD C++ code ---
+add_custom_command(
+    OUTPUT ${CAMX_GENERATED_DIR}/g_sensor/camxsensordriver.h
+           ${CAMX_GENERATED_DIR}/g_sensor/imagesensormodulesetmanager.h
+    COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}"
+        ${TOOLS_DIR}/ParameterParser
+        ${CAMX_GENERATED_DIR}/g_sensor s
+        ${CAMX_ROOT}/chi-cdk/api/sensor/
+        -pImageSensorModule -nCamX -l -q
+    DEPENDS ${TOOLS_DIR}/ParameterParser
+            ${CMAKE_BINARY_DIR}/libxml2.so.2
+    COMMENT "Generating sensor XSD C++ code (ParameterParser)"
+)
+
+# --- ParameterParser → parser utility code ---
+add_custom_command(
+    OUTPUT ${CAMX_GENERATED_DIR}/g_parser/parametermodule.h
+           ${CAMX_GENERATED_DIR}/g_parser/parametertuningtypes.h
+    COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}"
+        ${TOOLS_DIR}/ParameterParser
+        ${CAMX_GENERATED_DIR}/g_parser u
+        ${CAMX_ROOT}/chi-cdk/api/chromatix/XSD/
+        -l -q
+    DEPENDS ${TOOLS_DIR}/ParameterParser
+            ${CMAKE_BINARY_DIR}/libxml2.so.2
+    COMMENT "Generating parser utility C++ code (ParameterParser)"
+)
+
+add_custom_target(generate_headers DEPENDS
+    ${CAMX_GENERATED_DIR}/g_camxproperties.h
+    ${CAMX_GENERATED_DIR}/g_camxversion.h
+    ${CAMX_GENERATED_DIR}/g_camxsettings.h
+    ${CAMX_GENERATED_DIR}/g_sensor/camxsensordriver.h
+    ${CAMX_GENERATED_DIR}/g_parser/parametermodule.h
+)
+
+# ══════════════════════════════════════════════════════════════════════
+# CamX Core sources (52 files)
+# ══════════════════════════════════════════════════════════════════════
 
 set(CAMX_UTILS_SOURCES
     ${CAMX_ROOT}/camx/src/utils/camxdebug.cpp
@@ -56,6 +166,7 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxhwfactory.cpp
     ${CAMX_ROOT}/camx/src/core/camximagebuffer.cpp
     ${CAMX_ROOT}/camx/src/core/camximagebuffermanager.cpp
+    ${CAMX_ROOT}/camx/src/core/camximagesensormoduledatamanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxmempoolgroup.cpp
     ${CAMX_ROOT}/camx/src/core/camxmempoolmgr.cpp
     ${CAMX_ROOT}/camx/src/core/camxmetabuffer.cpp
@@ -73,11 +184,10 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxtest.cpp
     ${CAMX_ROOT}/camx/src/core/camxtuningdatamanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxvendortags.cpp
-    ${CAMX_ROOT}/camx/src/core/camximagesensormoduledatamanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxerrorinducer.cpp
 )
 
-# ── CamX Core OBJECT library (separate compile flags from chi_stub) ──
+# ── CamX Core OBJECT library ──
 
 add_library(camx_core OBJECT
     ${CAMX_UTILS_SOURCES}
@@ -86,6 +196,8 @@ add_library(camx_core OBJECT
     ${CAMX_CHI_SOURCES}
     ${CAMX_CORE_SOURCES}
 )
+
+add_dependencies(camx_core generate_headers)
 
 set_target_properties(camx_core PROPERTIES
     CXX_STANDARD 14
