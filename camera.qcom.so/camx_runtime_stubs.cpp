@@ -14,10 +14,25 @@
 #include "camxdisplayconfig.h"
 #include "camxhal3.h"
 
+#include "camxhwcontext.h"
+
 #include <cstdio>
 #include <unistd.h>
 
 CAMX_NAMESPACE_BEGIN
+
+class DummyHwContext final : public HwContext
+{
+public:
+    DummyHwContext() = default;
+    virtual ~DummyHwContext() override = default;
+    virtual BOOL IsNodeTypeSinkNoBuffer(UINT nodeType) const override
+    {
+        CAMX_UNREFERENCED_PARAM(nodeType);
+        return FALSE;
+    }
+    virtual StatsParser* GetStatsParser() override { return NULL; }
+};
 
 // ── ImageFormatUtils ──
 
@@ -345,8 +360,9 @@ CamxResult OsUtils::FDelete(const CHAR* pFilePath)
 
 static CamxResult StubHwContextCreate(HwContextCreateData* pCreateData)
 {
-    CAMX_UNREFERENCED_PARAM(pCreateData);
-    return CamxResultSuccess;
+    if (pCreateData == NULL) return CamxResultEInvalidArg;
+    pCreateData->pHwContext = CAMX_NEW DummyHwContext;
+    return (pCreateData->pHwContext != NULL) ? CamxResultSuccess : CamxResultENoMemory;
 }
 
 static CamxResult StubGetStaticMetadataKeysInfo(StaticMetadataKeysInfo* pKeysInfo, CameraMetadataTag tag)
@@ -427,7 +443,8 @@ CDK_VISIBILITY_PUBLIC VOID CAMXCustomizeEntry(
     CAMXCustomizeCAMXInterface* pCAMXInterface)
 {
     CAMX_UNREFERENCED_PARAM(pCAMXInterface);
-    if (ppOEMInterface != NULL) *ppOEMInterface = NULL;
+    static CAMXCustomizeOEMInterface s_oemInterface = {};
+    if (ppOEMInterface != NULL) *ppOEMInterface = &s_oemInterface;
 }
 
 // ── DisplayConfigInterface ──
@@ -458,3 +475,42 @@ VOID GenerateModifySettingsData(ChiModifySettings* pToken)
 }
 
 CAMX_NAMESPACE_END
+
+// ── CamX Adapter — C-linkage wrappers for chi_stub.cpp ──
+
+#include "camxchicontext.h"
+
+static CamX::ChiContext* g_pChiContext = nullptr;
+
+extern "C" {
+
+void* CamXAdapter_InitContext()
+{
+    if (g_pChiContext == nullptr)
+    {
+        fprintf(stderr, "[CamXAdapter] Initializing ChiContext...\n");
+        fflush(stderr);
+        g_pChiContext = CamX::ChiContext::Create();
+        if (g_pChiContext != nullptr)
+        {
+            fprintf(stderr, "[CamXAdapter] ChiContext initialized successfully\n");
+        }
+        else
+        {
+            fprintf(stderr, "[CamXAdapter] ChiContext initialization FAILED\n");
+        }
+        fflush(stderr);
+    }
+    return g_pChiContext;
+}
+
+void CamXAdapter_DestroyContext()
+{
+    if (g_pChiContext != nullptr)
+    {
+        g_pChiContext->Destroy();
+        g_pChiContext = nullptr;
+    }
+}
+
+}

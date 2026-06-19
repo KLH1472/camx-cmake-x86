@@ -13,6 +13,10 @@
 #include <hardware/camera_common.h>
 #include <system/camera_vendor_tags.h>
 
+// CamX adapter (C-linkage wrappers in camx_runtime_stubs.cpp)
+extern "C" void* CamXAdapter_InitContext();
+extern "C" void  CamXAdapter_DestroyContext();
+
 // =======================================================================
 // Internal state structures
 // =======================================================================
@@ -208,6 +212,7 @@ static void FillFakeSensorMode(CHISENSORMODEINFO* pMode, int index) {
 // =======================================================================
 static CHIHANDLE ChiOpenContext() {
     g_context.initialized = true;
+    CamXAdapter_InitContext();
     return &g_context;
 }
 
@@ -286,6 +291,8 @@ static CHIHANDLE ChiCreateSession(CHIHANDLE hChiContext, UINT numPipelines,
                                    VOID* pPrivateCallbackData,
                                    CHISESSIONFLAGS flags) {
     (void)hChiContext; (void)numPipelines; (void)pPipelineInfo; (void)flags;
+
+    CamXAdapter_InitContext();
 
     StubSession* session = new StubSession();
     if (pCallbacks) {

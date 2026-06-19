@@ -58,13 +58,6 @@ private:
     virtual ~DummyNode() override = default;
 };
 
-class DummySettingsManager final : public SettingsManager
-{
-public:
-    DummySettingsManager() : SettingsManager() {}
-    virtual ~DummySettingsManager() override = default;
-};
-
 class DummyHwFactory final : public HwFactory
 {
 public:
@@ -83,7 +76,7 @@ protected:
 
     virtual SettingsManager* HwCreateSettingsManager() const override
     {
-        return CAMX_NEW DummySettingsManager;
+        return SettingsManager::Create(NULL);
     }
 
     virtual ~DummyHwFactory() override = default;
