@@ -389,7 +389,8 @@ struct DumpFileName {
 };
 struct ChiUsecaseTag {};
 extern ChiUsecaseTag g_DefaultUsecase;
-#define g_pUsecaseZSL ((const ChiUsecase*)&g_DefaultUsecase)
+// g_pUsecaseZSL is defined in g_pipelines.h as (&Usecases97Target[UsecaseZSLId])
+// Do NOT override it here — the real pipeline topology data must be used.
 #define GRALLOC1_PRODUCER_USAGE_CAMERA   (1ULL << 17)
 #define GRALLOC1_PRODUCER_USAGE_CPU_READ (1ULL << 1)
 #define GRALLOC1_PRODUCER_USAGE_CPU_WRITE (1ULL << 5)

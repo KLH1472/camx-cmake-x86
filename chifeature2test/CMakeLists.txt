@@ -72,6 +72,7 @@ set(OEM_F2_SOURCES
     ${OEM_FEATURE2_DIR}/chifeature2generic/chifeature2generic.cpp
     ${OEM_FEATURE2_DIR}/chifeature2rt/chifeature2realtime.cpp
     ${OEM_FEATURE2_DIR}/chifeature2mfsr/chifeature2hwmultiframe.cpp
+    ${OEM_FEATURE2_DIR}/chifeature2graphselector/chifeature2bayer2yuvdescriptor.cpp
 )
 
 # ── Stubs ──
@@ -114,6 +115,8 @@ target_compile_definitions(chifeature2test PRIVATE
     strlcat=g_strlcat
     FEATURE_XMLLIB
     INVALID_INDEX=0xFFFFFFFF
+    "CAMX_TEST_INPUT_PATH=\"./testdata/\""
+    "CAMX_TEST_OUTPUT_PATH=\"./testdata/output/\""
 )
 
 # ── Force-include our types header to ensure camera metadata types are

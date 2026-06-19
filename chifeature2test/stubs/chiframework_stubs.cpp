@@ -31,6 +31,7 @@ VOID ChxUtils::Free(VOID* pMem) {
 }
 
 VOID* ChxUtils::Memcpy(VOID* pDst, const VOID* pSrc, SIZE_T numBytes) {
+    if (!pDst || !pSrc || numBytes == 0) return pDst;
     return memcpy(pDst, pSrc, numBytes);
 }
 
@@ -262,6 +263,8 @@ VOID ExtensionModule::GetVendorTagOps(CHITAGSOPS* pVendorTagOps) {
 
 const LogicalCameraInfo* ExtensionModule::GetPhysicalCameraInfo(UINT32 physicalCameraId) const {
     (void)physicalCameraId;
+    static DeviceInfo s_deviceInfo = {};
+    static DeviceInfo* s_ppDeviceInfo[1] = { &s_deviceInfo };
     static LogicalCameraInfo s_info = {};
     static bool s_initialized = false;
     if (!s_initialized) {
@@ -272,6 +275,7 @@ const LogicalCameraInfo* ExtensionModule::GetPhysicalCameraInfo(UINT32 physicalC
         s_info.m_cameraCaps.sensorCaps.size = sizeof(CHISENSORCAPS);
         s_info.m_cameraCaps.sensorCaps.activeArray = { 0, 0, 5344, 4016 };
         s_info.numPhysicalCameras = 1;
+        s_info.ppDeviceInfo = s_ppDeviceInfo;
         s_info.primaryCameraId = 0;
         s_info.publicVisiblity = TRUE;
     }
@@ -314,7 +318,9 @@ BOOL ExtensionModule::EnableTuningMetadata() { return FALSE; }
 
 ChiMetadataManager* ChiMetadataManager::Create(UINT32 inputFps) {
     (void)inputFps;
-    return nullptr;
+    void* pMem = ::operator new(sizeof(ChiMetadataManager));
+    memset(pMem, 0, sizeof(ChiMetadataManager));
+    return reinterpret_cast<ChiMetadataManager*>(pMem);
 }
 
 ChiMetadataManager::~ChiMetadataManager() {}
@@ -598,7 +604,7 @@ CAMX_NAMESPACE_END
 // Must use extern to override internal linkage of 'const' in C++
 // ══════════════════════════════════════════════════════════════════════════
 
-extern const ChiFeature2Descriptor Bayer2YuvFeatureDescriptor = {};
+// Bayer2YuvFeatureDescriptor is now compiled from the real chifeature2bayer2yuvdescriptor.cpp
 extern const ChiFeature2Descriptor IPEFeatureDescriptor = {};
 extern const ChiFeature2Descriptor JPEGFeatureDescriptor = {};
 extern const ChiFeature2Descriptor RealTimeFeatureDescriptor = {};

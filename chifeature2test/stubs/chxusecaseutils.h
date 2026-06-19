@@ -82,13 +82,30 @@ public:
     static CDKResult GetSnapshotStreamConfiguration(UINT numStreams, CHISTREAM** ppChiStreams,
         SnapshotStreamConfig& rSnapshotStreamConfig) { return CDKResultSuccess; }
     static CDKResult PruneUsecaseDescriptor(const ChiUsecase* const pUsecase, const UINT numPruneVariants,
-        const PruneVariant* const pPruneVariants, ChiUsecase** ppPrunedUsecase) { return CDKResultSuccess; }
+        const PruneVariant* const pPruneVariants, ChiUsecase** ppPrunedUsecase) {
+        (void)numPruneVariants; (void)pPruneVariants;
+        if (ppPrunedUsecase) *ppPrunedUsecase = const_cast<ChiUsecase*>(pUsecase);
+        return CDKResultSuccess;
+    }
     static CDKResult PruneUsecaseByStreamConfig(const camera3_stream_configuration_t* pStreamConfig,
         const ChiUsecase* pUsecaseInputDescriptor, ChiUsecase** ppUsecaseOutputDescriptor) { return CDKResultSuccess; }
     static VariantGroup GetVariantGroup(const CHAR* pVariantName) { return 0; }
     static VariantType GetVariantType(const CHAR* pVariantName) { return 0; }
     static CDKResult FreeUsecaseDescriptor(ChiUsecase* pUsecase) { return CDKResultSuccess; }
-    static ChiUsecase* CloneUsecase(const ChiUsecase* pSrcUsecase, UINT32 numDesc, UINT32* pDescIndex) { return nullptr; }
+    static ChiUsecase* CloneUsecase(const ChiUsecase* pSrcUsecase, UINT32 numDesc, UINT32* pDescIndex) {
+        if (!pSrcUsecase || numDesc == 0 || !pDescIndex) return nullptr;
+        ChiUsecase* pClone = static_cast<ChiUsecase*>(calloc(1, sizeof(ChiUsecase)));
+        if (!pClone) return nullptr;
+        *pClone = *pSrcUsecase;
+        pClone->numPipelines = numDesc;
+        pClone->pPipelineTargetCreateDesc = static_cast<ChiPipelineTargetCreateDescriptor*>(
+            calloc(numDesc, sizeof(ChiPipelineTargetCreateDescriptor)));
+        if (!pClone->pPipelineTargetCreateDesc) { free(pClone); return nullptr; }
+        for (UINT32 i = 0; i < numDesc; i++) {
+            pClone->pPipelineTargetCreateDesc[i] = pSrcUsecase->pPipelineTargetCreateDesc[pDescIndex[i]];
+        }
+        return pClone;
+    }
     static VOID DestroyUsecase(ChiUsecase* pUsecase) {}
     static ChiStream GetFDOutStream() { return {}; }
     static VOID UpdateFDStream(FLOAT referenceAspectRatio) {}
