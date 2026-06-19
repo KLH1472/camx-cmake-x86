@@ -452,11 +452,12 @@ CamxResult Pipeline::Initialize(
     // set frame delay in session metadata
     if (CamxResultSuccess == result)
     {
+        CamxResult vtResult = CamxResultSuccess;
         UINT32 metaTag    = 0;
         UINT32 frameDelay = DetermineFrameDelay();
-        result            = VendorTagManager::QueryVendorTagLocation(
+        vtResult            = VendorTagManager::QueryVendorTagLocation(
                             "org.quic.camera.eislookahead", "FrameDelay", &metaTag);
-        if (CamxResultSuccess == result)
+        if (CamxResultSuccess == vtResult)
         {
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
@@ -476,10 +477,10 @@ CamxResult Pipeline::Initialize(
     {
         UINT32  metaTag     = 0;
         BOOL    bEnabled    = IsEISEnabled();
-        result              = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "Enabled", &metaTag);
+        CamxResult vtResult = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "Enabled", &metaTag);
 
         // write the enabled flag only if it's set to TRUE. IsEISEnabled may return FALSE when vendor tag is not published too
-        if ((TRUE == bEnabled) && (CamxResultSuccess == result))
+        if ((TRUE == bEnabled) && (CamxResultSuccess == vtResult))
         {
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
@@ -500,14 +501,14 @@ CamxResult Pipeline::Initialize(
         UINT32 metaTag = 0;
         MarginRequest margin = { 0 };
 
-        result = DetermineEISMiniamalTotalMargin(&margin);
+        CamxResult vtResult = DetermineEISMiniamalTotalMargin(&margin);
 
-        if (CamxResultSuccess == result)
+        if (CamxResultSuccess == vtResult)
         {
-            result = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "MinimalTotalMargins", &metaTag);
+            vtResult = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "MinimalTotalMargins", &metaTag);
         }
 
-        if (CamxResultSuccess == result)
+        if (CamxResultSuccess == vtResult)
         {
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)

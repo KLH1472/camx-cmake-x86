@@ -220,7 +220,7 @@ const CHIPIPELINEINFO Pipeline::GetPipelineInfo() const {
 
 VOID Pipeline::SetOutputBuffers(UINT numOutputs, CHIPORTBUFFERDESCRIPTOR* pOutputs) {
     m_numOutputs = numOutputs;
-    m_pOutputs = pOutputs;
+    memcpy(&m_pOutputs[0], pOutputs, sizeof(CHIPORTBUFFERDESCRIPTOR) * numOutputs);
 }
 
 VOID Pipeline::SetInputBuffers(UINT numInputs, CHIPORTBUFFERDESCRIPTOR* pInputs) {

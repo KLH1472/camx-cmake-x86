@@ -189,7 +189,7 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxmempoolmgr.cpp
     ${CAMX_ROOT}/camx/src/core/camxmetabuffer.cpp
     ${CAMX_ROOT}/camx/src/core/camxmetadatapool.cpp
-    ${CAMX_ROOT}/camx/src/core/camxnode.cpp
+    ${CMAKE_SOURCE_DIR}/camx_patched_srcs/camxnode.cpp
     ${CAMX_ROOT}/camx/src/core/camxoverridesettingsfile.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacket.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacketbuilder.cpp
