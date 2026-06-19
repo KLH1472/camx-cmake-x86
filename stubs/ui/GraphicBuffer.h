@@ -6,12 +6,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <utils/StrongPointer.h>
+#include <utils/RefBase.h>
 #include <system/window.h>
 #include <ui/GraphicBufferMapper.h>
 
 namespace android {
 
-class GraphicBuffer {
+class GraphicBuffer : public LightRefBase<GraphicBuffer> {
 public:
     static constexpr uint32_t USAGE_SW_READ_NEVER     = 0x00000000;
     static constexpr uint32_t USAGE_SW_READ_RARELY    = 0x00000002;

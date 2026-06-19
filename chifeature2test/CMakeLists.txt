@@ -31,15 +31,15 @@ set(F2FRAMEWORK_SOURCES
     ${F2FRAMEWORK_SRC}/chibufferutils.cpp
     ${F2FRAMEWORK_SRC}/chifeature2log.cpp
     ${F2FRAMEWORK_SRC}/chifeature2test.cpp
-    ${F2FRAMEWORK_SRC}/chimetadatautil.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chimetadatautil.cpp
     ${F2FRAMEWORK_SRC}/chimodule.cpp
     ${F2FRAMEWORK_SRC}/cmdlineparser.cpp
-    ${F2FRAMEWORK_SRC}/feature2buffermanager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2buffermanager.cpp
     ${F2FRAMEWORK_SRC}/feature2mfxrtest.cpp
     ${F2FRAMEWORK_SRC}/feature2offlinetest.cpp
     ${F2FRAMEWORK_SRC}/feature2realtimetest.cpp
     ${F2FRAMEWORK_SRC}/feature2testcase.cpp
-    ${F2FRAMEWORK_SRC}/genericbuffermanager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/genericbuffermanager.cpp
     ${F2FRAMEWORK_SRC}/metaconfigparser.cpp
     ${F2FRAMEWORK_SRC}/spectraconfigparser.cpp
     ${F2FRAMEWORK_SRC}/streamconfigparser.cpp
@@ -62,7 +62,7 @@ set(F2CORE_SOURCES
     ${CHIFEATURE2_DIR}/chifeature2usecaserequestobject.cpp
     ${CHIFEATURE2_DIR}/chifeature2wrapper.cpp
     ${CHIFEATURE2_DIR}/chitargetbuffermanager.cpp
-    ${CHIFEATURE2_DIR}/chithreadmanager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chithreadmanager.cpp
 )
 
 # ── OEM Feature2 sources (used by test)
@@ -93,6 +93,7 @@ set(F2_COMPAT_SOURCES
     ${NT_UTILS_DIR}/camera_metadata_port.cpp
     ${NT_UTILS_DIR}/camera_metadata_tag_info.cpp
     ${NT_UTILS_DIR}/chiutils/log_compat.cpp
+    ${STUBS_DIR}/utils/RefBase.cpp
 )
 
 add_executable(chifeature2test
