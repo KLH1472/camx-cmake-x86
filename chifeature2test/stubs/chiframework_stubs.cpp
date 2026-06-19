@@ -5,8 +5,10 @@
 #include "chxsession.h"
 #include "chxusecase.h"
 #include "chxusecaseutils.h"
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dlfcn.h>
 #include <pthread.h>
 
 // Bring in real Feature class for vtable (from source tree)
@@ -62,13 +64,22 @@ VOID ChxUtils::ThreadTerminate(OSThreadHandle hThread) {
 }
 
 OSLIBRARYHANDLE ChxUtils::LibMap(const CHAR* pLibraryName) {
-    (void)pLibraryName;
-    return nullptr;
+    const char* path = pLibraryName;
+    if (pLibraryName &&
+        (strstr(pLibraryName, "camera.qcom") || strstr(pLibraryName, "camera_qcom")))
+    {
+        path = "./lib/libcamera_qcom.so";
+    }
+    void* handle = dlopen(path, RTLD_NOW);
+    if (!handle) {
+        fprintf(stderr, "ChxUtils::LibMap: dlopen(%s) failed: %s\n", path, dlerror());
+    }
+    return handle;
 }
 
 VOID* ChxUtils::LibGetAddr(OSLIBRARYHANDLE hLibrary, const CHAR* pProcName) {
-    (void)hLibrary; (void)pProcName;
-    return nullptr;
+    if (!hLibrary || !pProcName) return nullptr;
+    return dlsym(hLibrary, pProcName);
 }
 
 VOID* ChxUtils::MemMap(INT fd, SIZE_T length, SIZE_T offset) {
@@ -251,7 +262,20 @@ VOID ExtensionModule::GetVendorTagOps(CHITAGSOPS* pVendorTagOps) {
 
 const LogicalCameraInfo* ExtensionModule::GetPhysicalCameraInfo(UINT32 physicalCameraId) const {
     (void)physicalCameraId;
-    return nullptr;
+    static LogicalCameraInfo s_info = {};
+    static bool s_initialized = false;
+    if (!s_initialized) {
+        s_initialized = true;
+        s_info.cameraId = 0;
+        s_info.m_cameraCaps.size = sizeof(CHICAMERAINFO);
+        s_info.m_cameraCaps.numSensorModes = 3;
+        s_info.m_cameraCaps.sensorCaps.size = sizeof(CHISENSORCAPS);
+        s_info.m_cameraCaps.sensorCaps.activeArray = { 0, 0, 5344, 4016 };
+        s_info.numPhysicalCameras = 1;
+        s_info.primaryCameraId = 0;
+        s_info.publicVisiblity = TRUE;
+    }
+    return &s_info;
 }
 
 CDKResult ExtensionModule::GetPhysicalCameraSensorModes(UINT32 physicalCameraId, UINT32* pNumSensorModes, CHISENSORMODEINFO** ppAllSensorModes) {

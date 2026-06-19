@@ -23,13 +23,14 @@ set(F2TEST_STUBS     "${CMAKE_CURRENT_SOURCE_DIR}/stubs")
 set(F2FRAMEWORK_SRC  "${CHITEST_DIR}/chifeature2testframework")
 set(F2TEST_SRC       "${CHITEST_DIR}/chifeature2test")
 
-# ── Test framework sources (18 .cpp) ──
+# ── Test framework sources (16 .cpp, matching original Android.mk) ──
+# NOTE: chifeature2testbase.cpp and chifeature2testrequestobject.cpp are NOT
+# in the original LOCAL_SRC_FILES — they use undefined macros (CHIFEATURE2TEST_TEST_ORDERED,
+# CHIFEATURE2TEST_CHECK2) and their 3 ORDERED test cases are excluded from the build.
 set(F2FRAMEWORK_SOURCES
     ${F2FRAMEWORK_SRC}/chibufferutils.cpp
     ${F2FRAMEWORK_SRC}/chifeature2log.cpp
     ${F2FRAMEWORK_SRC}/chifeature2test.cpp
-    ${F2FRAMEWORK_SRC}/chifeature2testbase.cpp
-    ${F2FRAMEWORK_SRC}/chifeature2testrequestobject.cpp
     ${F2FRAMEWORK_SRC}/chimetadatautil.cpp
     ${F2FRAMEWORK_SRC}/chimodule.cpp
     ${F2FRAMEWORK_SRC}/cmdlineparser.cpp
@@ -65,8 +66,10 @@ set(F2CORE_SOURCES
 )
 
 # ── OEM Feature2 sources (used by test)
-# NOTE: chifeature2generic.cpp is #included by chifeature2testbase.cpp, do NOT compile separately
+# chifeature2generic.cpp was previously #included by chifeature2testbase.cpp;
+# now compiled directly since chifeature2testbase.cpp is removed from the build.
 set(OEM_F2_SOURCES
+    ${OEM_FEATURE2_DIR}/chifeature2generic/chifeature2generic.cpp
     ${OEM_FEATURE2_DIR}/chifeature2rt/chifeature2realtime.cpp
     ${OEM_FEATURE2_DIR}/chifeature2mfsr/chifeature2hwmultiframe.cpp
 )
