@@ -479,6 +479,7 @@ CAMX_NAMESPACE_END
 // ── CamX Adapter — C-linkage wrappers for chi_stub.cpp ──
 
 #include "camxchicontext.h"
+#include "camxdebugprint.h"
 
 static CamX::ChiContext* g_pChiContext = nullptr;
 
@@ -488,6 +489,8 @@ void* CamXAdapter_InitContext()
 {
     if (g_pChiContext == nullptr)
     {
+        CamX::g_logInfo.systemLogEnable = TRUE;
+
         fprintf(stderr, "[CamXAdapter] Initializing ChiContext...\n");
         fflush(stderr);
         g_pChiContext = CamX::ChiContext::Create();

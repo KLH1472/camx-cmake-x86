@@ -297,9 +297,23 @@ static CHIHANDLE ChiCreateSession(CHIHANDLE hChiContext, UINT numPipelines,
                                    CHICALLBACKS* pCallbacks,
                                    VOID* pPrivateCallbackData,
                                    CHISESSIONFLAGS flags) {
-    (void)hChiContext; (void)numPipelines; (void)pPipelineInfo; (void)flags;
+    (void)hChiContext;
 
-    CamXAdapter_InitContext();
+    void* ctx = CamXAdapter_InitContext();
+    if (ctx != NULL) {
+        void* realSession = CamXAdapter_CreateSession(
+            numPipelines, pPipelineInfo, pCallbacks, pPrivateCallbackData, &flags);
+        if (realSession != NULL) {
+            for (UINT i = 0; i < numPipelines; i++) {
+                if (pPipelineInfo[i].hPipelineDescriptor != NULL) {
+                    CamXAdapter_ActivatePipeline(realSession, pPipelineInfo[i].hPipelineDescriptor);
+                }
+            }
+            g_usingRealCamX = true;
+            return reinterpret_cast<CHIHANDLE>(realSession);
+        }
+        fprintf(stderr, "[chi_stub] Real CamX session failed, falling back to stub\n");
+    }
 
     StubSession* session = new StubSession();
     if (pCallbacks) {

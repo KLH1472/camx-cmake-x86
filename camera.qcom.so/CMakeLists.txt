@@ -151,7 +151,7 @@ set(CAMX_CSL_SOURCES
 )
 
 set(CAMX_CHI_SOURCES
-    ${CAMX_ROOT}/camx/src/core/chi/camxchisession.cpp
+    ${CAMX_PATCHED_DIR}/camxchisession.cpp
     ${CAMX_ROOT}/camx/src/core/chi/camxchicomponent.cpp
     ${CAMX_ROOT}/camx/src/core/chi/camxchicontext.cpp
 )
