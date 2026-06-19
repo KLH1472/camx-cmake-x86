@@ -70,6 +70,7 @@ public:
 
     VOID GetVendorTagOps(CHITAGSOPS* pVendorTagOps);
     VOID GetMetadataOps(CHIMETADATAOPS* pMetadataOps);
+    CDKResult GetAvailableRequestKeys(UINT32 cameraId, UINT32* pTagList, UINT32 maxTagListSize, UINT32* pActualCount);
 
     // Config settings
     BOOL DisableZSL();

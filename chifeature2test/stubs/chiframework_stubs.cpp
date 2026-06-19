@@ -222,6 +222,24 @@ CDKResult ChxUtils::AndroidMetadata::SetVendorTagValue(VOID* pMetadata, VendorTa
     return CDKResultSuccess;
 }
 
+VOID* ChxUtils::AndroidMetadata::AllocateMetaData(UINT32 entry_count, UINT32 data_count) {
+    size_t size = calculate_camera_metadata_size(entry_count, data_count);
+    void* pBuf = calloc(1, size);
+    if (pBuf) {
+        place_camera_metadata(pBuf, size, entry_count, data_count);
+    }
+    return pBuf;
+}
+
+VOID ChxUtils::AndroidMetadata::FreeMetaData(VOID* pMetadata) {
+    free(pMetadata);
+}
+
+camera_metadata_t* ChxUtils::AndroidMetadata::ResetMetadata(camera_metadata* pMetadata) {
+    (void)pMetadata;
+    return pMetadata;
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 // ExtensionModule
 // ══════════════════════════════════════════════════════════════════════════
@@ -293,6 +311,18 @@ VOID ExtensionModule::GetNumCameras(UINT32* pNumFwCameras, UINT32* pNumLogicalCa
 
 VOID ExtensionModule::GetVendorTagOps(CHITAGSOPS* pVendorTagOps) {
     (void)pVendorTagOps;
+}
+
+VOID ExtensionModule::GetMetadataOps(CHIMETADATAOPS* pMetadataOps) {
+    if (pMetadataOps) {
+        *pMetadataOps = g_chiMetadataOps;
+    }
+}
+
+CDKResult ExtensionModule::GetAvailableRequestKeys(UINT32 cameraId, UINT32* pTagList, UINT32 maxTagListSize, UINT32* pActualCount) {
+    (void)cameraId; (void)pTagList; (void)maxTagListSize;
+    if (pActualCount) *pActualCount = 0;
+    return CDKResultSuccess;
 }
 
 const LogicalCameraInfo* ExtensionModule::GetPhysicalCameraInfo(UINT32 physicalCameraId) const {
@@ -405,64 +435,8 @@ ChiMetadataManager::AndroidMetadataHolder::~AndroidMetadataHolder() {}
 ChiMetadataManager::MetaClient::~MetaClient() {}
 
 // ══════════════════════════════════════════════════════════════════════════
-// ChiMetadata
+// ChiMetadata — real implementation from chxmetadata.cpp (not stubbed)
 // ══════════════════════════════════════════════════════════════════════════
-
-ChiMetadata* ChiMetadata::Create(const UINT32* pTagList, UINT32 tagCount, bool useDefaultFrameworkKeys, ChiMetadataManager* pManager) {
-    (void)pTagList; (void)tagCount; (void)useDefaultFrameworkKeys; (void)pManager;
-    return new ChiMetadata();
-}
-
-ChiMetadata* ChiMetadata::Create(const CHAR* pMetadataFileName) {
-    (void)pMetadataFileName;
-    return new ChiMetadata();
-}
-
-CDKResult ChiMetadata::Destroy(bool force) {
-    (void)force;
-    delete this;
-    return CDKResultSuccess;
-}
-
-CDKResult ChiMetadata::SetTag(UINT32 tagID, const VOID* pData, UINT32 count) {
-    (void)tagID; (void)pData; (void)count;
-    return CDKResultSuccess;
-}
-
-CDKResult ChiMetadata::SetTag(const CHAR* pTagSectionName, const CHAR* pTagName, const VOID* pData, UINT32 count) {
-    (void)pTagSectionName; (void)pTagName; (void)pData; (void)count;
-    return CDKResultSuccess;
-}
-
-VOID* ChiMetadata::GetTag(UINT32 tagID) {
-    (void)tagID;
-    return nullptr;
-}
-
-VOID* ChiMetadata::GetTag(const CHAR* pTagSectionName, const CHAR* pTagName) {
-    (void)pTagSectionName; (void)pTagName;
-    return nullptr;
-}
-
-CDKResult ChiMetadata::Copy(ChiMetadata& srcMetadata, bool disjoint) {
-    (void)srcMetadata; (void)disjoint;
-    return CDKResultSuccess;
-}
-
-CDKResult ChiMetadata::Merge(ChiMetadata& srcMetadata, bool disjoint) {
-    (void)srcMetadata; (void)disjoint;
-    return CDKResultSuccess;
-}
-
-CDKResult ChiMetadata::FindTag(uint32_t tag, camera_metadata_entry_t* pEntry) {
-    (void)tag; (void)pEntry;
-    return CDKResultENoSuch;
-}
-
-CDKResult ChiMetadata::SetAndroidMetadata(const camera_metadata_t* pCameraMetadata) {
-    (void)pCameraMetadata;
-    return CDKResultSuccess;
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 // Pipeline
@@ -501,7 +475,7 @@ ChiMetadata* Pipeline::GetDescriptorMetadata() {
     return s_pMeta;
 }
 CHIPIPELINEDESCRIPTOR Pipeline::GetPipelineHandle() const { return (CHIPIPELINEDESCRIPTOR)this; }
-UINT Pipeline::GetMetadataClientId() const { return 0; }
+UINT Pipeline::GetMetadataClientId() const { return 1; }
 const CHAR* Pipeline::GetPipelineName() const { return "stub"; }
 UINT32* Pipeline::GetTagList() { return nullptr; }
 UINT32 Pipeline::GetTagCount() { return 0; }

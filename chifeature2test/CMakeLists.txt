@@ -93,6 +93,7 @@ set(F2_COMPAT_SOURCES
     ${NT_UTILS_DIR}/camera_metadata_port.cpp
     ${NT_UTILS_DIR}/camera_metadata_tag_info.cpp
     ${NT_UTILS_DIR}/chiutils/log_compat.cpp
+    ${NT_UTILS_DIR}/chiutils/chxmetadata.cpp
     ${STUBS_DIR}/utils/RefBase.cpp
 )
 
