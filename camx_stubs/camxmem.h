@@ -8,6 +8,8 @@
 
 CAMX_NAMESPACE_BEGIN
 
+struct ImageDimensions { UINT32 widthPixels; UINT32 heightLines; };
+
 CAMX_INLINE VOID* CamxCalloc(SIZE_T numBytes) { return calloc(1, numBytes); }
 CAMX_INLINE VOID  CamxFree(VOID* pMem) { free(pMem); }
 

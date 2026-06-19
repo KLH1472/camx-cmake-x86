@@ -5,6 +5,7 @@ set(CAMX_API_DIR "${CAMX_ROOT}/chi-cdk/api/common")
 set(STUBS_DIR "${CMAKE_SOURCE_DIR}/stubs")
 set(CAMX_STUBS_DIR "${CMAKE_SOURCE_DIR}/camx_stubs")
 set(CAMX_PATCHED_DIR "${CMAKE_SOURCE_DIR}/camx_patched_srcs")
+set(CAMX_GENERATED_DIR "${CMAKE_SOURCE_DIR}/generated")
 set(METADATA_PORT_DIR "${CMAKE_SOURCE_DIR}/nativechitest")
 
 # ── CamX Core sources (36 files) ──
@@ -92,6 +93,7 @@ target_compile_definitions(camx_core PRIVATE
     OS_LINUX
     OS_ANDROID
     ANDROID
+    CAMX
     CAMX_ANDROID_API=28
     __clang__=1
     CAMX_LOGS_ENABLED=1
@@ -109,6 +111,9 @@ target_compile_options(camx_core PRIVATE
 )
 
 target_include_directories(camx_core PRIVATE
+    ${CAMX_GENERATED_DIR}
+    ${CAMX_GENERATED_DIR}/g_sensor
+    ${CAMX_GENERATED_DIR}/g_parser
     ${CAMX_STUBS_DIR}
     ${CAMX_ROOT}/camx/src/utils
     ${CAMX_ROOT}/camx/src/osutils
