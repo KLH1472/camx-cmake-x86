@@ -18,6 +18,7 @@
 #include "streamconfigparser.h"
 
 #include <string>
+#include <unistd.h>
 
 // Initialize static variables
 UINT32 Feature2TestCase::m_frameNumber;
@@ -104,7 +105,6 @@ VOID Feature2TestCase::Teardown()
         m_pFeature2RequestObject = NULL;
     }
 
-    // Destroy buffer managers
     std::map<NativeChiStream*, GenericBufferManager*>::iterator iter;
     for (iter = m_streamBufferMap.begin(); iter != m_streamBufferMap.end(); iter++)
     {
@@ -117,7 +117,6 @@ VOID Feature2TestCase::Teardown()
     }
     m_streamBufferMap.clear();
 
-    // Destroy mutex and conditions
     if (NULL != m_pFeature2RequestStateMutex)
     {
         m_pFeature2RequestStateMutex->Destroy();

@@ -338,15 +338,16 @@ VOID * CHIThreadManager::DoWork(
                 pCtrl->pReadOK->Wait(pCtrl->pThreadLock->GetNativeHandle());
             }
 
-            if (Stopped != GetStatus(pCtrl))
+            if (Stopped == GetStatus(pCtrl))
             {
-                pCtrl->jobPending = FALSE; // Set to False immediately after wait, so that next trigger won't be blocked
-                pCtrl->pThreadLock->Unlock();
+                break;
             }
+
+            pCtrl->jobPending = FALSE;
+            pCtrl->pThreadLock->Unlock();
 
             result = ProcessJobQueue(pConfig);
 
-            // To guarantee flush is done
             if (TRUE == GetFlushBlockStatus(pCtrl))
             {
                 pCtrl->pFlushLock->Lock();
@@ -356,11 +357,6 @@ VOID * CHIThreadManager::DoWork(
             }
 
             pCtrl->pThreadLock->Lock();
-
-            if (CDKResultSuccess != result)
-            {
-                CHX_LOG_ERROR("ProcessJobQueue failed with result");
-            }
         }
         pCtrl->pThreadLock->Unlock();
     }
@@ -521,7 +517,6 @@ CDKResult CHIThreadManager::FlushJob(
 
                 if (CDKResultSuccess == result)
                 {
-                    // it would not wait when blocking singal comes first than wait()
                     pCtrl->pFlushLock->Lock();
                     if (TRUE == GetFlushBlockStatus(pCtrl))
                     {
@@ -761,7 +756,6 @@ CHIThreadManager::~CHIThreadManager()
 {
     CDKResult result = CDKResultSuccess;
 
-    // finishing all the remaining jobs and threads
     if (m_totalNumOfRegisteredJob > 0)
     {
         RegisteredJob* pRegisteredJob = NULL;
