@@ -200,6 +200,16 @@ VOID Pipeline::Destroy() {
 }
 
 CDKResult Pipeline::CreateDescriptor() {
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pCreatePipelineDescriptor && m_pCreateDesc) {
+        m_hDescriptor = pModule->GetChiOps()->pCreatePipelineDescriptor(
+            pModule->GetContext(), m_pName, m_pCreateDesc,
+            m_numOutputs, m_pOutputs, m_numInputs, m_pInputOptions);
+        if (m_hDescriptor != NULL) {
+            fprintf(stderr, "[Pipeline] CreateDescriptor OK: %p (nodes=%u links=%u)\n",
+                    m_hDescriptor, m_pCreateDesc->numNodes, m_pCreateDesc->numLinks);
+        }
+    }
     return CDKResultSuccess;
 }
 
@@ -209,7 +219,8 @@ const CHIPIPELINEINFO Pipeline::GetPipelineInfo() const {
 }
 
 VOID Pipeline::SetOutputBuffers(UINT numOutputs, CHIPORTBUFFERDESCRIPTOR* pOutputs) {
-    (void)numOutputs; (void)pOutputs;
+    m_numOutputs = numOutputs;
+    m_pOutputs = pOutputs;
 }
 
 VOID Pipeline::SetInputBuffers(UINT numInputs, CHIPORTBUFFERDESCRIPTOR* pInputs) {
@@ -222,7 +233,9 @@ ChiMetadata* Pipeline::GetDescriptorMetadata() {
     if (!s_pMeta) s_pMeta = ChiMetadata::Create(nullptr, 0, false, nullptr);
     return s_pMeta;
 }
-CHIPIPELINEDESCRIPTOR Pipeline::GetPipelineHandle() const { return (CHIPIPELINEDESCRIPTOR)this; }
+CHIPIPELINEDESCRIPTOR Pipeline::GetPipelineHandle() const {
+    return m_hDescriptor ? m_hDescriptor : (CHIPIPELINEDESCRIPTOR)this;
+}
 UINT Pipeline::GetMetadataClientId() const { return 1; }
 const CHAR* Pipeline::GetPipelineName() const { return "stub"; }
 UINT32* Pipeline::GetTagList() { return nullptr; }
@@ -250,8 +263,10 @@ BOOL Pipeline::IsRealTime() const { return FALSE; }
 VOID Pipeline::SetPipelineActivateFlag() {}
 VOID Pipeline::SetMetadataClientId(UINT clientId) { (void)clientId; }
 VOID Pipeline::SetDeferFinalizeFlag(BOOL isDeferFinalizeNeeded) { (void)isDeferFinalizeNeeded; }
-VOID Pipeline::SetPipelineNodePorts(const CHIPIPELINECREATEDESCRIPTOR* pCreateDesc) { (void)pCreateDesc; }
-VOID Pipeline::SetPipelineName(const CHAR* const pPipelineName) { (void)pPipelineName; }
+VOID Pipeline::SetPipelineNodePorts(const CHIPIPELINECREATEDESCRIPTOR* pCreateDesc) {
+    m_pCreateDesc = pCreateDesc;
+}
+VOID Pipeline::SetPipelineName(const CHAR* const pPipelineName) { m_pName = pPipelineName; }
 VOID Pipeline::SetSensorModePickHint(const CHISENSORMODEPICKHINT* pSensorModePickHint) { (void)pSensorModePickHint; }
 
 // ══════════════════════════════════════════════════════════════════════════

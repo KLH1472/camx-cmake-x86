@@ -77,8 +77,18 @@ public:
     INT32 GetNumberOfIFEsUsed();
 
 protected:
-    Pipeline() {}
+    Pipeline() : m_pCreateDesc(NULL), m_pName(NULL), m_numOutputs(0), m_pOutputs(NULL),
+                 m_numInputs(0), m_pInputOptions(NULL), m_hDescriptor(NULL) {}
     virtual ~Pipeline() {}
+
+private:
+    const CHIPIPELINECREATEDESCRIPTOR* m_pCreateDesc;
+    const CHAR*                        m_pName;
+    UINT                               m_numOutputs;
+    CHIPORTBUFFERDESCRIPTOR*           m_pOutputs;
+    UINT                               m_numInputs;
+    CHIPIPELINEINPUTOPTIONS*           m_pInputOptions;
+    CHIPIPELINEDESCRIPTOR              m_hDescriptor;
 };
 
 #endif // CHXPIPELINE_H
