@@ -275,13 +275,17 @@ VOID Pipeline::SetSensorModePickHint(const CHISENSORMODEPICKHINT* pSensorModePic
 
 Session* Session::Create(Pipeline** ppPipelines, UINT32 numPipelines, CHICALLBACKS* pCallbacks, VOID* pPrivateData) {
     Session* pSession = new Session();
+    pSession->m_numPipelines = numPipelines;
+    for (UINT32 i = 0; i < numPipelines && i < 16; i++) {
+        if (ppPipelines && ppPipelines[i]) {
+            pSession->m_pipelineHandles[i] = ppPipelines[i]->GetPipelineHandle();
+        }
+    }
     ChiModule* pModule = ChiModule::GetInstance();
     if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pCreateSession) {
         CHIPIPELINEINFO pipelineInfo[16] = {};
         for (UINT32 i = 0; i < numPipelines && i < 16; i++) {
-            if (ppPipelines && ppPipelines[i]) {
-                pipelineInfo[i].hPipelineDescriptor = ppPipelines[i]->GetPipelineHandle();
-            }
+            pipelineInfo[i].hPipelineDescriptor = pSession->m_pipelineHandles[i];
         }
         CHISESSIONFLAGS flags = {};
         pSession->m_hSession = pModule->GetChiOps()->pCreateSession(
@@ -303,7 +307,9 @@ VOID Session::Destroy(BOOL isForced) {
     delete this;
 }
 
-CHIPIPELINEDESCRIPTOR Session::GetPipelineHandle(UINT index) const { (void)index; return nullptr; }
+CHIPIPELINEDESCRIPTOR Session::GetPipelineHandle(UINT index) const {
+    return (index < m_numPipelines) ? m_pipelineHandles[index] : nullptr;
+}
 CHISENSORMODEINFO* Session::GetSensorModeInfo(UINT index) const {
     (void)index;
     return GetStubSensorModeInfo();

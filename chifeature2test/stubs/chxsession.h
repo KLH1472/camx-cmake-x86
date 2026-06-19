@@ -27,6 +27,8 @@ public:
     Pipeline* GetSCRealTimePipeline() const;
 
     CHIHANDLE m_hSession = nullptr;
+    CHIPIPELINEDESCRIPTOR m_pipelineHandles[16] = {};
+    UINT32 m_numPipelines = 0;
 
 protected:
     Session() {}
