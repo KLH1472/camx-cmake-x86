@@ -532,13 +532,18 @@ UINT32 Usecase::GetGenericMetadataClientId() {
 
 Mutex* Mutex::Create() {
     Mutex* m = new Mutex();
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&m->m_mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
     return m;
 }
 
-VOID Mutex::Destroy() { delete this; }
-VOID Mutex::Lock() {}
-VOID Mutex::Unlock() {}
-OSMutexHandle* Mutex::GetNativeHandle() { return nullptr; }
+VOID Mutex::Destroy() { pthread_mutex_destroy(&m_mutex); delete this; }
+VOID Mutex::Lock() { pthread_mutex_lock(&m_mutex); }
+VOID Mutex::Unlock() { pthread_mutex_unlock(&m_mutex); }
+OSMutexHandle* Mutex::GetNativeHandle() { return reinterpret_cast<OSMutexHandle*>(&m_mutex); }
 
 // ══════════════════════════════════════════════════════════════════════════
 // Condition
@@ -546,16 +551,25 @@ OSMutexHandle* Mutex::GetNativeHandle() { return nullptr; }
 
 Condition* Condition::Create() {
     Condition* c = new Condition();
+    pthread_cond_init(&c->m_conditionVar, nullptr);
     return c;
 }
 
-VOID Condition::Destroy() { delete this; }
-CDKResult Condition::Wait(OSMutexHandle* phMutex) { (void)phMutex; return CDKResultSuccess; }
-CDKResult Condition::TimedWait(OSMutexHandle* phMutex, UINT timeoutMilliseconds) {
-    (void)phMutex; (void)timeoutMilliseconds;
+VOID Condition::Destroy() { pthread_cond_destroy(&m_conditionVar); delete this; }
+CDKResult Condition::Wait(OSMutexHandle* phMutex) {
+    pthread_cond_wait(&m_conditionVar, reinterpret_cast<pthread_mutex_t*>(phMutex));
     return CDKResultSuccess;
 }
-VOID Condition::Signal() {}
+CDKResult Condition::TimedWait(OSMutexHandle* phMutex, UINT timeoutMilliseconds) {
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += timeoutMilliseconds / 1000;
+    ts.tv_nsec += (timeoutMilliseconds % 1000) * 1000000;
+    if (ts.tv_nsec >= 1000000000) { ts.tv_sec++; ts.tv_nsec -= 1000000000; }
+    pthread_cond_timedwait(&m_conditionVar, reinterpret_cast<pthread_mutex_t*>(phMutex), &ts);
+    return CDKResultSuccess;
+}
+VOID Condition::Signal() { pthread_cond_signal(&m_conditionVar); }
 
 // ══════════════════════════════════════════════════════════════════════════
 // Semaphore

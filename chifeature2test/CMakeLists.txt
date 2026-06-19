@@ -36,7 +36,7 @@ set(F2FRAMEWORK_SOURCES
     ${F2FRAMEWORK_SRC}/cmdlineparser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2buffermanager.cpp
     ${F2FRAMEWORK_SRC}/feature2offlinetest.cpp
-    ${F2FRAMEWORK_SRC}/feature2testcase.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2testcase.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/genericbuffermanager.cpp
     ${F2FRAMEWORK_SRC}/metaconfigparser.cpp
     ${F2FRAMEWORK_SRC}/spectraconfigparser.cpp
