@@ -254,6 +254,7 @@ typedef struct camera_metadata_buffer_entry {
 
 // Not inline — real implementations
 int find_camera_metadata_entry(camera_metadata_t* src, uint32_t tag, camera_metadata_entry_t* entry);
+int find_camera_metadata_ro_entry(const camera_metadata_t* src, uint32_t tag, camera_metadata_ro_entry_t* entry);
 int add_camera_metadata_entry(camera_metadata_t* dst, uint32_t tag, const void* data, size_t data_count);
 int add_camera_metadata_entry_raw(camera_metadata_t* dst, uint32_t tag, uint8_t type, const void* data, size_t data_count);
 camera_metadata_t* allocate_camera_metadata(size_t entry_cap, size_t data_cap);

@@ -212,6 +212,18 @@ int find_camera_metadata_entry(camera_metadata_t* src, uint32_t tag, camera_meta
     return get_camera_metadata_entry(src, index, entry);
 }
 
+int find_camera_metadata_ro_entry(const camera_metadata_t* src, uint32_t tag, camera_metadata_ro_entry_t* entry) {
+    camera_metadata_entry_t rw_entry;
+    int ret = find_camera_metadata_entry(const_cast<camera_metadata_t*>(src), tag, &rw_entry);
+    if (ret == 0 && entry != nullptr) {
+        entry->tag = rw_entry.tag;
+        entry->type = rw_entry.type;
+        entry->count = rw_entry.count;
+        entry->data.u8 = rw_entry.data.u8;
+    }
+    return ret;
+}
+
 // --- Clone / append ---
 
 int append_camera_metadata(camera_metadata_t* dst, const camera_metadata_t* src) {

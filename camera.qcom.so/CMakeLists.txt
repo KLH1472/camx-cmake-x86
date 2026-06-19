@@ -153,9 +153,25 @@ set(CAMX_CSL_SOURCES
 set(CAMX_CHI_SOURCES
     ${CAMX_ROOT}/camx/src/core/chi/camxchisession.cpp
     ${CAMX_ROOT}/camx/src/core/chi/camxchicomponent.cpp
-    ${CAMX_ROOT}/camx/src/core/chi/camxchi.cpp
     ${CAMX_ROOT}/camx/src/core/chi/camxchicontext.cpp
 )
+
+set(CAMX_HAL_SOURCES
+    ${CAMX_ROOT}/camx/src/core/halutils/camxhal3metadatautil.cpp
+    ${CAMX_ROOT}/camx/src/core/halutils/camxhal3queue.cpp
+    ${CAMX_ROOT}/camx/src/core/hal/camxhal3stream.cpp
+    ${CAMX_ROOT}/camx/src/core/hal/camxhal3module.cpp
+)
+
+set(CAMX_GENERATED_SOURCES
+    ${CAMX_GENERATED_DIR}/g_camxproperties.cpp
+    ${CAMX_GENERATED_DIR}/g_camxsettings.cpp
+    ${CAMX_GENERATED_DIR}/g_camxtitan17xsettings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/camx_runtime_stubs.cpp
+)
+
+file(GLOB CAMX_SENSOR_GEN_SOURCES ${CAMX_GENERATED_DIR}/g_sensor/*.cpp)
+file(GLOB CAMX_PARSER_GEN_SOURCES ${CAMX_GENERATED_DIR}/g_parser/*.cpp)
 
 set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxcmdbuffer.cpp
@@ -194,7 +210,11 @@ add_library(camx_core OBJECT
     ${CAMX_OSUTILS_SOURCES}
     ${CAMX_CSL_SOURCES}
     ${CAMX_CHI_SOURCES}
+    ${CAMX_HAL_SOURCES}
     ${CAMX_CORE_SOURCES}
+    ${CAMX_GENERATED_SOURCES}
+    ${CAMX_SENSOR_GEN_SOURCES}
+    ${CAMX_PARSER_GEN_SOURCES}
 )
 
 add_dependencies(camx_core generate_headers)
@@ -242,6 +262,7 @@ target_include_directories(camx_core PRIVATE
     ${CAMX_ROOT}/camx/src/core/oem
     ${CAMX_ROOT}/camx/src/hwl/titan17x
     ${CAMX_ROOT}/camx/src/mapperutils/formatmapper
+    ${CAMX_ROOT}/camx/src/mapperutils/extformatutil
     ${CAMX_ROOT}/camx/src/settings
     ${CAMX_ROOT}/chi-cdk/api/common
     ${CAMX_ROOT}/chi-cdk/api/node
@@ -264,6 +285,7 @@ add_library(camera_qcom SHARED
     ${METADATA_PORT_DIR}/camera_metadata_port.cpp
     ${METADATA_PORT_DIR}/camera_metadata_tag_info.cpp
     ${METADATA_PORT_DIR}/string_compat.cpp
+    $<TARGET_OBJECTS:camx_core>
 )
 
 target_compile_definitions(camera_qcom PRIVATE
