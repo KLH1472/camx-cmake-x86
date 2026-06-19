@@ -16,10 +16,17 @@
 // CamX adapter (C-linkage wrappers in camx_runtime_stubs.cpp)
 extern "C" void* CamXAdapter_InitContext();
 extern "C" void  CamXAdapter_DestroyContext();
+extern "C" void* CamXAdapter_CreateSession(unsigned int numPipelines, void* pPipelineInfo,
+    void* pCallbacks, void* pPrivateCallbackData, void* pFlags);
+extern "C" int   CamXAdapter_ActivatePipeline(void* pSession, void* hPipelineDescriptor);
+extern "C" int   CamXAdapter_SubmitRequest(void* pSession, void* pRequest);
+extern "C" void  CamXAdapter_DestroySession(void* pSession);
 
 // =======================================================================
 // Internal state structures
 // =======================================================================
+
+static bool g_usingRealCamX = false;
 
 // Our internal context handle
 struct StubContext {
@@ -308,6 +315,12 @@ static CHIHANDLE ChiCreateSession(CHIHANDLE hChiContext, UINT numPipelines,
 static VOID ChiDestroySession(CHIHANDLE hChiContext, CHIHANDLE hSession, BOOL isForced) {
     (void)hChiContext; (void)isForced;
     if (!hSession) return;
+
+    if (g_usingRealCamX) {
+        CamXAdapter_DestroySession(hSession);
+        return;
+    }
+
     StubSession* session = reinterpret_cast<StubSession*>(hSession);
     std::lock_guard<std::mutex> lock(g_mutex);
     for (auto it = g_sessions.begin(); it != g_sessions.end(); ++it) {
@@ -370,6 +383,11 @@ static CDKResult ChiFlushSession(CHIHANDLE hChiContext, CHISESSIONFLUSHINFO hFlu
 static CDKResult ChiSubmitPipelineRequest(CHIHANDLE hChiContext, CHIPIPELINEREQUEST* pRequest) {
     (void)hChiContext;
     if (!pRequest) return CDKResultEInvalidPointer;
+
+    if (g_usingRealCamX) {
+        CHIHANDLE hSession = pRequest->pSessionHandle;
+        return static_cast<CDKResult>(CamXAdapter_SubmitRequest(hSession, pRequest));
+    }
 
     CHIHANDLE hSession = pRequest->pSessionHandle;
     StubSession* session = reinterpret_cast<StubSession*>(hSession);

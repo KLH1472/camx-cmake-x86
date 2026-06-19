@@ -513,4 +513,51 @@ void CamXAdapter_DestroyContext()
     }
 }
 
+void* CamXAdapter_CreateSession(
+    unsigned int numPipelines, void* pPipelineInfo,
+    void* pCallbacks, void* pPrivateCallbackData, void* pFlags)
+{
+    if (g_pChiContext == nullptr) return nullptr;
+    CHISESSIONFLAGS flags = {};
+    if (pFlags) flags = *static_cast<CHISESSIONFLAGS*>(pFlags);
+
+    CamX::CHISession* pSession = g_pChiContext->CreateSession(
+        numPipelines,
+        static_cast<ChiPipelineInfo*>(pPipelineInfo),
+        static_cast<ChiCallBacks*>(pCallbacks),
+        pPrivateCallbackData,
+        flags);
+
+    fprintf(stderr, "[CamXAdapter] CreateSession: %p (pipelines=%u)\n", pSession, numPipelines);
+    fflush(stderr);
+    return pSession;
+}
+
+int CamXAdapter_ActivatePipeline(void* pSession, void* hPipelineDescriptor)
+{
+    if (g_pChiContext == nullptr || pSession == nullptr) return -1;
+    CamxResult result = g_pChiContext->ActivatePipeline(
+        static_cast<CamX::CHISession*>(pSession),
+        static_cast<CHIPIPELINEHANDLE>(hPipelineDescriptor));
+    fprintf(stderr, "[CamXAdapter] ActivatePipeline: result=%d\n", result);
+    fflush(stderr);
+    return result;
+}
+
+int CamXAdapter_SubmitRequest(void* pSession, void* pRequest)
+{
+    if (g_pChiContext == nullptr || pSession == nullptr) return -1;
+    return g_pChiContext->SubmitRequest(
+        static_cast<CamX::CHISession*>(pSession),
+        static_cast<ChiPipelineRequest*>(pRequest));
+}
+
+void CamXAdapter_DestroySession(void* pSession)
+{
+    if (g_pChiContext == nullptr || pSession == nullptr) return;
+    g_pChiContext->DestroySession(static_cast<CamX::CHISession*>(pSession));
+    fprintf(stderr, "[CamXAdapter] DestroySession done\n");
+    fflush(stderr);
+}
+
 }
