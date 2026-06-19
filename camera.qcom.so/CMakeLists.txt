@@ -168,6 +168,8 @@ set(CAMX_GENERATED_SOURCES
     ${CAMX_GENERATED_DIR}/g_camxsettings.cpp
     ${CAMX_GENERATED_DIR}/g_camxtitan17xsettings.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/camx_runtime_stubs.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/csl_mock.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dummy_node.cpp
 )
 
 file(GLOB CAMX_SENSOR_GEN_SOURCES ${CAMX_GENERATED_DIR}/g_sensor/*.cpp)

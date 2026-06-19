@@ -364,7 +364,8 @@ static CamxResult StubGetStaticCaps(PlatformStaticCaps* pCaps)
 
 static HwFactory* StubCreateHwFactory()
 {
-    return NULL;
+    extern HwFactory* CreateDummyHwFactory();
+    return CreateDummyHwFactory();
 }
 
 static CamxResult StubQueryVendorTagsInfo(VendorTagInfo* pVendorTagInfo)
@@ -457,18 +458,3 @@ VOID GenerateModifySettingsData(ChiModifySettings* pToken)
 }
 
 CAMX_NAMESPACE_END
-
-#include "camxcsljumptable.h"
-
-static CSLJumpTable g_stubCSLJumpTableHw  = {};
-static CSLJumpTable g_stubCSLJumpTableIFH = {};
-
-CSLJumpTable* GetCSLJumpTableHw(void)
-{
-    return &g_stubCSLJumpTableHw;
-}
-
-CSLJumpTable* GetCSLJumpTableIFH(void)
-{
-    return &g_stubCSLJumpTableIFH;
-}
