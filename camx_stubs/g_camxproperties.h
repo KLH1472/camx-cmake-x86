@@ -520,6 +520,75 @@ static const SIZE_T DebugDataPropertyOffsets[] = {
     offsetof(DebugDataPropertyBlob, pad_TuningDataBPS),
 };
 
+struct UsecasePropertyBlob
+{
+    BYTE pad_UsecaseSensorModes[256];
+    BYTE pad_UsecaseBatch[256];
+    BYTE pad_UsecaseFPS[256];
+    BYTE pad_UsecaseLensInfo[256];
+    BYTE pad_UsecaseCameraModuleInfo[256];
+    BYTE pad_UsecasePDLibInfo[256];
+    BYTE pad_UsecaseSensorCurrentMode[256];
+    BYTE pad_UsecaseSensorISO100Gain[256];
+    BYTE pad_UsecaseAWBFrameControl[256];
+    BYTE pad_UsecaseAECFrameControl[256];
+    BYTE pad_UsecaseAFFrameControl[256];
+    BYTE pad_UsecaseAFFrameInformation[256];
+    BYTE pad_UsecaseAECStatsControl[256];
+    BYTE pad_UsecaseAWBStatsControl[256];
+    BYTE pad_UsecaseAFStatsControl[256];
+    BYTE pad_UsecaseStatsStreamInitConfig[256];
+    BYTE pad_UsecasePipelineOutputDimensions[256];
+    BYTE pad_UsecaseFDResults[256];
+    BYTE pad_UsecaseFDMetadataResults[256];
+    BYTE pad_UsecaseFDContourResults[256];
+    BYTE pad_UsecaseIFEInputResolution[256];
+    BYTE pad_UsecaseIFEOutputResolution[256];
+    BYTE pad_UsecaseIFEPDAFInfo[256];
+    BYTE pad_UsecaseHWPDConfig[256];
+    BYTE pad_UsecaseChiTuningModeParameter[256];
+    BYTE pad_UsecaseAESyncStartLockTagID[256];
+    BYTE pad_UsecaseAESyncStopLockTagID[256];
+    BYTE pad_UsecaseIFEPDHWInfo[256];
+    BYTE pad_UsecasePDHWEnableConditions[256];
+    BYTE pad_UsecasePDLibInputPDHWEnableConditions[256];
+    BYTE pad_UsecaseTrackerResults[256];
+};
+
+static const SIZE_T UsecasePropertyOffsets[] = {
+    offsetof(UsecasePropertyBlob, pad_UsecaseSensorModes),
+    offsetof(UsecasePropertyBlob, pad_UsecaseBatch),
+    offsetof(UsecasePropertyBlob, pad_UsecaseFPS),
+    offsetof(UsecasePropertyBlob, pad_UsecaseLensInfo),
+    offsetof(UsecasePropertyBlob, pad_UsecaseCameraModuleInfo),
+    offsetof(UsecasePropertyBlob, pad_UsecasePDLibInfo),
+    offsetof(UsecasePropertyBlob, pad_UsecaseSensorCurrentMode),
+    offsetof(UsecasePropertyBlob, pad_UsecaseSensorISO100Gain),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAWBFrameControl),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAECFrameControl),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAFFrameControl),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAFFrameInformation),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAECStatsControl),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAWBStatsControl),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAFStatsControl),
+    offsetof(UsecasePropertyBlob, pad_UsecaseStatsStreamInitConfig),
+    offsetof(UsecasePropertyBlob, pad_UsecasePipelineOutputDimensions),
+    offsetof(UsecasePropertyBlob, pad_UsecaseFDResults),
+    offsetof(UsecasePropertyBlob, pad_UsecaseFDMetadataResults),
+    offsetof(UsecasePropertyBlob, pad_UsecaseFDContourResults),
+    offsetof(UsecasePropertyBlob, pad_UsecaseIFEInputResolution),
+    offsetof(UsecasePropertyBlob, pad_UsecaseIFEOutputResolution),
+    offsetof(UsecasePropertyBlob, pad_UsecaseIFEPDAFInfo),
+    offsetof(UsecasePropertyBlob, pad_UsecaseHWPDConfig),
+    offsetof(UsecasePropertyBlob, pad_UsecaseChiTuningModeParameter),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAESyncStartLockTagID),
+    offsetof(UsecasePropertyBlob, pad_UsecaseAESyncStopLockTagID),
+    offsetof(UsecasePropertyBlob, pad_UsecaseIFEPDHWInfo),
+    offsetof(UsecasePropertyBlob, pad_UsecasePDHWEnableConditions),
+    offsetof(UsecasePropertyBlob, pad_UsecasePDLibInputPDHWEnableConditions),
+    offsetof(UsecasePropertyBlob, pad_UsecaseTrackerResults),
+};
+
 CAMX_NAMESPACE_END
 
 #endif
