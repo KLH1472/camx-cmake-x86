@@ -506,7 +506,24 @@ const CHAR* Pipeline::GetPipelineName() const { return "stub"; }
 UINT32* Pipeline::GetTagList() { return nullptr; }
 UINT32 Pipeline::GetTagCount() { return 0; }
 UINT32 Pipeline::GetPartialTagCount() { return 0; }
-CHISENSORMODEINFO* Pipeline::GetSensorModeInfo() { return nullptr; }
+static CHISENSORMODEINFO* GetStubSensorModeInfo() {
+    static CHISENSORMODEINFO s_sensorMode = {};
+    static bool init = false;
+    if (!init) {
+        init = true;
+        s_sensorMode.size = sizeof(CHISENSORMODEINFO);
+        s_sensorMode.modeIndex = 0;
+        s_sensorMode.frameDimension = { 5344, 4016 };
+        s_sensorMode.cropInfo = { 5344, 4016 };
+        s_sensorMode.bpp = 10;
+        s_sensorMode.frameRate = 30;
+        s_sensorMode.horizontalBinning = 1;
+        s_sensorMode.verticalBinning = 1;
+    }
+    return &s_sensorMode;
+}
+
+CHISENSORMODEINFO* Pipeline::GetSensorModeInfo() { return GetStubSensorModeInfo(); }
 BOOL Pipeline::IsRealTime() const { return FALSE; }
 VOID Pipeline::SetPipelineActivateFlag() {}
 VOID Pipeline::SetMetadataClientId(UINT clientId) { (void)clientId; }
@@ -550,7 +567,10 @@ VOID Session::Destroy(BOOL isForced) {
 }
 
 CHIPIPELINEDESCRIPTOR Session::GetPipelineHandle(UINT index) const { (void)index; return nullptr; }
-CHISENSORMODEINFO* Session::GetSensorModeInfo(UINT index) const { (void)index; return nullptr; }
+CHISENSORMODEINFO* Session::GetSensorModeInfo(UINT index) const {
+    (void)index;
+    return GetStubSensorModeInfo();
+}
 CHIHANDLE Session::GetSessionHandle() const { return m_hSession; }
 BOOL Session::IsPipelineActive(UINT index) const { (void)index; return FALSE; }
 
