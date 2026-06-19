@@ -26,6 +26,8 @@ public:
     CHISENSORMODEINFO* GetSensorModeInfo(UINT index = 0) const;
     Pipeline* GetSCRealTimePipeline() const;
 
+    CHIHANDLE m_hSession = nullptr;
+
 protected:
     Session() {}
     virtual ~Session() {}

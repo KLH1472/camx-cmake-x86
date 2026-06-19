@@ -11,12 +11,30 @@
 #include <dlfcn.h>
 #include <pthread.h>
 
-// Bring in real Feature class for vtable (from source tree)
 #include "chxfeature.h"
 #include "camxchiofflinelogger.h"
 #include "chifeature2types.h"
+#include "chimodule.h"
 
 using namespace std;
+
+CHIBUFFERMANAGEROPS g_chiBufferManagerOps = {};
+CHIFENCEOPS         g_chiFenceOps         = {};
+CHIMETADATAOPS      g_chiMetadataOps      = {};
+
+static void InitializeGlobalOps() {
+    static bool initialized = false;
+    if (initialized) return;
+    initialized = true;
+
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (!pModule) return;
+    const CHICONTEXTOPS* ops = pModule->GetChiOps();
+    if (!ops) return;
+    if (ops->pGetBufferManagerOps) ops->pGetBufferManagerOps(&g_chiBufferManagerOps);
+    if (ops->pGetFenceOps)         ops->pGetFenceOps(&g_chiFenceOps);
+    if (ops->pMetadataOps)         ops->pMetadataOps(&g_chiMetadataOps);
+}
 
 // ══════════════════════════════════════════════════════════════════════════
 // ChxUtils static methods
@@ -56,12 +74,20 @@ VOID ChxUtils::AtomicStoreU32(volatile UINT32* pVar, UINT32 val) {
 }
 
 CDKResult ChxUtils::ThreadCreate(OSThreadFunc threadEntryFunction, VOID* pThreadData, OSThreadHandle* phThread) {
-    (void)threadEntryFunction; (void)pThreadData; (void)phThread;
-    return CDKResultSuccess;
+    pthread_t thread;
+    int ret = pthread_create(&thread, nullptr,
+        reinterpret_cast<void*(*)(void*)>(threadEntryFunction), pThreadData);
+    if (ret == 0 && phThread) {
+        *phThread = reinterpret_cast<OSThreadHandle>(thread);
+        return CDKResultSuccess;
+    }
+    return CDKResultEFailed;
 }
 
 VOID ChxUtils::ThreadTerminate(OSThreadHandle hThread) {
-    (void)hThread;
+    if (hThread) {
+        pthread_join(reinterpret_cast<pthread_t>(hThread), nullptr);
+    }
 }
 
 OSLIBRARYHANDLE ChxUtils::LibMap(const CHAR* pLibraryName) {
@@ -202,6 +228,11 @@ CDKResult ChxUtils::AndroidMetadata::SetVendorTagValue(VOID* pMetadata, VendorTa
 
 ExtensionModule* ExtensionModule::GetInstance() {
     static ExtensionModule instance;
+    static bool opsInitialized = false;
+    if (!opsInitialized) {
+        opsInitialized = true;
+        InitializeGlobalOps();
+    }
     return &instance;
 }
 
@@ -243,7 +274,10 @@ CDKResult ExtensionModule::Flush(CHIHANDLE sessionHandle) {
 }
 
 CDKResult ExtensionModule::SubmitRequest(CHIPIPELINEREQUEST* pSubmitRequestData) {
-    (void)pSubmitRequestData;
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pSubmitPipelineRequest) {
+        return pModule->GetChiOps()->pSubmitPipelineRequest(pModule->GetContext(), pSubmitRequestData);
+    }
     return CDKResultSuccess;
 }
 
@@ -307,6 +341,7 @@ BOOL ExtensionModule::EnableFeature2Dump() { return FALSE; }
 BOOL ExtensionModule::EnableMFSRChiFence() { return FALSE; }
 BOOL ExtensionModule::EnableTBMChiFence() { return FALSE; }
 BOOL ExtensionModule::UseGPURotationUsecase() { return FALSE; }
+BOOL ExtensionModule::EnableUnifiedBufferManager() { return TRUE; }
 UINT ExtensionModule::GetUsecaseMaxFPS() { return 30; }
 UINT32 ExtensionModule::GetMaxHalRequests() { return 4; }
 BOOL ExtensionModule::Enable3ADebugData() { return FALSE; }
@@ -460,7 +495,11 @@ VOID Pipeline::SetInputBuffers(UINT numInputs, CHIPORTBUFFERDESCRIPTOR* pInputs)
 }
 
 // Inline methods that need out-of-line definitions:
-ChiMetadata* Pipeline::GetDescriptorMetadata() { return nullptr; }
+ChiMetadata* Pipeline::GetDescriptorMetadata() {
+    static ChiMetadata* s_pMeta = nullptr;
+    if (!s_pMeta) s_pMeta = ChiMetadata::Create(nullptr, 0, false, nullptr);
+    return s_pMeta;
+}
 CHIPIPELINEDESCRIPTOR Pipeline::GetPipelineHandle() const { return (CHIPIPELINEDESCRIPTOR)this; }
 UINT Pipeline::GetMetadataClientId() const { return 0; }
 const CHAR* Pipeline::GetPipelineName() const { return "stub"; }
@@ -481,18 +520,38 @@ VOID Pipeline::SetSensorModePickHint(const CHISENSORMODEPICKHINT* pSensorModePic
 // ══════════════════════════════════════════════════════════════════════════
 
 Session* Session::Create(Pipeline** ppPipelines, UINT32 numPipelines, CHICALLBACKS* pCallbacks, VOID* pPrivateData) {
-    (void)ppPipelines; (void)numPipelines; (void)pCallbacks; (void)pPrivateData;
-    return new Session();
+    Session* pSession = new Session();
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pCreateSession) {
+        CHIPIPELINEINFO pipelineInfo[16] = {};
+        for (UINT32 i = 0; i < numPipelines && i < 16; i++) {
+            if (ppPipelines && ppPipelines[i]) {
+                pipelineInfo[i].hPipelineDescriptor = ppPipelines[i]->GetPipelineHandle();
+            }
+        }
+        CHISESSIONFLAGS flags = {};
+        pSession->m_hSession = pModule->GetChiOps()->pCreateSession(
+            pModule->GetContext(), numPipelines, pipelineInfo,
+            pCallbacks, pPrivateData, flags);
+    }
+    return pSession;
 }
 
 VOID Session::Destroy(BOOL isForced) {
     (void)isForced;
+    if (m_hSession) {
+        ChiModule* pModule = ChiModule::GetInstance();
+        if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pDestroySession) {
+            pModule->GetChiOps()->pDestroySession(pModule->GetContext(), m_hSession, isForced);
+        }
+        m_hSession = nullptr;
+    }
     delete this;
 }
 
 CHIPIPELINEDESCRIPTOR Session::GetPipelineHandle(UINT index) const { (void)index; return nullptr; }
 CHISENSORMODEINFO* Session::GetSensorModeInfo(UINT index) const { (void)index; return nullptr; }
-CHIHANDLE Session::GetSessionHandle() const { return nullptr; }
+CHIHANDLE Session::GetSessionHandle() const { return m_hSession; }
 BOOL Session::IsPipelineActive(UINT index) const { (void)index; return FALSE; }
 
 // ══════════════════════════════════════════════════════════════════════════

@@ -30,26 +30,53 @@ protected:
 };
 
 // ── CHIBufferManager ──
+extern CHIBUFFERMANAGEROPS g_chiBufferManagerOps;
+
 class CHIBufferManager
 {
 public:
-    static CHIBufferManager* Create(const CHAR* pBufferManagerName, CHIBufferManagerCreateData* pCreateData) { return nullptr; }
-    static UINT32 GetBufferSize(const CHIBUFFERINFO* pBufferInfo) { return 0; }
-    static CDKResult CopyBuffer(const CHIBUFFERINFO* pSrcBufferInfo, CHIBUFFERINFO* pDstBufferInfo) { return CDKResultSuccess; }
-    static VOID SetPerfMode(CHIBUFFERINFO* pBufferInfo) {}
-    static VOID* GetCPUAddress(const CHIBUFFERINFO* pBufferInfo, INT size) { return nullptr; }
-    static VOID PutCPUAddress(const CHIBUFFERINFO* pBufferInfo, INT size, VOID* pVirtualAddress) {}
-    static INT GetFileDescriptor(const CHIBUFFERINFO* pBufferInfo) { return -1; }
-    static buffer_handle_t* GetGrallocHandle(const CHIBUFFERINFO* pBufferInfo) { return nullptr; }
-    VOID Destroy() {}
-    CHIBUFFERINFO GetImageBufferInfo() { return {}; }
-    CDKResult AddReference(const CHIBUFFERINFO* pBufferInfo) { return CDKResultSuccess; }
-    CDKResult ReleaseReference(const CHIBUFFERINFO* pBufferInfo) { return CDKResultSuccess; }
-    UINT GetReference(const CHIBUFFERINFO* pBufferInfo) { return 0; }
-    CDKResult Activate() { return CDKResultSuccess; }
-    CDKResult Deactivate(BOOL isPartialRelease) { return CDKResultSuccess; }
-    CDKResult BindBuffer(const CHIBUFFERINFO* pBufferInfo) { return CDKResultSuccess; }
-    CDKResult CacheOps(const CHIBUFFERINFO* pBufferInfo, BOOL invalidate, BOOL clean) { return CDKResultSuccess; }
+    static CHIBufferManager* Create(const CHAR* pBufferManagerName, CHIBufferManagerCreateData* pCreateData) {
+        if (!g_chiBufferManagerOps.pCreate) return nullptr;
+        CHIBufferManager* pMgr = new CHIBufferManager();
+        pMgr->m_hBufMgr = g_chiBufferManagerOps.pCreate(pBufferManagerName, pCreateData);
+        if (!pMgr->m_hBufMgr) { delete pMgr; return nullptr; }
+        return pMgr;
+    }
+    static UINT32 GetBufferSize(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return 0; }
+    static CDKResult CopyBuffer(const CHIBUFFERINFO* pSrcBufferInfo, CHIBUFFERINFO* pDstBufferInfo) { (void)pSrcBufferInfo; (void)pDstBufferInfo; return CDKResultSuccess; }
+    static VOID SetPerfMode(CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; }
+    static VOID* GetCPUAddress(const CHIBUFFERINFO* pBufferInfo, INT size) { (void)pBufferInfo; (void)size; return nullptr; }
+    static VOID PutCPUAddress(const CHIBUFFERINFO* pBufferInfo, INT size, VOID* pVirtualAddress) { (void)pBufferInfo; (void)size; (void)pVirtualAddress; }
+    static INT GetFileDescriptor(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return -1; }
+    static buffer_handle_t* GetGrallocHandle(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return nullptr; }
+    VOID Destroy() {
+        if (m_hBufMgr && g_chiBufferManagerOps.pDestroy) g_chiBufferManagerOps.pDestroy(m_hBufMgr);
+        delete this;
+    }
+    CHIBUFFERINFO GetImageBufferInfo() {
+        CHIBUFFERINFO info = {};
+        if (m_hBufMgr && g_chiBufferManagerOps.pGetImageBuffer) {
+            info.phBuffer = g_chiBufferManagerOps.pGetImageBuffer(m_hBufMgr);
+        }
+        return info;
+    }
+    CDKResult AddReference(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return CDKResultSuccess; }
+    CDKResult ReleaseReference(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return CDKResultSuccess; }
+    UINT GetReference(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return 0; }
+    CDKResult Activate() {
+        if (m_hBufMgr && g_chiBufferManagerOps.pActivate) return g_chiBufferManagerOps.pActivate(m_hBufMgr);
+        return CDKResultSuccess;
+    }
+    CDKResult Deactivate(BOOL isPartialRelease) {
+        if (m_hBufMgr && g_chiBufferManagerOps.pDeactivate) return g_chiBufferManagerOps.pDeactivate(m_hBufMgr, isPartialRelease);
+        return CDKResultSuccess;
+    }
+    CDKResult BindBuffer(const CHIBUFFERINFO* pBufferInfo) { (void)pBufferInfo; return CDKResultSuccess; }
+    CDKResult CacheOps(const CHIBUFFERINFO* pBufferInfo, BOOL invalidate, BOOL clean) { (void)pBufferInfo; (void)invalidate; (void)clean; return CDKResultSuccess; }
+
+private:
+    CHIBufferManager() : m_hBufMgr(nullptr) {}
+    CHIBUFFERMANAGERHANDLE m_hBufMgr;
 };
 
 // ── UsecaseSelector ──
