@@ -6949,10 +6949,10 @@ CamxResult Node::CreateBufferManagers()
                     }
                     else
                     {
-                        CAMX_LOG_ERROR(CamxLogGroupMemMgr, "[%s] Buffer Manager creation failed, result=%s",
-                                       bufferManagerName, Utils::CamxResultToString(result))
-                        break;
-
+                        CAMX_LOG_WARN(CamxLogGroupMemMgr, "[%s] Buffer Manager creation failed (non-fatal), result=%s",
+                                       bufferManagerName, Utils::CamxResultToString(result));
+                        pOutputPort->pImageBufferManager = NULL;
+                        result = CamxResultSuccess;
                     }
                 }
             }

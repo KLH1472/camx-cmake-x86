@@ -498,6 +498,10 @@ void* CamXAdapter_InitContext()
         g_pChiContext = CamX::ChiContext::Create();
         if (g_pChiContext != nullptr)
         {
+            CamX::StaticSettings* pSettings = const_cast<CamX::StaticSettings*>(
+                CamX::HwEnvironment::GetInstance()->GetStaticSettings());
+            pSettings->MPMEnable = FALSE;
+
             if (FALSE == CamX::HAL3MetadataUtil::IsMetadataTableInitialized())
             {
                 CamxResult metaResult = CamX::HAL3MetadataUtil::InitializeMetadataTable();

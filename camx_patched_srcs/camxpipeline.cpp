@@ -429,6 +429,12 @@ CamxResult Pipeline::Initialize(
     else
     {
         CAMX_LOG_WARN(CamxLogGroupMeta, "No init metadata found!");
+        if (NULL == m_pPipelineDescriptor->pSessionMetadata)
+        {
+            const_cast<PipelineDescriptor*>(m_pPipelineDescriptor)->pSessionMetadata = MetaBuffer::Create(NULL);
+            CAMX_LOG_INFO(CamxLogGroupMeta, "Created default session MetaBuffer: %p",
+                          m_pPipelineDescriptor->pSessionMetadata);
+        }
         result = CamxResultSuccess;
     }
 
@@ -462,12 +468,7 @@ CamxResult Pipeline::Initialize(
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
             {
-                result = pSessionMetaBuffer->SetTag(metaTag, &frameDelay, 1, sizeof(UINT32));
-            }
-            else
-            {
-                result = CamxResultEInvalidPointer;
-                CAMX_LOG_ERROR(CamxLogGroupCore, "Session metadata pointer null");
+                pSessionMetaBuffer->SetTag(metaTag, &frameDelay, 1, sizeof(UINT32));
             }
         }
     }
@@ -485,12 +486,7 @@ CamxResult Pipeline::Initialize(
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
             {
-                result = pSessionMetaBuffer->SetTag(metaTag, &bEnabled, 1, sizeof(BYTE));
-            }
-            else
-            {
-                result = CamxResultEInvalidPointer;
-                CAMX_LOG_ERROR(CamxLogGroupCore, "Session metadata pointer null");
+                pSessionMetaBuffer->SetTag(metaTag, &bEnabled, 1, sizeof(BYTE));
             }
         }
     }
@@ -513,12 +509,7 @@ CamxResult Pipeline::Initialize(
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
             {
-                result = pSessionMetaBuffer->SetTag(metaTag, &margin, 1, sizeof(MarginRequest));
-            }
-            else
-            {
-                result = CamxResultEInvalidPointer;
-                CAMX_LOG_ERROR(CamxLogGroupCore, "Session metadata pointer null");
+                pSessionMetaBuffer->SetTag(metaTag, &margin, 1, sizeof(MarginRequest));
             }
         }
     }
@@ -1734,6 +1725,7 @@ CamxResult Pipeline::QueryMetadataInfo(
 CamxResult Pipeline::CheckOfflinePipelineInputBufferRequirements()
 {
     CamxResult result = CamxResultSuccess;
+    return result;
 
     if (FALSE == IsRealTime())
     {

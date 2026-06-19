@@ -215,6 +215,11 @@ CDKResult Pipeline::CreateDescriptor() {
 
 const CHIPIPELINEINFO Pipeline::GetPipelineInfo() const {
     CHIPIPELINEINFO info = {};
+    info.hPipelineDescriptor = GetPipelineHandle();
+    info.pipelineInputInfo.isInputSensor = FALSE;
+    info.pipelineInputInfo.inputBufferInfo.numInputBuffers = m_numInputBuffers;
+    info.pipelineInputInfo.inputBufferInfo.pInputBufferDescriptors =
+        (m_numInputBuffers > 0) ? &m_pInputBuffers[0] : NULL;
     return info;
 }
 
@@ -224,7 +229,10 @@ VOID Pipeline::SetOutputBuffers(UINT numOutputs, CHIPORTBUFFERDESCRIPTOR* pOutpu
 }
 
 VOID Pipeline::SetInputBuffers(UINT numInputs, CHIPORTBUFFERDESCRIPTOR* pInputs) {
-    (void)numInputs; (void)pInputs;
+    m_numInputBuffers = numInputs;
+    if (numInputs > 0 && pInputs != NULL) {
+        memcpy(&m_pInputBuffers[0], pInputs, sizeof(CHIPORTBUFFERDESCRIPTOR) * numInputs);
+    }
 }
 
 // Inline methods that need out-of-line definitions:
@@ -285,7 +293,9 @@ Session* Session::Create(Pipeline** ppPipelines, UINT32 numPipelines, CHICALLBAC
     if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pCreateSession) {
         CHIPIPELINEINFO pipelineInfo[16] = {};
         for (UINT32 i = 0; i < numPipelines && i < 16; i++) {
-            pipelineInfo[i].hPipelineDescriptor = pSession->m_pipelineHandles[i];
+            if (ppPipelines && ppPipelines[i]) {
+                pipelineInfo[i] = ppPipelines[i]->GetPipelineInfo();
+            }
         }
         CHISESSIONFLAGS flags = {};
         pSession->m_hSession = pModule->GetChiOps()->pCreateSession(

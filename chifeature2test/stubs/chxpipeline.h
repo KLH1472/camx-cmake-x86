@@ -78,7 +78,7 @@ public:
 
 protected:
     Pipeline() : m_pCreateDesc(NULL), m_pName(NULL), m_numOutputs(0),
-                 m_numInputs(0), m_hDescriptor(NULL) {}
+                 m_numInputBuffers(0), m_numInputs(0), m_hDescriptor(NULL) {}
     virtual ~Pipeline() {}
 
 private:
@@ -86,6 +86,8 @@ private:
     const CHAR*                        m_pName;
     UINT                               m_numOutputs;
     CHIPORTBUFFERDESCRIPTOR            m_pOutputs[16];
+    UINT                               m_numInputBuffers;
+    CHIPORTBUFFERDESCRIPTOR            m_pInputBuffers[16];
     UINT                               m_numInputs;
     CHIPIPELINEINPUTOPTIONS            m_pInputOptions[16];
     CHIPIPELINEDESCRIPTOR              m_hDescriptor;
