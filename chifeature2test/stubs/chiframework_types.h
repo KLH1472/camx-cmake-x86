@@ -130,6 +130,8 @@ enum class VendorTag {
     ZSLTimestampRange = 10, DebugDumpConfig = 11,
     VideoHDR10Mode = 12,
     LivePreview = 13,
+    Feature1Mode = 14,
+    Feature2Mode = 15,
 };
 enum class PartialResultCount {
     NoPartialResult = 0, FirstPartialResult = 1,
@@ -255,6 +257,12 @@ struct CSIDBinningInfo {
 struct GeoLibStreamOutput {
     UINT32 dummy[4];
 };
+
+typedef struct {
+    UINT32 currentCameraId;
+    UINT32 logicalCameraId;
+    UINT32 masterCameraId;
+} MultiCameraIds;
 
 // ==========================================================================
 // Additional structs (not in chi.h/chicommon.h)

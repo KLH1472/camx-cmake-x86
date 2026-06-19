@@ -32,7 +32,7 @@ set(F2FRAMEWORK_SOURCES
     ${F2FRAMEWORK_SRC}/chifeature2log.cpp
     ${F2FRAMEWORK_SRC}/chifeature2test.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chimetadatautil.cpp
-    ${F2FRAMEWORK_SRC}/chimodule.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chimodule.cpp
     ${F2FRAMEWORK_SRC}/cmdlineparser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2buffermanager.cpp
     ${F2FRAMEWORK_SRC}/feature2offlinetest.cpp
@@ -92,6 +92,9 @@ set(F2_COMPAT_SOURCES
     ${NT_UTILS_DIR}/camera_metadata_tag_info.cpp
     ${NT_UTILS_DIR}/chiutils/log_compat.cpp
     ${NT_UTILS_DIR}/chiutils/chxmetadata.cpp
+    ${NT_UTILS_DIR}/chiutils/chxutils.cpp
+    ${NT_UTILS_DIR}/chiutils/chxperf.cpp
+    ${NT_UTILS_DIR}/chiutils/chxblmclient.cpp
     ${STUBS_DIR}/utils/RefBase.cpp
 )
 

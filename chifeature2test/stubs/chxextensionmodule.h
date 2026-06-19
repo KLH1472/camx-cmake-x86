@@ -7,6 +7,8 @@
 class ExtensionModule;
 struct PipelineCreateData;
 struct SessionCreateData;
+enum class VendorTag : int;
+enum class PartialMetaSupport : UINT32;
 
 // ── ExtensionModule base class ──
 class ExtensionModule
@@ -58,7 +60,7 @@ public:
     VOID ReturnFrameworkResult(const camera3_capture_result_t* pResult, UINT32 cameraID);
     VOID ReturnFrameworkMessage(const camera3_notify_msg_t* msg, UINT32 cameraID);
 
-    UINT32 GetNumMetadataResults();
+    UINT32 GetNumMetadataResults() { return 1; }
     UINT32 GetCameraIdfromDevice(const camera3_device_t* pCamera3Device);
     VOID DumpDebugData(UINT32 cameraID);
 
@@ -71,6 +73,15 @@ public:
     VOID GetVendorTagOps(CHITAGSOPS* pVendorTagOps);
     VOID GetMetadataOps(CHIMETADATAOPS* pMetadataOps);
     CDKResult GetAvailableRequestKeys(UINT32 cameraId, UINT32* pTagList, UINT32 maxTagListSize, UINT32* pActualCount);
+    UINT32 GetVendorTagId(VendorTag tag) { return 0x80000000 + static_cast<UINT32>(tag); }
+    VOID* GetPerfLibHandle() { return nullptr; }
+
+    UINT32 DebugDataSizeAEC() { return 0; }
+    UINT32 DebugDataSizeAWB() { return 0; }
+    UINT32 DebugDataSizeAF()  { return 0; }
+    UINT32 TuningDumpDataSizeIFE() { return 0; }
+    UINT32 TuningDumpDataSizeIPE() { return 0; }
+    UINT32 TuningDumpDataSizeBPS() { return 0; }
 
     // Config settings
     BOOL DisableZSL();
@@ -94,7 +105,7 @@ public:
     BOOL IsSWMFEnabled();
     BOOL DisableASDProcessing();
     BOOL EnableFOVCUseCase();
-    BOOL EnableCHIPartialData();
+    PartialMetaSupport EnableCHIPartialData() { return static_cast<PartialMetaSupport>(0); }
     BOOL EnableOfflineNoiseReprocessing();
     BOOL EnableTBMChiFence();
     BOOL EnableMFSRChiFence();
