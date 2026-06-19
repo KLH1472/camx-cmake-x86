@@ -2,6 +2,8 @@
 #define STUB_TUNINGSETMANAGER_H
 #include "camxtypes.h"
 #include "chituningmodeparam.h"
+#include "parametermodule.h"
+#include "parametersetmanager.h"
 
 CAMX_NAMESPACE_BEGIN
 
@@ -25,6 +27,7 @@ public:
     static TuningSetManager* Create(TuningModeSelector*, UINT32) { return NULL; }
     VOID Destroy() {}
     TuningSetManager* GetChromatix() { return NULL; }
+    BOOL LoadBinaryParameters(VOID*, UINT32) { return FALSE; }
 };
 
 CAMX_NAMESPACE_END
