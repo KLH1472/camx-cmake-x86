@@ -378,61 +378,8 @@ BOOL ExtensionModule::Enable3ADebugData() { return FALSE; }
 BOOL ExtensionModule::EnableTuningMetadata() { return FALSE; }
 
 // ══════════════════════════════════════════════════════════════════════════
-// ChiMetadataManager
+// ChiMetadataManager — real implementation from chxmetadata.cpp (not stubbed)
 // ══════════════════════════════════════════════════════════════════════════
-
-ChiMetadataManager* ChiMetadataManager::Create(UINT32 inputFps) {
-    (void)inputFps;
-    void* pMem = ::operator new(sizeof(ChiMetadataManager));
-    memset(pMem, 0, sizeof(ChiMetadataManager));
-    return reinterpret_cast<ChiMetadataManager*>(pMem);
-}
-
-ChiMetadataManager::~ChiMetadataManager() {}
-
-VOID ChiMetadataManager::Destroy() {
-    delete this;
-}
-
-ChiMetadata* ChiMetadataManager::Get(UINT32 clientId, UINT32 frameNumber) {
-    (void)clientId; (void)frameNumber;
-    return ChiMetadata::Create(nullptr, 0, false, nullptr);
-}
-
-ChiMetadata* ChiMetadataManager::GetInput(const camera_metadata_t* pFrameworkInput, UINT32 frameNumber, bool bUseSticky, bool bReuseBuffers) {
-    (void)pFrameworkInput; (void)frameNumber; (void)bUseSticky; (void)bReuseBuffers;
-    return ChiMetadata::Create(nullptr, 0, false, nullptr);
-}
-
-CDKResult ChiMetadataManager::Release(ChiMetadata* pMetadata) {
-    (void)pMetadata;
-    return CDKResultSuccess;
-}
-
-UINT32 ChiMetadataManager::RegisterClient(BOOL isExclusive, UINT32* pTagList, UINT32 tagCount, UINT32 partialTagCount, UINT32 bufferCount, ChiMetadataUsage usage) {
-    (void)isExclusive; (void)pTagList; (void)tagCount; (void)partialTagCount; (void)bufferCount; (void)usage;
-    return 1;
-}
-
-CDKResult ChiMetadataManager::UnregisterClient(UINT32 clientId) {
-    (void)clientId;
-    return CDKResultSuccess;
-}
-
-ChiMetadata* ChiMetadataManager::GetMetadataFromHandle(CHIMETADATAHANDLE hMetaHandle) {
-    (void)hMetaHandle;
-    return ChiMetadata::Create(nullptr, 0, false, nullptr);
-}
-
-CDKResult ChiMetadataManager::InitializeFrameworkInputClient(UINT32 bufferCount, bool bSupportMultipleInputs) {
-    (void)bufferCount; (void)bSupportMultipleInputs;
-    return CDKResultSuccess;
-}
-
-// Nested class destructors
-ChiMetadataManager::AndroidMetadataHolder::AndroidMetadataHolder() {}
-ChiMetadataManager::AndroidMetadataHolder::~AndroidMetadataHolder() {}
-ChiMetadataManager::MetaClient::~MetaClient() {}
 
 // ══════════════════════════════════════════════════════════════════════════
 // ChiMetadata — real implementation from chxmetadata.cpp (not stubbed)

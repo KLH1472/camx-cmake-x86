@@ -35,9 +35,7 @@ set(F2FRAMEWORK_SOURCES
     ${F2FRAMEWORK_SRC}/chimodule.cpp
     ${F2FRAMEWORK_SRC}/cmdlineparser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2buffermanager.cpp
-    ${F2FRAMEWORK_SRC}/feature2mfxrtest.cpp
     ${F2FRAMEWORK_SRC}/feature2offlinetest.cpp
-    ${F2FRAMEWORK_SRC}/feature2realtimetest.cpp
     ${F2FRAMEWORK_SRC}/feature2testcase.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/genericbuffermanager.cpp
     ${F2FRAMEWORK_SRC}/metaconfigparser.cpp
@@ -47,7 +45,7 @@ set(F2FRAMEWORK_SOURCES
 )
 
 set(F2MAIN_SOURCES
-    ${F2TEST_SRC}/chifeature2testmain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chifeature2testmain.cpp
 )
 
 # ── Feature2 core sources (from chi-cdk/core/chifeature2/) ──
@@ -66,12 +64,12 @@ set(F2CORE_SOURCES
 )
 
 # ── OEM Feature2 sources (used by test)
-# chifeature2generic.cpp was previously #included by chifeature2testbase.cpp;
-# now compiled directly since chifeature2testbase.cpp is removed from the build.
+# Only chifeature2generic is needed for TestBayerToYUV.
+# chifeature2realtime.cpp and chifeature2hwmultiframe.cpp each define
+# their own CreateFeature/DoQueryCaps/ChiFeature2OpsEntry entry points
+# which conflict in a monolithic build (in Android they're separate .so files).
 set(OEM_F2_SOURCES
     ${OEM_FEATURE2_DIR}/chifeature2generic/chifeature2generic.cpp
-    ${OEM_FEATURE2_DIR}/chifeature2rt/chifeature2realtime.cpp
-    ${OEM_FEATURE2_DIR}/chifeature2mfsr/chifeature2hwmultiframe.cpp
     ${OEM_FEATURE2_DIR}/chifeature2graphselector/chifeature2bayer2yuvdescriptor.cpp
 )
 
@@ -191,10 +189,8 @@ target_link_libraries(chifeature2test PRIVATE
     rt
 )
 
-# Allow multiple definitions (OEM feature .cpp files share common globals)
-target_link_options(chifeature2test PRIVATE
-    -Wl,--allow-multiple-definition
-)
+# Note: --allow-multiple-definition was removed to ensure each symbol
+# is defined exactly once (either real or stub, not both).
 
 # ── Export symbols for dlopen camera.qcom.so ──
 set_target_properties(chifeature2test PROPERTIES
