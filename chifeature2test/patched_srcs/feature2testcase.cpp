@@ -695,25 +695,9 @@ VOID Feature2TestCase::RunFeature2Test()
 
             if (NULL != m_pFeature2RequestObject)
             {
-                int _loopCount = 0;
-                int _sameStateCount = 0;
-                int _lastState = -1;
                 bool _pipelineError = false;
                 do
                 {
-                    int curState = (int)m_pFeature2RequestObject->GetCurRequestState(0);
-                    if (curState != _lastState) {
-                        CHX_LOG_INFO("State transition: %d -> %d (iter %d)", _lastState, curState, _loopCount);
-                        _sameStateCount = 0;
-                        _lastState = curState;
-                    } else {
-                        _sameStateCount++;
-                        if (_sameStateCount > 20) {
-                            CHX_LOG_ERROR("State %d stuck for %d iterations, breaking", curState, _sameStateCount);
-                            break;
-                        }
-                    }
-                    _loopCount++;
                     switch (m_pFeature2RequestObject->GetCurRequestState(0))
                     {
                     case ChiFeature2RequestState::Initialized:
@@ -739,7 +723,6 @@ VOID Feature2TestCase::RunFeature2Test()
                         m_pFeature2RequestStateMutex->Unlock();
                         break;
                     default:
-                        usleep(100000);
                         break;
                     }
                 } while (ChiFeature2RequestState::Complete != m_pFeature2RequestObject->GetCurRequestState(0));
