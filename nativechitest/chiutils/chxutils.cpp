@@ -33,20 +33,45 @@ extern BOOL   g_enableSystemLog;
 #if defined (_LINUX)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Operator new
+// Operator new / delete overrides
+// CamX assumes operator new returns zero-initialized memory (camxmem.cpp provides this under #if __clang__).
+// For GCC builds, we replicate the same behavior with calloc for all variants.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __SANITIZE_ADDRESS__
 VOID* operator new(
-    size_t numBytes)    ///< Number of bytes to allocate
+    size_t numBytes)
 {
     return calloc(1, numBytes);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Operator delete
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+VOID* operator new[](
+    size_t numBytes)
+{
+    return calloc(1, numBytes);
+}
+
 VOID operator delete(
-    VOID* pMem)    ///< Memory pointer
+    VOID* pMem) noexcept
+{
+    free(pMem);
+}
+
+VOID operator delete[](
+    VOID* pMem) noexcept
+{
+    free(pMem);
+}
+
+VOID operator delete(
+    VOID* pMem,
+    size_t) noexcept
+{
+    free(pMem);
+}
+
+VOID operator delete[](
+    VOID* pMem,
+    size_t) noexcept
 {
     free(pMem);
 }
