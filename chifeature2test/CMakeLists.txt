@@ -71,6 +71,9 @@ set(F2CORE_SOURCES
 set(OEM_F2_SOURCES
     ${OEM_FEATURE2_DIR}/chifeature2generic/chifeature2generic.cpp
     ${OEM_FEATURE2_DIR}/chifeature2graphselector/chifeature2bayer2yuvdescriptor.cpp
+    ${OEM_FEATURE2_DIR}/chifeature2graphselector/chifeature2bpsdescriptor.cpp
+    ${OEM_FEATURE2_DIR}/chifeature2graphselector/chifeature2ipedescriptor.cpp
+    ${OEM_FEATURE2_DIR}/chifeature2graphselector/chifeature2jpegdescriptor.cpp
 )
 
 # ── Stubs ──

@@ -439,10 +439,8 @@ VOID Feature::SetFeatureStatus(FeatureStatus currentstate) {
 // ══════════════════════════════════════════════════════════════════════════
 
 // Bayer2YuvFeatureDescriptor is now compiled from the real chifeature2bayer2yuvdescriptor.cpp
-extern const ChiFeature2Descriptor IPEFeatureDescriptor = {};
-extern const ChiFeature2Descriptor JPEGFeatureDescriptor = {};
+// BPS/IPE/JPEG FeatureDescriptor now compiled from real descriptor .cpp files
 extern const ChiFeature2Descriptor RealTimeFeatureDescriptor = {};
-extern const ChiFeature2Descriptor BPSFeatureDescriptor = {};
 extern const ChiFeature2Descriptor MFSRFeatureDescriptor = {};
 
 // ══════════════════════════════════════════════════════════════════════════
