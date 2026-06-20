@@ -586,14 +586,10 @@ int CamXAdapter_SubmitRequest(void* pSession, void* pRequest)
     ChiPipelineRequest* pPipelineReq = static_cast<ChiPipelineRequest*>(pRequest);
 
     for (UINT i = 0; i < pPipelineReq->numRequests; i++) {
-        ChiCaptureRequest* pReq = const_cast<ChiCaptureRequest*>(&pPipelineReq->pCaptureRequests[i]);
-        void* origIn  = pReq->pInputMetadata;
-        void* origOut = pReq->pOutputMetadata;
-        pReq->pInputMetadata  = CamX::MetaBuffer::Create(origIn);
-        pReq->pOutputMetadata = CamX::MetaBuffer::Create(origOut);
-        fprintf(stderr, "[CamXAdapter] SubmitRequest: req[%u] handle=%p frame=%llu outs=%u origMeta=%p/%p wrappedMeta=%p/%p\n",
+        const ChiCaptureRequest* pReq = &pPipelineReq->pCaptureRequests[i];
+        fprintf(stderr, "[CamXAdapter] SubmitRequest: req[%u] handle=%p frame=%llu outs=%u meta=%p/%p\n",
                 i, pReq->hPipelineHandle, pReq->frameNumber, pReq->numOutputs,
-                origIn, origOut, pReq->pInputMetadata, pReq->pOutputMetadata);
+                pReq->pInputMetadata, pReq->pOutputMetadata);
     }
 
     CamxResult result;
@@ -614,6 +610,23 @@ void CamXAdapter_DestroySession(void* pSession)
     g_pChiContext->DestroySession(static_cast<CamX::CHISession*>(pSession));
     fprintf(stderr, "[CamXAdapter] DestroySession done\n");
     fflush(stderr);
+}
+
+void* CamXAdapter_MetaCreate(void* pPrivateData)
+{
+    return CamX::MetaBuffer::Create(pPrivateData);
+}
+
+int CamXAdapter_MetaDestroy(void* handle, int force)
+{
+    if (!handle) return 0;
+    return static_cast<CamX::MetaBuffer*>(handle)->Destroy(force ? TRUE : FALSE);
+}
+
+void* CamXAdapter_MetaGetPrivateData(void* handle)
+{
+    if (!handle) return nullptr;
+    return static_cast<CamX::MetaBuffer*>(handle)->GetPrivateUserHandle();
 }
 
 }

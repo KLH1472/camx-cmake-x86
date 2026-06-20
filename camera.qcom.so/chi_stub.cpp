@@ -25,6 +25,9 @@ extern "C" void* CamXAdapter_CreatePipelineDescriptor(const char* pPipelineName,
     unsigned int numOutputs, void* pOutputBufferDescriptors,
     unsigned int numInputs, void* pInputBufferOptions);
 extern "C" void  CamXAdapter_DestroySession(void* pSession);
+extern "C" void* CamXAdapter_MetaCreate(void* pPrivateData);
+extern "C" int   CamXAdapter_MetaDestroy(void* handle, int force);
+extern "C" void* CamXAdapter_MetaGetPrivateData(void* handle);
 
 // =======================================================================
 // Internal state structures
@@ -74,13 +77,6 @@ struct StubBufferManager {
     bool active = false;
 };
 
-// Metadata handle - simple tag map
-struct StubMetadata {
-    std::map<uint32_t, std::pair<std::vector<uint8_t>, uint32_t>> tags; // tag -> (data, count)
-    CHIMETAPRIVATEDATA pPrivateData = nullptr;
-    int refCount = 1;
-};
-
 // Fence handle
 struct StubFence {
     CDKResult status = CDKResultEInvalidState;
@@ -92,7 +88,6 @@ static std::vector<StubSession*> g_sessions;
 static std::vector<StubPipelineDescriptor*> g_pipelineDescriptors;
 static std::vector<StubPipeline*> g_pipelines;
 static std::vector<StubBufferManager*> g_bufferManagers;
-static std::vector<StubMetadata*> g_metadatas;
 static std::vector<StubFence*> g_fences;
 static std::set<CHIPIPELINEDESCRIPTOR> g_realCamXDescriptors;
 static std::mutex g_mutex;
@@ -103,8 +98,6 @@ static std::mutex g_mutex;
 
 static const int FAKE_NUM_CAMERAS = 1;
 static const int FAKE_NUM_SENSOR_MODES = 3;
-
-static StubMetadata* g_cameraMeta[1] = { nullptr };
 
 // =======================================================================
 // Helper: get stub context / session
@@ -587,22 +580,15 @@ static VOID ChiGetFenceOps(CHIFENCEOPS* pOps) {
 // Metadata operations stub
 // =======================================================================
 static CDKResult StubMetaCreate(CHIMETAHANDLE* pMetaHandle, CHIMETAPRIVATEDATA pPrivateData) {
-    StubMetadata* m = new StubMetadata();
-    m->pPrivateData = pPrivateData;
-    std::lock_guard<std::mutex> lock(g_mutex);
-    g_metadatas.push_back(m);
-    *pMetaHandle = reinterpret_cast<CHIMETAHANDLE>(m);
+    CamXAdapter_InitContext();
+    void* pMB = CamXAdapter_MetaCreate(pPrivateData);
+    if (!pMB) return CDKResultEFailed;
+    *pMetaHandle = reinterpret_cast<CHIMETAHANDLE>(pMB);
     return CDKResultSuccess;
 }
 
 static CDKResult StubMetaDestroy(CHIMETAHANDLE hMetaHandle, BOOL force) {
-    (void)force;
-    std::lock_guard<std::mutex> lock(g_mutex);
-    StubMetadata* m = reinterpret_cast<StubMetadata*>(hMetaHandle);
-    for (auto it = g_metadatas.begin(); it != g_metadatas.end(); ++it) {
-        if (*it == m) { g_metadatas.erase(it); break; }
-    }
-    delete m;
+    CamXAdapter_MetaDestroy(hMetaHandle, force);
     return CDKResultSuccess;
 }
 
@@ -770,8 +756,7 @@ static CDKResult StubMetaFilter(CHIMETAHANDLE hMetaHandle, VOID* pAndroidMeta, B
 }
 
 static CDKResult StubMetaGetPrivateData(CHIMETAHANDLE hMetaHandle, CHIMETAPRIVATEDATA* ppPrivateData) {
-    StubMetadata* m = reinterpret_cast<StubMetadata*>(hMetaHandle);
-    *ppPrivateData = m ? m->pPrivateData : nullptr;
+    *ppPrivateData = CamXAdapter_MetaGetPrivateData(hMetaHandle);
     return CDKResultSuccess;
 }
 
