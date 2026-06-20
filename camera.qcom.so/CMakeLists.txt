@@ -167,7 +167,8 @@ set(CAMX_GENERATED_SOURCES
     ${CAMX_GENERATED_DIR}/g_camxproperties.cpp
     ${CAMX_GENERATED_DIR}/g_camxsettings.cpp
     ${CAMX_GENERATED_DIR}/g_camxtitan17xsettings.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/camx_runtime_stubs.cpp
+     ${CMAKE_CURRENT_SOURCE_DIR}/camx_runtime_stubs.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/validate_metadata_tags.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/csl_mock.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy_node.cpp
 )
