@@ -269,7 +269,7 @@ CDKResult Pipeline::CreateDescriptor() {
     if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pCreatePipelineDescriptor && m_pCreateDesc) {
         m_hDescriptor = pModule->GetChiOps()->pCreatePipelineDescriptor(
             pModule->GetContext(), m_pName, m_pCreateDesc,
-            m_numOutputs, m_pOutputs, m_numInputs, m_pInputOptions);
+            m_numOutputs, m_pOutputs, m_numInputBuffers, m_pInputOptions);
         if (m_hDescriptor != NULL) {
             fprintf(stderr, "[Pipeline] CreateDescriptor OK: %p (nodes=%u links=%u)\n",
                     m_hDescriptor, m_pCreateDesc->numNodes, m_pCreateDesc->numLinks);

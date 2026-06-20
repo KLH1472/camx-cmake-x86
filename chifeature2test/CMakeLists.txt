@@ -55,7 +55,7 @@ set(F2CORE_SOURCES
     ${CHIFEATURE2_DIR}/chifeature2featurepool.cpp
     ${CHIFEATURE2_DIR}/chifeature2graph.cpp
     ${CHIFEATURE2_DIR}/chifeature2graphmanager.cpp
-    ${CHIFEATURE2_DIR}/chifeature2multistagedescriptor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chifeature2multistagedescriptor.cpp
     ${CHIFEATURE2_DIR}/chifeature2requestobject.cpp
     ${CHIFEATURE2_DIR}/chifeature2usecaserequestobject.cpp
     ${CHIFEATURE2_DIR}/chifeature2wrapper.cpp
