@@ -80,6 +80,7 @@ set(OEM_F2_SOURCES
 set(F2STUB_SOURCES
     ${F2TEST_STUBS}/xmllib_stub.cpp
     ${F2TEST_STUBS}/chiframework_stubs.cpp
+    ${F2TEST_STUBS}/chxusecaseutils_pruning.cpp
 )
 
 # ── Real CHI framework sources (needed for vtable emission, etc.) ──

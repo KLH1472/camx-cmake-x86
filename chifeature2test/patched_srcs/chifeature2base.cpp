@@ -5437,10 +5437,8 @@ CDKResult ChiFeature2Base::AssignStreams(
         }
         else
         {
-            CHX_LOG_WARN("Skipping unmatched target: %s (prunable port has no stream)",
-                pTargetDesc->pTargetName);
-            CHX_FREE(pStream);
-            result = CDKResultSuccess;
+            CHX_LOG_ERROR("Create Stream Failed: Target = %s", pTargetDesc->pTargetName);
+            result = CDKResultENoMemory;
         }
     }
 
