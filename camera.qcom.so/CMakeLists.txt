@@ -201,7 +201,7 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxstatsparser.cpp
     ${CAMX_ROOT}/camx/src/core/camxtest.cpp
     ${CAMX_ROOT}/camx/src/core/camxtuningdatamanager.cpp
-    ${CMAKE_SOURCE_DIR}/camx_patched_srcs/camxvendortags.cpp
+    ${CAMX_ROOT}/camx/src/core/camxvendortags.cpp
     ${CAMX_ROOT}/camx/src/core/camxerrorinducer.cpp
 )
 

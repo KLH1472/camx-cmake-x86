@@ -502,6 +502,7 @@ void* CamXAdapter_InitContext()
         g_pChiContext = CamX::ChiContext::Create();
         if (g_pChiContext != nullptr)
         {
+            // Safe: StaticSettings is heap-allocated by SettingsManager, const is on accessor only
             CamX::StaticSettings* pSettings = const_cast<CamX::StaticSettings*>(
                 CamX::HwEnvironment::GetInstance()->GetStaticSettings());
             pSettings->MPMEnable = FALSE;
@@ -592,14 +593,8 @@ int CamXAdapter_SubmitRequest(void* pSession, void* pRequest)
                 pReq->pInputMetadata, pReq->pOutputMetadata);
     }
 
-    CamxResult result;
-    try {
-        result = g_pChiContext->SubmitRequest(
-            static_cast<CamX::CHISession*>(pSession), pPipelineReq);
-    } catch (...) {
-        fprintf(stderr, "[CamXAdapter] SubmitRequest: exception caught\n");
-        result = CamxResultEFailed;
-    }
+    CamxResult result = g_pChiContext->SubmitRequest(
+        static_cast<CamX::CHISession*>(pSession), pPipelineReq);
     fprintf(stderr, "[CamXAdapter] SubmitRequest: result=%d\n", result);
     return result;
 }

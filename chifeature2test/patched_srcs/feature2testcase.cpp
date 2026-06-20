@@ -740,8 +740,17 @@ VOID Feature2TestCase::RunFeature2Test()
                 } while (ChiFeature2RequestState::Complete != m_pFeature2RequestObject->GetCurRequestState(0));
             }
         }
-        fprintf(stdout, "[ PASS] Feature2 request completed successfully (state=Complete)\n");
+        if (m_pFeature2RequestObject != NULL &&
+            ChiFeature2RequestState::Complete == m_pFeature2RequestObject->GetCurRequestState(0))
+        {
+            fprintf(stdout, "[ PASS] Feature2 request completed successfully (state=Complete)\n");
+        }
+        else
+        {
+            fprintf(stderr, "[ FAIL] Feature2 request did NOT reach Complete state\n");
+        }
         fflush(stdout);
+        fflush(stderr);
     }
 
     if (pFeature2Base != NULL) {

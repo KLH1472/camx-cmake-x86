@@ -36,10 +36,6 @@ extern "C" void  CamXAdapter_MetaReleaseAllRefs(void* handle, int bCHIAndCamX);
 
 struct StubContext {
     bool initialized = false;
-    CHITAGSOPS tagOps;
-    CHIFENCEOPS fenceOps;
-    CHIMETADATAOPS metadataOps;
-    CHIBUFFERMANAGEROPS bufferManagerOps;
 };
 
 // Image buffer handle
@@ -74,9 +70,6 @@ static std::mutex g_mutex;
 static const int FAKE_NUM_CAMERAS = 1;
 static const int FAKE_NUM_SENSOR_MODES = 3;
 
-// =======================================================================
-// Helper: create fake camera info
-// =======================================================================
 // =======================================================================
 // Helper: create fake camera info
 // =======================================================================
@@ -185,6 +178,7 @@ static CHIHANDLE ChiOpenContext() {
 
 static VOID ChiCloseContext(CHIHANDLE hChiContext) {
     (void)hChiContext;
+    CamXAdapter_DestroyContext();
     g_context.initialized = false;
 }
 
@@ -802,21 +796,6 @@ static int StubGetCameraInfo(int camera_id, camera_info* info) {
 static void StubGetVendorTagOps(vendor_tag_ops_t* ops) {
     memset(ops, 0, sizeof(vendor_tag_ops_t));
 }
-
-static camera_module_t g_cameraModule = {
-    0, // common_version
-    0, // hal_api_version
-    nullptr,
-    {nullptr, nullptr, nullptr, nullptr, nullptr},
-    StubGetNumberOfCameras,
-    StubGetCameraInfo,
-    nullptr,
-    StubGetVendorTagOps,
-    nullptr,
-    nullptr,
-    nullptr,
-    {nullptr, nullptr, nullptr, nullptr, nullptr},
-};
 
 CDK_VISIBILITY_PUBLIC camera_module_t HMI = {
     0, // common_version (will be set below)
