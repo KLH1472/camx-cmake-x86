@@ -20,6 +20,7 @@ using namespace std;
 CHIBUFFERMANAGEROPS g_chiBufferManagerOps = {};
 CHIFENCEOPS         g_chiFenceOps         = {};
 CHIMETADATAOPS      g_chiMetadataOps      = {};
+static CHITAGSOPS   s_chiTagsOps          = {};
 
 static void InitializeGlobalOps() {
     static bool initialized = false;
@@ -33,6 +34,7 @@ static void InitializeGlobalOps() {
     if (ops->pGetBufferManagerOps) ops->pGetBufferManagerOps(&g_chiBufferManagerOps);
     if (ops->pGetFenceOps)         ops->pGetFenceOps(&g_chiFenceOps);
     if (ops->pMetadataOps)         ops->pMetadataOps(&g_chiMetadataOps);
+    if (ops->pTagOps)              ops->pTagOps(&s_chiTagsOps);
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -176,6 +178,59 @@ UINT ExtensionModule::GetUsecaseMaxFPS() { return 30; }
 UINT32 ExtensionModule::GetMaxHalRequests() { return 4; }
 BOOL ExtensionModule::Enable3ADebugData() { return FALSE; }
 BOOL ExtensionModule::EnableTuningMetadata() { return FALSE; }
+
+static const struct { const char* section; const char* name; } s_vendorTagNames[] = {
+    { "com.qti.sensorbps",                              "mode_index"                 },
+    { "com.qti.sensorbps",                              "gain"                       },
+    { "org.quic.camera.debugdata",                      "DebugDataAll"               },
+    { "org.codeaurora.qcamera3.sensor_meta_data",       "sensor_mode_index"          },
+    { "com.qti.cropregions",                            "crop_regions"               },
+    { "org.quic.camera2.tuning.mode",                   "TuningMode"                 },
+    { "org.quic.camera2.ref.cropsize",                  "RefCropSize"                },
+    { "com.qti.chi.multicamerainfo",                    "MultiCameraIds"             },
+    { "com.qti.stats_control",                          "is_flash_snapshot"          },
+    { "org.quic.camera2.tuning.feature",                "Feature1Mode"               },
+    { "org.quic.camera2.tuning.feature",                "Feature2Mode"               },
+    { "org.quic.camera2.streamconfigs",                  "HDRVideoMode"               },
+    { "com.qti.chi.statsSkip",                          "skipFrame"                  },
+    { "org.quic.camera.BurstFPS",                       "burstfps"                   },
+    { "org.quic.camera.CustomNoiseReduction",            "CustomNoiseReduction"       },
+    { "org.quic.camera.SensorModeFS",                   "SensorModeFS"               },
+    { "com.qti.insensor_control",                       "seamless_insensor_state"    },
+    { "org.quic.camera2.statsconfigs",                  "HistNodeLTCRatioIndex"      },
+    { "org.quic.camera.HWResourceInfo",                 "IFEMaxLineWidth"            },
+    { "com.qti.chi.ZSLSettings",                        "ZSLTimeRange"               },
+    { "org.quic.camera.overrideIPEScaleProfile",         "OverrideIPEScaleProfile"    },
+    { "com.qti.chi.livePreview",                        "enable"                     },
+    { "org.quic.camera.debugDumpConfig",                "DebugDumpConfig"            },
+    { "org.quic.camera.overrideGPURotationUsecase",     "OverrideGPURotationUsecase" },
+};
+static constexpr UINT32 kNumVendorTags = sizeof(s_vendorTagNames) / sizeof(s_vendorTagNames[0]);
+
+UINT32 ExtensionModule::GetVendorTagId(VendorTag tag) {
+    static UINT32 s_cachedIds[kNumVendorTags] = {};
+    static bool s_initialized = false;
+    if (!s_initialized) {
+        InitializeGlobalOps();
+        if (s_chiTagsOps.pQueryVendorTagLocation) {
+            for (UINT32 i = 0; i < kNumVendorTags; i++) {
+                UINT32 loc = 0;
+                CDKResult r = s_chiTagsOps.pQueryVendorTagLocation(
+                    s_vendorTagNames[i].section, s_vendorTagNames[i].name, &loc);
+                if (r == CDKResultSuccess) {
+                    s_cachedIds[i] = loc;
+                } else {
+                    fprintf(stderr, "[ExtensionModule] VendorTag %u (%s.%s) query failed: %d\n",
+                            i, s_vendorTagNames[i].section, s_vendorTagNames[i].name, r);
+                }
+            }
+        }
+        s_initialized = true;
+    }
+    UINT32 idx = static_cast<UINT32>(tag);
+    if (idx >= kNumVendorTags) return 0;
+    return s_cachedIds[idx];
+}
 
 // ══════════════════════════════════════════════════════════════════════════
 // ChiMetadataManager — real implementation from chxmetadata.cpp (not stubbed)

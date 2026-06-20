@@ -320,6 +320,7 @@ static CDKResult ChiSubmitPipelineRequest(CHIHANDLE hChiContext, CHIPIPELINEREQU
 // =======================================================================
 static CDKResult StubQueryVendorTagLocation(const CHAR* pSectionName, const CHAR* pTagName,
                                              UINT32* pTagLocation) {
+    CamXAdapter_InitContext();
     return static_cast<CDKResult>(CamXAdapter_QueryVendorTagLocation(pSectionName, pTagName, pTagLocation));
 }
 

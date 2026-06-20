@@ -73,7 +73,7 @@ public:
     VOID GetVendorTagOps(CHITAGSOPS* pVendorTagOps);
     VOID GetMetadataOps(CHIMETADATAOPS* pMetadataOps);
     CDKResult GetAvailableRequestKeys(UINT32 cameraId, UINT32* pTagList, UINT32 maxTagListSize, UINT32* pActualCount);
-    UINT32 GetVendorTagId(VendorTag tag) { return 0x80000000 + static_cast<UINT32>(tag); }
+    UINT32 GetVendorTagId(VendorTag tag);
     VOID* GetPerfLibHandle() { return nullptr; }
 
     UINT32 DebugDataSizeAEC() { return 0; }
