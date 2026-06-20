@@ -12,7 +12,6 @@
 #include <pthread.h>
 
 #include "chxfeature.h"
-#include "camxchiofflinelogger.h"
 #include "chifeature2types.h"
 #include "chimodule.h"
 
@@ -367,23 +366,6 @@ VOID Feature::Flush() {}
 VOID Feature::SetFeatureStatus(FeatureStatus currentstate) {
     (void)currentstate;
 }
-
-// ══════════════════════════════════════════════════════════════════════════
-// CamX::OfflineLogger
-// ══════════════════════════════════════════════════════════════════════════
-
-CAMX_NAMESPACE_BEGIN
-
-OfflineLogger::OfflineLogger(OfflineLoggerType type) { (void)type; }
-CamxResult OfflineLogger::AddLog(const CHAR* pLog, UINT logSize) { (void)pLog; (void)logSize; return CamxResultSuccess; }
-
-// Static members defined in camxchiofflinelogger.h need out-of-line definition
-BOOL OfflineLogger::s_isInitValid = FALSE;
-BOOL OfflineLogger::s_isInit = FALSE;
-std::mutex OfflineLogger::s_initMutex;
-std::vector<OfflineLogger*> OfflineLogger::s_pOfflineLoggerInstancePool;
-
-CAMX_NAMESPACE_END
 
 // ══════════════════════════════════════════════════════════════════════════
 // Feature2 descriptors (extern references from OEM features)
