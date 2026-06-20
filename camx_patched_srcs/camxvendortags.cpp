@@ -402,9 +402,7 @@ CamxResult VendorTagManager::QueryVendorTagLocation(
 
     if (CamxResultSuccess != result)
     {
-        CAMX_LOG_VERBOSE(CamxLogGroupCore, "Vendor tag %s in section %s does not exist, using dummy tag", pTagName, pSectionName);
-        *pTagLocation = 0;
-        result = CamxResultSuccess;
+        CAMX_LOG_WARN(CamxLogGroupCore, "Vendor tag %s in section %s does not exist!", pTagName, pSectionName);
     }
 
     return result;

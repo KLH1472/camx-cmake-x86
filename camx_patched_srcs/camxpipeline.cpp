@@ -458,17 +458,21 @@ CamxResult Pipeline::Initialize(
     // set frame delay in session metadata
     if (CamxResultSuccess == result)
     {
-        CamxResult vtResult = CamxResultSuccess;
         UINT32 metaTag    = 0;
         UINT32 frameDelay = DetermineFrameDelay();
-        vtResult            = VendorTagManager::QueryVendorTagLocation(
+        result            = VendorTagManager::QueryVendorTagLocation(
                             "org.quic.camera.eislookahead", "FrameDelay", &metaTag);
-        if (CamxResultSuccess == vtResult)
+        if (CamxResultSuccess == result)
         {
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
             {
-                pSessionMetaBuffer->SetTag(metaTag, &frameDelay, 1, sizeof(UINT32));
+                result = pSessionMetaBuffer->SetTag(metaTag, &frameDelay, 1, sizeof(UINT32));
+            }
+            else
+            {
+                result = CamxResultEInvalidPointer;
+                CAMX_LOG_ERROR(CamxLogGroupCore, "Session metadata pointer null");
             }
         }
     }
@@ -478,15 +482,20 @@ CamxResult Pipeline::Initialize(
     {
         UINT32  metaTag     = 0;
         BOOL    bEnabled    = IsEISEnabled();
-        CamxResult vtResult = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "Enabled", &metaTag);
+        result              = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "Enabled", &metaTag);
 
         // write the enabled flag only if it's set to TRUE. IsEISEnabled may return FALSE when vendor tag is not published too
-        if ((TRUE == bEnabled) && (CamxResultSuccess == vtResult))
+        if ((TRUE == bEnabled) && (CamxResultSuccess == result))
         {
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
             {
-                pSessionMetaBuffer->SetTag(metaTag, &bEnabled, 1, sizeof(BYTE));
+                result = pSessionMetaBuffer->SetTag(metaTag, &bEnabled, 1, sizeof(BYTE));
+            }
+            else
+            {
+                result = CamxResultEInvalidPointer;
+                CAMX_LOG_ERROR(CamxLogGroupCore, "Session metadata pointer null");
             }
         }
     }
@@ -497,19 +506,24 @@ CamxResult Pipeline::Initialize(
         UINT32 metaTag = 0;
         MarginRequest margin = { 0 };
 
-        CamxResult vtResult = DetermineEISMiniamalTotalMargin(&margin);
+        result = DetermineEISMiniamalTotalMargin(&margin);
 
-        if (CamxResultSuccess == vtResult)
+        if (CamxResultSuccess == result)
         {
-            vtResult = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "MinimalTotalMargins", &metaTag);
+            result = VendorTagManager::QueryVendorTagLocation("org.quic.camera.eisrealtime", "MinimalTotalMargins", &metaTag);
         }
 
-        if (CamxResultSuccess == vtResult)
+        if (CamxResultSuccess == result)
         {
             MetaBuffer* pSessionMetaBuffer = m_pPipelineDescriptor->pSessionMetadata;
             if (NULL != pSessionMetaBuffer)
             {
-                pSessionMetaBuffer->SetTag(metaTag, &margin, 1, sizeof(MarginRequest));
+                result = pSessionMetaBuffer->SetTag(metaTag, &margin, 1, sizeof(MarginRequest));
+            }
+            else
+            {
+                result = CamxResultEInvalidPointer;
+                CAMX_LOG_ERROR(CamxLogGroupCore, "Session metadata pointer null");
             }
         }
     }
@@ -1725,7 +1739,6 @@ CamxResult Pipeline::QueryMetadataInfo(
 CamxResult Pipeline::CheckOfflinePipelineInputBufferRequirements()
 {
     CamxResult result = CamxResultSuccess;
-    return result;
 
     if (FALSE == IsRealTime())
     {
@@ -1793,23 +1806,18 @@ CamxResult Pipeline::FinalizePipeline(
     if (CamxResultSuccess == result)
     {
         pSensorModuleData    = m_pChiContext->GetHwContext()->GetImageSensorModuleData(m_cameraId);
-        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: sensorModuleData=%p sensorModeInfo=%p\n",
-                pSensorModuleData, pFinalizeInitializationData->pSensorModeInfo);
         if (pFinalizeInitializationData->pSensorModeInfo != NULL) {
             m_currentSensorMode  = pFinalizeInitializationData->pSensorModeInfo->modeIndex;
         }
         CAMX_LOG_VERBOSE(CamxLogGroupCore, "Current Sensor mode is %d", m_currentSensorMode);
 
         // Make sure metadata pools are all initialied before nodes FinalizeInitialization
-        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: waiting for pools...\n");
         m_pInputPool->WaitForMetadataPoolCreation();
-        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: input pool status=%d\n", m_pInputPool->GetPoolStatus());
 
         m_pInternalPool->WaitForMetadataPoolCreation();
         m_pMainPool->WaitForMetadataPoolCreation();
         m_pEarlyMainPool->WaitForMetadataPoolCreation();
         pFinalizeInitializationData->pDebugDataPool->WaitForMetadataPoolCreation();
-        fprintf(stderr, "[PIPE_DBG] FinalizePipeline: all pools ready\n");
 
         /// @todo (CAMX-1512) Metadata pools needs to be per pipeline
         m_pDebugDataPool = pFinalizeInitializationData->pDebugDataPool;

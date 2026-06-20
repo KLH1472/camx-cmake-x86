@@ -217,6 +217,7 @@ add_library(camx_core OBJECT
     ${CAMX_GENERATED_SOURCES}
     ${CAMX_SENSOR_GEN_SOURCES}
     ${CAMX_PARSER_GEN_SOURCES}
+    hw_vendor_tags.cpp
 )
 
 add_dependencies(camx_core generate_headers)

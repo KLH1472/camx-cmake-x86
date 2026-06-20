@@ -1367,7 +1367,7 @@ CamxResult Node::Initialize(
         }
     }
 
-    CacheVendorTagLocation();
+    result = CacheVendorTagLocation();
 
 #if CAMX_CONTINGENCY_INDUCER_ENABLE
     if (CamxResultSuccess == result)

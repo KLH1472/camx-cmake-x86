@@ -387,7 +387,11 @@ static HwFactory* StubCreateHwFactory()
 
 static CamxResult StubQueryVendorTagsInfo(VendorTagInfo* pVendorTagInfo)
 {
-    if (pVendorTagInfo != NULL) Utils::Memset(pVendorTagInfo, 0, sizeof(*pVendorTagInfo));
+    extern void GetHwVendorTagInfo(VendorTagInfo* pInfo);
+    if (pVendorTagInfo != NULL)
+    {
+        GetHwVendorTagInfo(pVendorTagInfo);
+    }
     return CamxResultSuccess;
 }
 
