@@ -35,7 +35,7 @@ set(F2FRAMEWORK_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chimodule.cpp
     ${F2FRAMEWORK_SRC}/cmdlineparser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2buffermanager.cpp
-    ${F2FRAMEWORK_SRC}/feature2offlinetest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2offlinetest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/feature2testcase.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/genericbuffermanager.cpp
     ${F2FRAMEWORK_SRC}/metaconfigparser.cpp

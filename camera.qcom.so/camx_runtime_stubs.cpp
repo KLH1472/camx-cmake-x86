@@ -629,4 +629,22 @@ void* CamXAdapter_MetaGetPrivateData(void* handle)
     return static_cast<CamX::MetaBuffer*>(handle)->GetPrivateUserHandle();
 }
 
+unsigned int CamXAdapter_MetaAddRef(void* handle, unsigned int clientID)
+{
+    if (!handle) return 0;
+    return static_cast<CamX::MetaBuffer*>(handle)->AddReference(clientID, TRUE);
+}
+
+unsigned int CamXAdapter_MetaReleaseRef(void* handle, unsigned int clientID)
+{
+    if (!handle) return 0;
+    return static_cast<CamX::MetaBuffer*>(handle)->ReleaseReference(clientID, TRUE);
+}
+
+void CamXAdapter_MetaReleaseAllRefs(void* handle, int bCHIAndCamX)
+{
+    if (!handle) return;
+    static_cast<CamX::MetaBuffer*>(handle)->ReleaseAllReferences(bCHIAndCamX ? TRUE : FALSE);
+}
+
 }

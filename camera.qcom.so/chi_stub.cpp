@@ -28,6 +28,9 @@ extern "C" void  CamXAdapter_DestroySession(void* pSession);
 extern "C" void* CamXAdapter_MetaCreate(void* pPrivateData);
 extern "C" int   CamXAdapter_MetaDestroy(void* handle, int force);
 extern "C" void* CamXAdapter_MetaGetPrivateData(void* handle);
+extern "C" unsigned int CamXAdapter_MetaAddRef(void* handle, unsigned int clientID);
+extern "C" unsigned int CamXAdapter_MetaReleaseRef(void* handle, unsigned int clientID);
+extern "C" void  CamXAdapter_MetaReleaseAllRefs(void* handle, int bCHIAndCamX);
 
 // =======================================================================
 // Internal state structures
@@ -681,19 +684,21 @@ static CDKResult StubMetaBinaryDump(CHIMETAHANDLE hMetaHandle, const CHAR* pFile
 }
 
 static CDKResult StubMetaAddReference(CHIMETAHANDLE hMetaHandle, CHIMETADATACLIENTID clientID, UINT32* pRefCount) {
-    (void)hMetaHandle; (void)clientID;
-    *pRefCount = 1;
+    UINT32 id;
+    memcpy(&id, &clientID, sizeof(id));
+    *pRefCount = CamXAdapter_MetaAddRef(hMetaHandle, id);
     return CDKResultSuccess;
 }
 
 static CDKResult StubMetaReleaseReference(CHIMETAHANDLE hMetaHandle, CHIMETADATACLIENTID clientID, UINT32* pRefCount) {
-    (void)hMetaHandle; (void)clientID;
-    *pRefCount = 0;
+    UINT32 id;
+    memcpy(&id, &clientID, sizeof(id));
+    *pRefCount = CamXAdapter_MetaReleaseRef(hMetaHandle, id);
     return CDKResultSuccess;
 }
 
 static CDKResult StubMetaReleaseAllReferences(CHIMETAHANDLE hMetaHandle, BOOL bCHIAndCAMX) {
-    (void)hMetaHandle; (void)bCHIAndCAMX;
+    CamXAdapter_MetaReleaseAllRefs(hMetaHandle, bCHIAndCAMX);
     return CDKResultSuccess;
 }
 
