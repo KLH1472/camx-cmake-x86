@@ -723,6 +723,8 @@ VOID Feature2TestCase::RunFeature2Test()
                         m_pFeature2RequestStateMutex->Unlock();
                         break;
                     default:
+                        CHX_LOG_INFO("Not waiting for state %d",
+                            m_pFeature2RequestObject->GetCurRequestState(0));
                         break;
                     }
                 } while (ChiFeature2RequestState::Complete != m_pFeature2RequestObject->GetCurRequestState(0));
