@@ -698,6 +698,7 @@ VOID Feature2TestCase::RunFeature2Test()
                 int _loopCount = 0;
                 int _sameStateCount = 0;
                 int _lastState = -1;
+                bool _pipelineError = false;
                 do
                 {
                     int curState = (int)m_pFeature2RequestObject->GetCurRequestState(0);
@@ -708,7 +709,7 @@ VOID Feature2TestCase::RunFeature2Test()
                     } else {
                         _sameStateCount++;
                         if (_sameStateCount > 20) {
-                            CHX_LOG_WARN("State %d stuck for %d iterations, forcing complete", curState, _sameStateCount);
+                            CHX_LOG_ERROR("State %d stuck for %d iterations, breaking", curState, _sameStateCount);
                             break;
                         }
                     }
@@ -722,7 +723,11 @@ VOID Feature2TestCase::RunFeature2Test()
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
                     case ChiFeature2RequestState::OutputNotificationPending:
+                        pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
+                        break;
                     case ChiFeature2RequestState::OutputErrorNotificationPending:
+                        CHX_LOG_ERROR("Pipeline reported OutputErrorNotification — marking failure");
+                        _pipelineError = true;
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
                     case ChiFeature2RequestState::OutputResourcePending:
@@ -738,19 +743,23 @@ VOID Feature2TestCase::RunFeature2Test()
                         break;
                     }
                 } while (ChiFeature2RequestState::Complete != m_pFeature2RequestObject->GetCurRequestState(0));
+
+                bool testPassed = (ChiFeature2RequestState::Complete ==
+                                   m_pFeature2RequestObject->GetCurRequestState(0)) && !_pipelineError;
+                if (testPassed)
+                {
+                    fprintf(stdout, "[ PASS] Feature2 request completed successfully (state=Complete)\n");
+                }
+                else
+                {
+                    fprintf(stderr, "[ FAIL] Feature2 request did NOT reach Complete state (pipelineError=%d)\n",
+                            _pipelineError);
+                }
+                fflush(stdout);
+                fflush(stderr);
+                CF2_EXPECT(testPassed, "Feature2 request did not complete successfully");
             }
         }
-        if (m_pFeature2RequestObject != NULL &&
-            ChiFeature2RequestState::Complete == m_pFeature2RequestObject->GetCurRequestState(0))
-        {
-            fprintf(stdout, "[ PASS] Feature2 request completed successfully (state=Complete)\n");
-        }
-        else
-        {
-            fprintf(stderr, "[ FAIL] Feature2 request did NOT reach Complete state\n");
-        }
-        fflush(stdout);
-        fflush(stderr);
     }
 
     if (pFeature2Base != NULL) {
