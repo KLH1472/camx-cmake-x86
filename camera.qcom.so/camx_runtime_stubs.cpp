@@ -584,23 +584,16 @@ int CamXAdapter_SubmitRequest(void* pSession, void* pRequest)
     if (g_pChiContext == nullptr || pSession == nullptr) return -1;
 
     ChiPipelineRequest* pPipelineReq = static_cast<ChiPipelineRequest*>(pRequest);
-    CamX::MetaBuffer* pTempInput  = CamX::MetaBuffer::Create(NULL);
-    CamX::MetaBuffer* pTempOutput = CamX::MetaBuffer::Create(NULL);
-
-    fprintf(stderr, "[CamXAdapter] SubmitRequest: metaIn=%p metaOut=%p numReqs=%u\n",
-            pTempInput, pTempOutput, pPipelineReq->numRequests);
-
-    if (pTempInput == NULL || pTempOutput == NULL) {
-        fprintf(stderr, "[CamXAdapter] SubmitRequest: MetaBuffer::Create failed\n");
-        return 6;
-    }
 
     for (UINT i = 0; i < pPipelineReq->numRequests; i++) {
         ChiCaptureRequest* pReq = const_cast<ChiCaptureRequest*>(&pPipelineReq->pCaptureRequests[i]);
-        fprintf(stderr, "[CamXAdapter] SubmitRequest: req[%u] handle=%p frame=%llu outs=%u\n",
-                i, pReq->hPipelineHandle, pReq->frameNumber, pReq->numOutputs);
-        pReq->pInputMetadata  = pTempInput;
-        pReq->pOutputMetadata = pTempOutput;
+        void* origIn  = pReq->pInputMetadata;
+        void* origOut = pReq->pOutputMetadata;
+        pReq->pInputMetadata  = CamX::MetaBuffer::Create(origIn);
+        pReq->pOutputMetadata = CamX::MetaBuffer::Create(origOut);
+        fprintf(stderr, "[CamXAdapter] SubmitRequest: req[%u] handle=%p frame=%llu outs=%u origMeta=%p/%p wrappedMeta=%p/%p\n",
+                i, pReq->hPipelineHandle, pReq->frameNumber, pReq->numOutputs,
+                origIn, origOut, pReq->pInputMetadata, pReq->pOutputMetadata);
     }
 
     CamxResult result;
