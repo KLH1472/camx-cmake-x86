@@ -50,7 +50,7 @@ set(F2MAIN_SOURCES
 
 # ── Feature2 core sources (from chi-cdk/core/chifeature2/) ──
 set(F2CORE_SOURCES
-    ${CHIFEATURE2_DIR}/chifeature2base.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chifeature2base.cpp
     ${CHIFEATURE2_DIR}/chifeature2baserequestflow.cpp
     ${CHIFEATURE2_DIR}/chifeature2featurepool.cpp
     ${CHIFEATURE2_DIR}/chifeature2graph.cpp

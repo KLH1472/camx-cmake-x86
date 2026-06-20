@@ -242,6 +242,7 @@ VOID Feature2OfflineTest::InitializeFeature2Test()
         m_pInputStream                 = &tests::Bayer2YuvStreamsInput;
         m_pOutputStream[0]             = &tests::Bayer2YuvStreamsOutput;
         m_pStreamConfig                = &tests::Bayer2YuvStreamConfigInfo;
+        m_pOutputPortName[0]           = "YUV_Out_External";
         inputImage                     = (TRUE == bIsCustomFileName) ?
                                          (spectraSimConfigImageName.c_str()):
                                          (tests::BPS_IDEALRAW_UHD);
