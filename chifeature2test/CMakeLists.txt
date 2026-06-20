@@ -91,7 +91,7 @@ set(F2_COMPAT_SOURCES
     ${NT_UTILS_DIR}/camera_metadata_port.cpp
     ${NT_UTILS_DIR}/camera_metadata_tag_info.cpp
     ${NT_UTILS_DIR}/chiutils/log_compat.cpp
-    ${NT_UTILS_DIR}/chiutils/chxmetadata.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/patched_srcs/chxmetadata.cpp
     ${NT_UTILS_DIR}/chiutils/chxutils.cpp
     ${NT_UTILS_DIR}/chiutils/chxperf.cpp
     ${NT_UTILS_DIR}/chiutils/chxblmclient.cpp

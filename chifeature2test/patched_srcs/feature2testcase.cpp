@@ -744,6 +744,10 @@ VOID Feature2TestCase::RunFeature2Test()
         fflush(stdout);
     }
 
+    if (pFeature2Base != NULL) {
+        pFeature2Base->Destroy();
+        pFeature2Base = NULL;
+    }
 
     //TODO: uncomment when available
     //m_feature2Interface.pGetInputFeature2RequestObject(pFeature2Base, &m_pFeature2RequestObject);
