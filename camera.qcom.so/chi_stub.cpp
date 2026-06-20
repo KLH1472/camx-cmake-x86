@@ -18,6 +18,8 @@ extern "C" void  CamXAdapter_DestroyContext();
 extern "C" void* CamXAdapter_CreateSession(unsigned int numPipelines, void* pPipelineInfo,
     void* pCallbacks, void* pPrivateCallbackData, void* pFlags);
 extern "C" int   CamXAdapter_ActivatePipeline(void* pSession, void* hPipelineDescriptor);
+extern "C" int   CamXAdapter_DeactivatePipeline(void* pSession, void* hPipelineDescriptor, unsigned int modeBitmask);
+extern "C" int   CamXAdapter_FlushSession(void* pSession);
 extern "C" int   CamXAdapter_SubmitRequest(void* pSession, void* pRequest);
 extern "C" void* CamXAdapter_CreatePipelineDescriptor(const char* pPipelineName, void* pDescriptor,
     unsigned int numOutputs, void* pOutputBufferDescriptors,
@@ -279,8 +281,9 @@ static CDKResult ChiActivatePipeline(CHIHANDLE hChiContext, CHIHANDLE hSession,
 
 static CDKResult ChiDeactivatePipeline(CHIHANDLE hChiContext, CHIHANDLE hSession,
                                         CHIHANDLE hPipeline, CHIDEACTIVATEPIPELINEMODE mode) {
-    (void)hChiContext; (void)hSession; (void)hPipeline; (void)mode;
-    return CDKResultSuccess;
+    (void)hChiContext;
+    if (!hPipeline) return CDKResultEInvalidPointer;
+    return static_cast<CDKResult>(CamXAdapter_DeactivatePipeline(hSession, hPipeline, mode));
 }
 
 // =======================================================================
@@ -301,8 +304,9 @@ static CDKResult ChiQueryPipelineMetadataInfo(CHIHANDLE hChiContext, CHIHANDLE h
 // ChiOps Implementation: Flush session
 // =======================================================================
 static CDKResult ChiFlushSession(CHIHANDLE hChiContext, CHISESSIONFLUSHINFO hFlushInfo) {
-    (void)hChiContext; (void)hFlushInfo;
-    return CDKResultSuccess;
+    (void)hChiContext;
+    if (!hFlushInfo.pSessionHandle) return CDKResultEInvalidPointer;
+    return static_cast<CDKResult>(CamXAdapter_FlushSession(hFlushInfo.pSessionHandle));
 }
 
 // =======================================================================

@@ -79,17 +79,28 @@ CDKResult ExtensionModule::GetChiFenceStatus(CHIFENCEHANDLE hChiFence, CDKResult
 }
 
 CDKResult ExtensionModule::ActivatePipeline(CHIHANDLE sessionHandle, CHIPIPELINEDESCRIPTOR pipelineHandle) {
-    (void)sessionHandle; (void)pipelineHandle;
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pActivatePipeline) {
+        return pModule->GetChiOps()->pActivatePipeline(pModule->GetContext(), sessionHandle, pipelineHandle, NULL);
+    }
     return CDKResultSuccess;
 }
 
 CDKResult ExtensionModule::DeactivatePipeline(CHIHANDLE sessionHandle, CHIPIPELINEDESCRIPTOR pipelineHandle, CHIDEACTIVATEPIPELINEMODE mode) {
-    (void)sessionHandle; (void)pipelineHandle; (void)mode;
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pDeactivatePipeline) {
+        return pModule->GetChiOps()->pDeactivatePipeline(pModule->GetContext(), sessionHandle, pipelineHandle, mode);
+    }
     return CDKResultSuccess;
 }
 
 CDKResult ExtensionModule::Flush(CHIHANDLE sessionHandle) {
-    (void)sessionHandle;
+    CHISESSIONFLUSHINFO flushInfo = {};
+    flushInfo.pSessionHandle = sessionHandle;
+    ChiModule* pModule = ChiModule::GetInstance();
+    if (pModule && pModule->GetChiOps() && pModule->GetChiOps()->pFlushSession) {
+        return pModule->GetChiOps()->pFlushSession(pModule->GetContext(), flushInfo);
+    }
     return CDKResultSuccess;
 }
 

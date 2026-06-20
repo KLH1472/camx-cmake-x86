@@ -582,6 +582,26 @@ int CamXAdapter_ActivatePipeline(void* pSession, void* hPipelineDescriptor)
     return result;
 }
 
+int CamXAdapter_DeactivatePipeline(void* pSession, void* hPipelineDescriptor, unsigned int modeBitmask)
+{
+    if (g_pChiContext == nullptr || pSession == nullptr) return -1;
+    CamxResult result = g_pChiContext->DeactivatePipeline(
+        static_cast<CamX::CHISession*>(pSession),
+        static_cast<CHIPIPELINEHANDLE>(hPipelineDescriptor),
+        static_cast<CHIDEACTIVATEPIPELINEMODE>(modeBitmask));
+    return result;
+}
+
+int CamXAdapter_FlushSession(void* pSession)
+{
+    if (g_pChiContext == nullptr || pSession == nullptr) return -1;
+    CHISESSIONFLUSHINFO flushInfo = {};
+    flushInfo.pSessionHandle = pSession;
+    CamxResult result = g_pChiContext->FlushSession(
+        static_cast<CamX::CHISession*>(pSession), flushInfo);
+    return result;
+}
+
 int CamXAdapter_SubmitRequest(void* pSession, void* pRequest)
 {
     if (g_pChiContext == nullptr || pSession == nullptr) return -1;
