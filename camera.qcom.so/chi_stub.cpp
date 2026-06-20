@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <map>
-#include <set>
 #include <vector>
 #include <mutex>
 
@@ -36,34 +34,12 @@ extern "C" void  CamXAdapter_MetaReleaseAllRefs(void* handle, int bCHIAndCamX);
 // Internal state structures
 // =======================================================================
 
-static bool g_usingRealCamX = false;
-
-// Our internal context handle
 struct StubContext {
     bool initialized = false;
     CHITAGSOPS tagOps;
     CHIFENCEOPS fenceOps;
     CHIMETADATAOPS metadataOps;
     CHIBUFFERMANAGEROPS bufferManagerOps;
-};
-
-// A session handle
-struct StubSession {
-    CHICALLBACKS callbacks;
-    void* pPrivateCallbackData;
-    bool active = false;
-};
-
-// A pipeline descriptor handle
-struct StubPipelineDescriptor {
-    int cameraId;
-    bool isRealTime;
-};
-
-// A pipeline handle
-struct StubPipeline {
-    StubPipelineDescriptor* pDescriptor;
-    bool activated = false;
 };
 
 // Image buffer handle
@@ -87,12 +63,8 @@ struct StubFence {
 
 // Global state
 static StubContext g_context;
-static std::vector<StubSession*> g_sessions;
-static std::vector<StubPipelineDescriptor*> g_pipelineDescriptors;
-static std::vector<StubPipeline*> g_pipelines;
 static std::vector<StubBufferManager*> g_bufferManagers;
 static std::vector<StubFence*> g_fences;
-static std::set<CHIPIPELINEDESCRIPTOR> g_realCamXDescriptors;
 static std::mutex g_mutex;
 
 // =======================================================================
@@ -101,19 +73,6 @@ static std::mutex g_mutex;
 
 static const int FAKE_NUM_CAMERAS = 1;
 static const int FAKE_NUM_SENSOR_MODES = 3;
-
-// =======================================================================
-// Helper: get stub context / session
-// =======================================================================
-static StubContext* GetCtx(CHIHANDLE h) {
-    (void)h;
-    return &g_context;
-}
-
-static StubSession* GetSession(CHIHANDLE h) {
-    if (!h) return nullptr;
-    return reinterpret_cast<StubSession*>(h);
-}
 
 // =======================================================================
 // Helper: create fake camera info
@@ -265,44 +224,16 @@ static CHIPIPELINEDESCRIPTOR ChiCreatePipelineDescriptor(
 {
     (void)hChiContext;
 
-    void* ctx = CamXAdapter_InitContext();
-    if (ctx != NULL) {
-        void* realDesc = CamXAdapter_CreatePipelineDescriptor(
-            pPipelineName, (void*)pDescriptor,
-            numOutputs, pOutputBufferDescriptors,
-            numInputs, pInputBufferOptions);
-        if (realDesc != NULL) {
-            CHIPIPELINEDESCRIPTOR handle = reinterpret_cast<CHIPIPELINEDESCRIPTOR>(realDesc);
-            {
-                std::lock_guard<std::mutex> lock(g_mutex);
-                g_realCamXDescriptors.insert(handle);
-            }
-            return handle;
-        }
-        fprintf(stderr, "[chi_stub] Real CamX pipeline descriptor failed, falling back to stub\n");
-    }
-
-    StubPipelineDescriptor* desc = new StubPipelineDescriptor();
-    desc->cameraId = pDescriptor ? pDescriptor->cameraId : 0;
-    desc->isRealTime = pDescriptor ? pDescriptor->isRealTime : true;
-
-    std::lock_guard<std::mutex> lock(g_mutex);
-    g_pipelineDescriptors.push_back(desc);
-    return reinterpret_cast<CHIPIPELINEDESCRIPTOR>(desc);
+    CamXAdapter_InitContext();
+    void* handle = CamXAdapter_CreatePipelineDescriptor(
+        pPipelineName, (void*)pDescriptor,
+        numOutputs, pOutputBufferDescriptors,
+        numInputs, pInputBufferOptions);
+    return reinterpret_cast<CHIPIPELINEDESCRIPTOR>(handle);
 }
 
 static VOID ChiDestroyPipelineDescriptor(CHIHANDLE hChiContext, CHIPIPELINEDESCRIPTOR hDesc) {
-    (void)hChiContext;
-    if (!hDesc) return;
-    StubPipelineDescriptor* desc = reinterpret_cast<StubPipelineDescriptor*>(hDesc);
-    std::lock_guard<std::mutex> lock(g_mutex);
-    for (auto it = g_pipelineDescriptors.begin(); it != g_pipelineDescriptors.end(); ++it) {
-        if (*it == desc) {
-            g_pipelineDescriptors.erase(it);
-            break;
-        }
-    }
-    delete desc;
+    (void)hChiContext; (void)hDesc;
 }
 
 // =======================================================================
@@ -315,61 +246,16 @@ static CHIHANDLE ChiCreateSession(CHIHANDLE hChiContext, UINT numPipelines,
                                    CHISESSIONFLAGS flags) {
     (void)hChiContext;
 
-    void* ctx = CamXAdapter_InitContext();
-    if (ctx != NULL) {
-        bool allReal = true;
-        {
-            std::lock_guard<std::mutex> lock(g_mutex);
-            for (UINT i = 0; i < numPipelines; i++) {
-                if (g_realCamXDescriptors.find(pPipelineInfo[i].hPipelineDescriptor) ==
-                    g_realCamXDescriptors.end()) {
-                    allReal = false;
-                    break;
-                }
-            }
-        }
-            if (!allReal) {
-            fprintf(stderr, "[chi_stub] Not all descriptors are real CamX, using stub session\n");
-        } else {
-            void* realSession = CamXAdapter_CreateSession(
-                numPipelines, pPipelineInfo, pCallbacks, pPrivateCallbackData, &flags);
-            if (realSession != NULL) {
-                g_usingRealCamX = true;
-                return reinterpret_cast<CHIHANDLE>(realSession);
-            }
-            fprintf(stderr, "[chi_stub] Real CamX session failed, falling back to stub\n");
-        }
-    }
-
-    StubSession* session = new StubSession();
-    if (pCallbacks) {
-        session->callbacks = *pCallbacks;
-    }
-    session->pPrivateCallbackData = pPrivateCallbackData;
-
-    std::lock_guard<std::mutex> lock(g_mutex);
-    g_sessions.push_back(session);
-    return reinterpret_cast<CHIHANDLE>(session);
+    CamXAdapter_InitContext();
+    void* pSession = CamXAdapter_CreateSession(
+        numPipelines, pPipelineInfo, pCallbacks, pPrivateCallbackData, &flags);
+    return reinterpret_cast<CHIHANDLE>(pSession);
 }
 
 static VOID ChiDestroySession(CHIHANDLE hChiContext, CHIHANDLE hSession, BOOL isForced) {
     (void)hChiContext; (void)isForced;
     if (!hSession) return;
-
-    if (g_usingRealCamX) {
-        CamXAdapter_DestroySession(hSession);
-        return;
-    }
-
-    StubSession* session = reinterpret_cast<StubSession*>(hSession);
-    std::lock_guard<std::mutex> lock(g_mutex);
-    for (auto it = g_sessions.begin(); it != g_sessions.end(); ++it) {
-        if (*it == session) {
-            g_sessions.erase(it);
-            break;
-        }
-    }
-    delete session;
+    CamXAdapter_DestroySession(hSession);
 }
 
 // =======================================================================
@@ -379,25 +265,13 @@ static CDKResult ChiActivatePipeline(CHIHANDLE hChiContext, CHIHANDLE hSession,
                                       CHIHANDLE hPipeline, CHISENSORMODEINFO* pSensorModeInfo) {
     (void)hChiContext; (void)pSensorModeInfo;
     if (!hPipeline) return CDKResultEInvalidPointer;
-
-    if (g_usingRealCamX) {
-        int r = CamXAdapter_ActivatePipeline(hSession, hPipeline);
-        return (r == 0) ? CDKResultSuccess : CDKResultEFailed;
-    }
-
-    StubPipeline* pipeline = reinterpret_cast<StubPipeline*>(hPipeline);
-    pipeline->activated = true;
-    StubSession* session = reinterpret_cast<StubSession*>(hSession);
-    if (session) session->active = true;
-    return CDKResultSuccess;
+    int r = CamXAdapter_ActivatePipeline(hSession, hPipeline);
+    return (r == 0) ? CDKResultSuccess : CDKResultEFailed;
 }
 
 static CDKResult ChiDeactivatePipeline(CHIHANDLE hChiContext, CHIHANDLE hSession,
                                         CHIHANDLE hPipeline, CHIDEACTIVATEPIPELINEMODE mode) {
-    (void)hChiContext; (void)hSession; (void)mode;
-    if (!hPipeline) return CDKResultEInvalidPointer;
-    StubPipeline* pipeline = reinterpret_cast<StubPipeline*>(hPipeline);
-    pipeline->activated = false;
+    (void)hChiContext; (void)hSession; (void)hPipeline; (void)mode;
     return CDKResultSuccess;
 }
 
@@ -429,74 +303,8 @@ static CDKResult ChiFlushSession(CHIHANDLE hChiContext, CHISESSIONFLUSHINFO hFlu
 static CDKResult ChiSubmitPipelineRequest(CHIHANDLE hChiContext, CHIPIPELINEREQUEST* pRequest) {
     (void)hChiContext;
     if (!pRequest) return CDKResultEInvalidPointer;
-
-    if (g_usingRealCamX) {
-        CHIHANDLE hSession = pRequest->pSessionHandle;
-        return static_cast<CDKResult>(CamXAdapter_SubmitRequest(hSession, pRequest));
-    }
-
     CHIHANDLE hSession = pRequest->pSessionHandle;
-    StubSession* session = reinterpret_cast<StubSession*>(hSession);
-    if (!session) return CDKResultEInvalidState;
-
-    for (UINT32 reqIdx = 0; reqIdx < pRequest->numRequests; reqIdx++) {
-        const CHICAPTUREREQUEST* pCapReq = &pRequest->pCaptureRequests[reqIdx];
-
-        // Build output buffers
-        CHISTREAMBUFFER* pOutputBufs = nullptr;
-        if (pCapReq->numOutputs > 0) {
-            pOutputBufs = new CHISTREAMBUFFER[pCapReq->numOutputs]();
-            for (UINT32 i = 0; i < pCapReq->numOutputs; i++) {
-                pOutputBufs[i] = pCapReq->pOutputBuffers[i];
-                pOutputBufs[i].bufferStatus = 0; // OK
-                pOutputBufs[i].acquireFence.valid = false;
-                pOutputBufs[i].releaseFence.valid = false;
-            }
-        }
-
-        // Build input buffer (return same buffer with OK status)
-        CHISTREAMBUFFER* pInputBuf = nullptr;
-        CHISTREAMBUFFER tmpInputBuf;
-        if (pCapReq->numInputs > 0 && pCapReq->pInputBuffers) {
-            tmpInputBuf = pCapReq->pInputBuffers[0];
-            tmpInputBuf.bufferStatus = 0;
-            tmpInputBuf.acquireFence.valid = false;
-            tmpInputBuf.releaseFence.valid = false;
-            pInputBuf = &tmpInputBuf;
-        }
-
-        CHICAPTURERESULT result;
-        memset(&result, 0, sizeof(result));
-        result.frameworkFrameNum = pCapReq->frameNumber & 0xFFFFFFFF;
-        result.numOutputBuffers = pCapReq->numOutputs;
-        result.pOutputBuffers = pOutputBufs;
-        result.pInputBuffer = pInputBuf;
-        result.pPrivData = pCapReq->pPrivData;
-        result.pInputMetadata = pCapReq->pInputMetadata;
-        result.pOutputMetadata = pCapReq->pOutputMetadata;
-        result.pResultMetadata = nullptr;
-
-        // Call back with the result
-        if (session->callbacks.ChiProcessCaptureResult) {
-            session->callbacks.ChiProcessCaptureResult(&result, session->pPrivateCallbackData);
-        }
-
-        // Call back with shutter message
-        CHIMESSAGEDESCRIPTOR msg;
-        memset(&msg, 0, sizeof(msg));
-        msg.messageType = ChiMessageTypeShutter;
-        msg.message.shutterMessage.frameworkFrameNum = pCapReq->frameNumber & 0xFFFFFFFF;
-        msg.message.shutterMessage.timestamp = 0;
-        msg.pPrivData = pCapReq->pPrivData;
-
-        if (session->callbacks.ChiNotify) {
-            session->callbacks.ChiNotify(&msg, session->pPrivateCallbackData);
-        }
-
-        if (pOutputBufs) delete[] pOutputBufs;
-    }
-
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_SubmitRequest(hSession, pRequest));
 }
 
 // =======================================================================
