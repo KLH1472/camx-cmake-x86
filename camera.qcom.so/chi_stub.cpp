@@ -29,6 +29,20 @@ extern "C" void* CamXAdapter_MetaGetPrivateData(void* handle);
 extern "C" unsigned int CamXAdapter_MetaAddRef(void* handle, unsigned int clientID);
 extern "C" unsigned int CamXAdapter_MetaReleaseRef(void* handle, unsigned int clientID);
 extern "C" void  CamXAdapter_MetaReleaseAllRefs(void* handle, int bCHIAndCamX);
+extern "C" int   CamXAdapter_QueryVendorTagLocation(const char* section, const char* tag, unsigned int* pLoc);
+extern "C" int   CamXAdapter_MetaGetTag(void* handle, unsigned int tagID, void** ppData);
+extern "C" int   CamXAdapter_MetaSetTag(void* handle, unsigned int tagID, const void* pData, unsigned int count);
+extern "C" int   CamXAdapter_MetaGetVendorTag(void* handle, const char* section, const char* name, void** ppData);
+extern "C" int   CamXAdapter_MetaSetVendorTag(void* handle, const char* section, const char* name, const void* pData, unsigned int count);
+extern "C" int   CamXAdapter_MetaCopy(void* hDst, void* hSrc, int disjoint);
+extern "C" int   CamXAdapter_MetaMerge(void* hDst, void* hSrc, int disjoint);
+extern "C" int   CamXAdapter_MetaClone(void* hSrc, void** phDst);
+extern "C" int   CamXAdapter_MetaInvalidate(void* handle);
+extern "C" int   CamXAdapter_MetaDeleteTag(void* handle, unsigned int tagID);
+extern "C" int   CamXAdapter_MetaGetTagByCameraId(void* handle, unsigned int tagID, unsigned int cameraId, void** ppData);
+extern "C" unsigned int CamXAdapter_MetaReferenceCount(void* handle);
+extern "C" unsigned int CamXAdapter_MetaCapacity(void* handle);
+extern "C" unsigned int CamXAdapter_MetaCount(void* handle);
 
 // =======================================================================
 // Internal state structures
@@ -306,9 +320,7 @@ static CDKResult ChiSubmitPipelineRequest(CHIHANDLE hChiContext, CHIPIPELINEREQU
 // =======================================================================
 static CDKResult StubQueryVendorTagLocation(const CHAR* pSectionName, const CHAR* pTagName,
                                              UINT32* pTagLocation) {
-    (void)pSectionName; (void)pTagName;
-    *pTagLocation = 0x80000000; // Return a vendor tag ID
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_QueryVendorTagLocation(pSectionName, pTagName, pTagLocation));
 }
 
 static CDKResult StubSetMetaData(CHIHANDLE metaHandle, UINT32 tag, VOID* pData, SIZE_T count) {
@@ -398,13 +410,11 @@ static CDKResult StubMetaDestroy(CHIMETAHANDLE hMetaHandle, BOOL force) {
 }
 
 static CDKResult StubMetaClone(CHIMETAHANDLE hSrc, CHIMETAHANDLE* phDst) {
-    (void)hSrc; (void)phDst;
-    return CDKResultEFailed;
+    return static_cast<CDKResult>(CamXAdapter_MetaClone(hSrc, reinterpret_cast<void**>(phDst)));
 }
 
 static CDKResult StubMetaGetTag(CHIMETAHANDLE hMetaHandle, UINT32 tagID, VOID** ppData) {
-    (void)hMetaHandle; (void)tagID; (void)ppData;
-    return CDKResultENoSuch;
+    return static_cast<CDKResult>(CamXAdapter_MetaGetTag(hMetaHandle, tagID, ppData));
 }
 
 static CDKResult StubMetaGetTagEntry(CHIMETAHANDLE hMetaHandle, UINT32 tagID, CHIMETADATAENTRY* pEntry) {
@@ -413,8 +423,7 @@ static CDKResult StubMetaGetTagEntry(CHIMETAHANDLE hMetaHandle, UINT32 tagID, CH
 }
 
 static CDKResult StubMetaGetVendorTag(CHIMETAHANDLE hMetaHandle, const CHAR* pSection, const CHAR* pName, VOID** ppData) {
-    (void)hMetaHandle; (void)pSection; (void)pName; (void)ppData;
-    return CDKResultENoSuch;
+    return static_cast<CDKResult>(CamXAdapter_MetaGetVendorTag(hMetaHandle, pSection, pName, ppData));
 }
 
 static CDKResult StubMetaGetVendorTagEntry(CHIMETAHANDLE hMetaHandle, const CHAR* pSection, const CHAR* pName, CHIMETADATAENTRY* pEntry) {
@@ -423,14 +432,12 @@ static CDKResult StubMetaGetVendorTagEntry(CHIMETAHANDLE hMetaHandle, const CHAR
 }
 
 static CDKResult StubMetaSetTag(CHIMETAHANDLE hMetaHandle, UINT32 tagID, const VOID* pData, UINT32 count) {
-    (void)hMetaHandle; (void)tagID; (void)pData; (void)count;
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_MetaSetTag(hMetaHandle, tagID, pData, count));
 }
 
 static CDKResult StubMetaSetVendorTag(CHIMETAHANDLE hMetaHandle, const CHAR* pSection, const CHAR* pName,
                                        const VOID* pData, UINT32 count) {
-    (void)hMetaHandle; (void)pSection; (void)pName; (void)pData; (void)count;
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_MetaSetVendorTag(hMetaHandle, pSection, pName, pData, count));
 }
 
 static CDKResult StubMetaSetAndroidMetadata(CHIMETAHANDLE hMetaHandle, const VOID* pAndroidMeta) {
@@ -439,34 +446,30 @@ static CDKResult StubMetaSetAndroidMetadata(CHIMETAHANDLE hMetaHandle, const VOI
 }
 
 static CDKResult StubMetaDeleteTag(CHIMETAHANDLE hMetaHandle, UINT32 tagID) {
-    (void)hMetaHandle; (void)tagID;
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_MetaDeleteTag(hMetaHandle, tagID));
 }
 
 static CDKResult StubMetaInvalidate(CHIMETAHANDLE hMetaHandle) {
-    (void)hMetaHandle;
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_MetaInvalidate(hMetaHandle));
 }
 
 static CDKResult StubMetaMerge(CHIMETAHANDLE hDst, CHIMETAHANDLE hSrc, BOOL disjoint) {
-    (void)hDst; (void)hSrc; (void)disjoint;
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_MetaMerge(hDst, hSrc, disjoint));
 }
 
 static CDKResult StubMetaCopy(CHIMETAHANDLE hDst, CHIMETAHANDLE hSrc, BOOL disjoint) {
-    (void)hDst; (void)hSrc; (void)disjoint;
-    return CDKResultSuccess;
+    return static_cast<CDKResult>(CamXAdapter_MetaCopy(hDst, hSrc, disjoint));
 }
 
 static CDKResult StubMetaCapacity(CHIMETAHANDLE hMetaHandle, UINT32* pCapacity) {
-    (void)hMetaHandle;
-    *pCapacity = 1024;
+    if (!pCapacity) return CDKResultEInvalidArg;
+    *pCapacity = CamXAdapter_MetaCapacity(hMetaHandle);
     return CDKResultSuccess;
 }
 
 static CDKResult StubMetaTagCount(CHIMETAHANDLE hMetaHandle, UINT32* pCount) {
-    (void)hMetaHandle;
-    *pCount = 0;
+    if (!pCount) return CDKResultEInvalidArg;
+    *pCount = CamXAdapter_MetaCount(hMetaHandle);
     return CDKResultSuccess;
 }
 
@@ -505,8 +508,8 @@ static CDKResult StubMetaReleaseAllReferences(CHIMETAHANDLE hMetaHandle, BOOL bC
 }
 
 static CDKResult StubMetaReferenceCount(CHIMETAHANDLE hMetaHandle, UINT32* pRefCount) {
-    (void)hMetaHandle;
-    *pRefCount = 1;
+    if (!pRefCount) return CDKResultEInvalidArg;
+    *pRefCount = CamXAdapter_MetaReferenceCount(hMetaHandle);
     return CDKResultSuccess;
 }
 
@@ -574,9 +577,7 @@ static CDKResult StubMetaMergeMultiCameraMeta(CHIMETAHANDLE hDst, UINT32 count, 
 }
 
 static CDKResult StubMetaGetTagByCameraId(CHIMETAHANDLE hMetaHandle, UINT32 tagID, UINT32 cameraId, VOID** ppData) {
-    (void)hMetaHandle; (void)tagID; (void)cameraId;
-    *ppData = nullptr;
-    return CDKResultENoSuch;
+    return static_cast<CDKResult>(CamXAdapter_MetaGetTagByCameraId(hMetaHandle, tagID, cameraId, ppData));
 }
 
 static CDKResult StubMetaCreateWithTagArray(const UINT32* pTagList, UINT32 tagListCount,

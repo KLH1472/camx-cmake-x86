@@ -16,6 +16,8 @@
 
 #include "camxhwcontext.h"
 #include "camxmetabuffer.h"
+#include "camxhal3metadatautil.h"
+#include "camxvendortags.h"
 
 #include <cstdio>
 #include <unistd.h>
@@ -640,6 +642,129 @@ void CamXAdapter_MetaReleaseAllRefs(void* handle, int bCHIAndCamX)
 {
     if (!handle) return;
     static_cast<CamX::MetaBuffer*>(handle)->ReleaseAllReferences(bCHIAndCamX ? TRUE : FALSE);
+}
+
+int CamXAdapter_QueryVendorTagLocation(const char* pSectionName, const char* pTagName,
+                                       unsigned int* pTagLocation)
+{
+    if (!pSectionName || !pTagName || !pTagLocation) return 4;
+    return CamX::VendorTagManager::QueryVendorTagLocation(pSectionName, pTagName, pTagLocation);
+}
+
+int CamXAdapter_MetaGetTag(void* handle, unsigned int tagID, void** ppData)
+{
+    if (!handle || !ppData) return 4;
+    CamX::MetaBuffer* p = static_cast<CamX::MetaBuffer*>(handle);
+    if (!CamX::MetaBuffer::IsValid(p)) return 4;
+    *ppData = p->GetTag(tagID);
+    return (*ppData != nullptr) ? 0 : 6;
+}
+
+int CamXAdapter_MetaSetTag(void* handle, unsigned int tagID, const void* pData, unsigned int count)
+{
+    if (!handle || !pData) return 4;
+    CamX::MetaBuffer* p = static_cast<CamX::MetaBuffer*>(handle);
+    if (!CamX::MetaBuffer::IsValid(p)) return 4;
+    const CamX::MetadataInfo* pInfo = CamX::HAL3MetadataUtil::GetMetadataInfoByTag(tagID);
+    if (!pInfo) return 1;
+    UINT32 size = CamX::TagSizeByType[pInfo->type] * count;
+    return p->SetTag(tagID, pData, count, size);
+}
+
+int CamXAdapter_MetaGetVendorTag(void* handle, const char* pSection, const char* pName, void** ppData)
+{
+    if (!handle || !pSection || !pName || !ppData) return 4;
+    CamX::MetaBuffer* p = static_cast<CamX::MetaBuffer*>(handle);
+    if (!CamX::MetaBuffer::IsValid(p)) return 4;
+    UINT32 tag = 0;
+    CamxResult r = CamX::VendorTagManager::QueryVendorTagLocation(pSection, pName, &tag);
+    if (r != CamxResultSuccess) return r;
+    *ppData = p->GetTag(tag);
+    return (*ppData != nullptr) ? 0 : 6;
+}
+
+int CamXAdapter_MetaSetVendorTag(void* handle, const char* pSection, const char* pName,
+                                 const void* pData, unsigned int count)
+{
+    if (!handle || !pSection || !pName || !pData) return 4;
+    CamX::MetaBuffer* p = static_cast<CamX::MetaBuffer*>(handle);
+    if (!CamX::MetaBuffer::IsValid(p)) return 4;
+    UINT32 tag = 0;
+    CamxResult r = CamX::VendorTagManager::QueryVendorTagLocation(pSection, pName, &tag);
+    if (r != CamxResultSuccess) return r;
+    const CamX::MetadataInfo* pInfo = CamX::HAL3MetadataUtil::GetMetadataInfoByTag(tag);
+    if (!pInfo) return 1;
+    UINT32 size = CamX::TagSizeByType[pInfo->type] * count;
+    return p->SetTag(tag, pData, count, size);
+}
+
+int CamXAdapter_MetaCopy(void* hDst, void* hSrc, int disjoint)
+{
+    if (!hDst || !hSrc) return 4;
+    CamX::MetaBuffer* pDst = static_cast<CamX::MetaBuffer*>(hDst);
+    CamX::MetaBuffer* pSrc = static_cast<CamX::MetaBuffer*>(hSrc);
+    if (!CamX::MetaBuffer::IsValid(pDst) || !CamX::MetaBuffer::IsValid(pSrc)) return 4;
+    return pDst->Copy(pSrc, disjoint ? TRUE : FALSE);
+}
+
+int CamXAdapter_MetaMerge(void* hDst, void* hSrc, int disjoint)
+{
+    if (!hDst || !hSrc) return 4;
+    CamX::MetaBuffer* pDst = static_cast<CamX::MetaBuffer*>(hDst);
+    CamX::MetaBuffer* pSrc = static_cast<CamX::MetaBuffer*>(hSrc);
+    if (!CamX::MetaBuffer::IsValid(pDst) || !CamX::MetaBuffer::IsValid(pSrc)) return 4;
+    return pDst->Merge(pSrc, disjoint ? TRUE : FALSE);
+}
+
+int CamXAdapter_MetaClone(void* hSrc, void** phDst)
+{
+    if (!hSrc || !phDst) return 4;
+    CamX::MetaBuffer* pSrc = static_cast<CamX::MetaBuffer*>(hSrc);
+    if (!CamX::MetaBuffer::IsValid(pSrc)) return 4;
+    CamX::MetaBuffer* pDst = pSrc->Clone();
+    if (!pDst) return 1;
+    *phDst = pDst;
+    return 0;
+}
+
+int CamXAdapter_MetaInvalidate(void* handle)
+{
+    if (!handle) return 4;
+    return static_cast<CamX::MetaBuffer*>(handle)->Invalidate();
+}
+
+int CamXAdapter_MetaDeleteTag(void* handle, unsigned int tagID)
+{
+    if (!handle) return 4;
+    return static_cast<CamX::MetaBuffer*>(handle)->RemoveTag(tagID);
+}
+
+int CamXAdapter_MetaGetTagByCameraId(void* handle, unsigned int tagID, unsigned int cameraId,
+                                     void** ppData)
+{
+    if (!handle || !ppData) return 4;
+    CamX::MetaBuffer* p = static_cast<CamX::MetaBuffer*>(handle);
+    if (!CamX::MetaBuffer::IsValid(p)) return 4;
+    *ppData = p->GetTagByCameraId(tagID, cameraId, FALSE);
+    return (*ppData != nullptr) ? 0 : 6;
+}
+
+unsigned int CamXAdapter_MetaReferenceCount(void* handle)
+{
+    if (!handle) return 0;
+    return static_cast<CamX::MetaBuffer*>(handle)->ReferenceCount();
+}
+
+unsigned int CamXAdapter_MetaCapacity(void* handle)
+{
+    if (!handle) return 0;
+    return static_cast<CamX::MetaBuffer*>(handle)->Capacity();
+}
+
+unsigned int CamXAdapter_MetaCount(void* handle)
+{
+    if (!handle) return 0;
+    return static_cast<CamX::MetaBuffer*>(handle)->Count();
 }
 
 }
