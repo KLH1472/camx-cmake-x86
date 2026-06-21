@@ -13,6 +13,9 @@
 #include "chimetadatautil.h"
 #include "chxextensionmodule.h"
 #include "spectraconfigparser.h"
+#undef  LOG_TAG
+#define LOG_TAG "Feature2Test"
+#include <android/log.h>
 #include "chistatsproperty.h"
 #include "metaconfigparser.h"
 #include "streamconfigparser.h"
@@ -733,11 +736,11 @@ VOID Feature2TestCase::RunFeature2Test()
                                    m_pFeature2RequestObject->GetCurRequestState(0)) && !_pipelineError;
                 if (testPassed)
                 {
-                    fprintf(stdout, "[ PASS] Feature2 request completed successfully (state=Complete)\n");
+                    XLOGI("PASS: Feature2 request completed successfully (state=Complete)");
                 }
                 else
                 {
-                    fprintf(stderr, "[ FAIL] Feature2 request did NOT reach Complete state (pipelineError=%d)\n",
+                    XLOGE("FAIL: Feature2 request did NOT reach Complete state (pipelineError=%d)",
                             _pipelineError);
                 }
                 fflush(stdout);

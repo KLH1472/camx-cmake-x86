@@ -10,6 +10,9 @@
 #include <cstring>
 #include <dlfcn.h>
 #include <pthread.h>
+#undef  LOG_TAG
+#define LOG_TAG "ChiStubs"
+#include <android/log.h>
 
 #include "chxfeature.h"
 #include "chifeature2types.h"
@@ -231,7 +234,7 @@ UINT32 ExtensionModule::GetVendorTagId(VendorTag tag) {
                 if (r == CDKResultSuccess) {
                     s_cachedIds[i] = loc;
                 } else {
-                    fprintf(stderr, "[ExtensionModule] VendorTag %u (%s.%s) query failed: %d\n",
+                    XLOGW("VendorTag %u (%s.%s) query failed: %d",
                             i, s_vendorTagNames[i].section, s_vendorTagNames[i].name, r);
                 }
             }
@@ -271,7 +274,7 @@ CDKResult Pipeline::CreateDescriptor() {
             pModule->GetContext(), m_pName, m_pCreateDesc,
             m_numOutputs, m_pOutputs, m_numInputBuffers, m_pInputOptions);
         if (m_hDescriptor != NULL) {
-            fprintf(stderr, "[Pipeline] CreateDescriptor OK: %p (nodes=%u links=%u)\n",
+            XLOGI("CreateDescriptor OK: %p (nodes=%u links=%u)",
                     m_hDescriptor, m_pCreateDesc->numNodes, m_pCreateDesc->numLinks);
         }
     }

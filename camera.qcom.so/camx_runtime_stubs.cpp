@@ -21,6 +21,9 @@
 
 #include <cstdio>
 #include <unistd.h>
+#undef  LOG_TAG
+#define LOG_TAG "CamXAdapter"
+#include <android/log.h>
 
 CAMX_NAMESPACE_BEGIN
 
@@ -499,7 +502,7 @@ void* CamXAdapter_InitContext()
     {
         CamX::g_logInfo.systemLogEnable = TRUE;
 
-        fprintf(stderr, "[CamXAdapter] Initializing ChiContext...\n");
+        XLOGI("Initializing ChiContext...");
         fflush(stderr);
         g_pChiContext = CamX::ChiContext::Create();
         if (g_pChiContext != nullptr)
@@ -512,14 +515,14 @@ void* CamXAdapter_InitContext()
             if (FALSE == CamX::HAL3MetadataUtil::IsMetadataTableInitialized())
             {
                 CamxResult metaResult = CamX::HAL3MetadataUtil::InitializeMetadataTable();
-                fprintf(stderr, "[CamXAdapter] InitializeMetadataTable: result=%d tags=%u\n",
+                XLOGI("InitializeMetadataTable: result=%d tags=%u",
                         metaResult, CamX::HAL3MetadataUtil::GetTotalTagCount());
             }
-            fprintf(stderr, "[CamXAdapter] ChiContext initialized successfully\n");
+            XLOGI("ChiContext initialized successfully");
         }
         else
         {
-            fprintf(stderr, "[CamXAdapter] ChiContext initialization FAILED\n");
+            XLOGE("ChiContext initialization FAILED");
         }
         fflush(stderr);
     }
@@ -566,7 +569,7 @@ void* CamXAdapter_CreateSession(
         pPrivateCallbackData,
         flags);
 
-    fprintf(stderr, "[CamXAdapter] CreateSession: %p (pipelines=%u)\n", pSession, numPipelines);
+    XLOGI("CreateSession: %p (pipelines=%u)", pSession, numPipelines);
     fflush(stderr);
     return pSession;
 }
@@ -577,7 +580,7 @@ int CamXAdapter_ActivatePipeline(void* pSession, void* hPipelineDescriptor)
     CamxResult result = g_pChiContext->ActivatePipeline(
         static_cast<CamX::CHISession*>(pSession),
         static_cast<CHIPIPELINEHANDLE>(hPipelineDescriptor));
-    fprintf(stderr, "[CamXAdapter] ActivatePipeline: result=%d\n", result);
+    XLOGI("ActivatePipeline: result=%d", result);
     fflush(stderr);
     return result;
 }
@@ -610,14 +613,14 @@ int CamXAdapter_SubmitRequest(void* pSession, void* pRequest)
 
     for (UINT i = 0; i < pPipelineReq->numRequests; i++) {
         const ChiCaptureRequest* pReq = &pPipelineReq->pCaptureRequests[i];
-        fprintf(stderr, "[CamXAdapter] SubmitRequest: req[%u] handle=%p frame=%llu outs=%u meta=%p/%p\n",
+        XLOGI("SubmitRequest: req[%u] handle=%p frame=%llu outs=%u meta=%p/%p",
                 i, pReq->hPipelineHandle, pReq->frameNumber, pReq->numOutputs,
                 pReq->pInputMetadata, pReq->pOutputMetadata);
     }
 
     CamxResult result = g_pChiContext->SubmitRequest(
         static_cast<CamX::CHISession*>(pSession), pPipelineReq);
-    fprintf(stderr, "[CamXAdapter] SubmitRequest: result=%d\n", result);
+    XLOGI("SubmitRequest: result=%d", result);
     return result;
 }
 
@@ -625,7 +628,7 @@ void CamXAdapter_DestroySession(void* pSession)
 {
     if (g_pChiContext == nullptr || pSession == nullptr) return;
     g_pChiContext->DestroySession(static_cast<CamX::CHISession*>(pSession));
-    fprintf(stderr, "[CamXAdapter] DestroySession done\n");
+    XLOGI("DestroySession done");
     fflush(stderr);
 }
 

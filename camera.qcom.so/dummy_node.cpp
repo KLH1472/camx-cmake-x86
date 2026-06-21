@@ -3,6 +3,9 @@
 #include "camxsettingsmanager.h"
 #include "camxcsl.h"
 #include "camxincs.h"
+#undef  LOG_TAG
+#define LOG_TAG "DummyNode"
+#include <android/log.h>
 
 CAMX_NAMESPACE_BEGIN
 
@@ -25,7 +28,7 @@ protected:
     virtual CamxResult ExecuteProcessRequest(
         ExecuteProcessRequestData* pExecuteProcessRequestData) override
     {
-        fprintf(stderr, "[DummyNode] ExecuteProcessRequest type=%u inst=%u reqId=%llu\n",
+        XLOGD("ExecuteProcessRequest type=%u inst=%u seq=%d",
                 Type(), InstanceID(),
                 pExecuteProcessRequestData->pNodeProcessRequestData->processSequenceId);
         PerRequestActivePorts* pPorts = pExecuteProcessRequestData->pEnabledPortsInfo;

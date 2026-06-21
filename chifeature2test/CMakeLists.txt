@@ -135,6 +135,7 @@ target_compile_options(chifeature2test PRIVATE
 # ── Include paths: stubs BEFORE real dirs so they override ──
 target_include_directories(chifeature2test PRIVATE
     ${F2TEST_STUBS}                    # xmllib_parser.h, chiframework stubs
+    ${CMAKE_SOURCE_DIR}/camx_stubs     # android/log.h stub
     ${F2FRAMEWORK_SRC}                 # chifeature2test.h, etc.
     ${F2TEST_SRC}                      # chifeature2testmain.cpp
     ${CHIFEATURE2_DIR}                 # chifeature2base.h, chifeature2types.h, etc.
