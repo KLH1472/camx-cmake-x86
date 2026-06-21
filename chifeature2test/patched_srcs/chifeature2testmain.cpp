@@ -10,6 +10,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "chifeature2test.h"
+#undef  LOG_TAG
+#define LOG_TAG "F2Mn"
+#include <android/log.h>
 #include "feature2offlinetest.h"
 #include <unistd.h>
 
@@ -21,10 +24,10 @@ int main(int argc, char* argv[])
 {
     // print the title with app version and platform info
 #ifdef ENVIRONMENT64 // 64-bit
-    CF2_LOG_INFO("===== ChiFeature2Test %s (64-bit %s %s) =====", CF2_VERSION,
+    XLOGI("===== ChiFeature2Test %s (64-bit %s %s) =====", CF2_VERSION,
         CmdLineParser::GetTargetProduct(), CmdLineParser::GetPlatformVersion());
 #else // 32-bit
-    CF2_LOG_INFO("===== ChiFeature2Test %s (32-bit %s %s) =====", CF2_VERSION,
+    XLOGI("===== ChiFeature2Test %s (32-bit %s %s) =====", CF2_VERSION,
         CmdLineParser::GetTargetProduct(), CmdLineParser::GetPlatformVersion());
 #endif
 
@@ -39,7 +42,7 @@ int main(int argc, char* argv[])
     verboseSeverity eSev = static_cast<verboseSeverity>(CmdLineParser::GetLogLevel());
     if (-1 == CF2Log.SetLogLevel(eSev))
     {
-        CF2_LOG_ERROR("Invalid log level %d", CmdLineParser::GetLogLevel());
+        XLOGE("Invalid log level %d", CmdLineParser::GetLogLevel());
         return 1;
     }
 

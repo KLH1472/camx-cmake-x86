@@ -10,8 +10,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "chibinarylog.h"
+#undef  LOG_TAG
+#define LOG_TAG "F2Bs"
+#include <android/log.h>
 #include "chifeature2base.h"
 #include "chifeature2utils.h"
+#undef  CHX_LOG
+#define CHX_LOG XLOGI
 
 // NOWHINE FILE CP006:  Used standard libraries for performance improvements
 
@@ -34,7 +39,7 @@ UINT32 ChiFeature2Base::GetPipelineIndex(
     }
     if (CDKInvalidId == index)
     {
-        CHX_LOG_ERROR("Unable to find matching index for pipeline %s", pPipelineName);
+        XLOGE("Unable to find matching index for pipeline %s", pPipelineName);
     }
     return index;
 }
@@ -53,7 +58,7 @@ CHITARGETBUFFERINFOHANDLE ChiFeature2Base::GetOutputMetadataBuffer(
 
     if (NULL == pTargetBufferManager)
     {
-        CHX_LOG_ERROR("No metadata TBM for pipeline %s", pPipelineData->pPipelineName);
+        XLOGE("No metadata TBM for pipeline %s", pPipelineData->pPipelineName);
         result = CDKResultENoSuch;
     }
 
@@ -79,7 +84,7 @@ CHITARGETBUFFERINFOHANDLE ChiFeature2Base::GetInputMetadataBuffer(
 
     if (NULL == pTargetBufferManager)
     {
-        CHX_LOG_ERROR("No metadata TBM for pipeline %s", pPipelineData->pPipelineName);
+        XLOGE("No metadata TBM for pipeline %s", pPipelineData->pPipelineName);
         result = CDKResultENoSuch;
     }
 
@@ -115,13 +120,13 @@ CDKResult ChiFeature2Base::GetStreamBuffer(
         }
         else
         {
-            CHX_LOG_ERROR("Unable to get buffer info for handle %p", handle);
+            XLOGE("Unable to get buffer info for handle %p", handle);
             result = CDKResultENoSuch;
         }
     }
     else
     {
-        CHX_LOG_ERROR("Unable to get target buffer manager for handle %p", handle);
+        XLOGE("Unable to get target buffer manager for handle %p", handle);
         result = CDKResultEInvalidArg;
     }
     return result;
@@ -141,7 +146,7 @@ CHITARGETBUFFERINFOHANDLE ChiFeature2Base::GetOutputBufferHandle(
 
     if ((NULL == pPortData) || (NULL == pPortData->pOutputBufferTbm))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pPortData");
+        XLOGE("Invalid argument: NULL pPortData");
         result = CDKResultEInvalidArg;
     }
 
@@ -152,7 +157,7 @@ CHITARGETBUFFERINFOHANDLE ChiFeature2Base::GetOutputBufferHandle(
 
         if (NULL == hBuffer)
         {
-            CHX_LOG_ERROR("Returning null buffer handle for port %s", pPortData->pPortName);
+            XLOGE("Returning null buffer handle for port %s", pPortData->pPortName);
             result = CDKResultEFailed;
         }
     }
@@ -179,7 +184,7 @@ CDKResult ChiFeature2Base::ProcessRequest(
 
     if (NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pRequestObject");
+        XLOGE("Invalid argument: NULL pRequestObject");
         result = CDKResultEInvalidArg;
     }
 
@@ -199,7 +204,7 @@ CDKResult ChiFeature2Base::ProcessRequest(
                     result = HandleInputResourcePending(pRequestObject, requestId);
                     if (CDKResultSuccess != result)
                     {
-                        CHX_LOG_ERROR("HandleInputResourcePending failed with result: %d", result);
+                        XLOGE("HandleInputResourcePending failed with result: %d", result);
                     }
                     canExecute = FALSE;
                     break;
@@ -210,7 +215,7 @@ CDKResult ChiFeature2Base::ProcessRequest(
                     result = HandleOutputNotificationPending(pRequestObject, requestId);
                     if (CDKResultSuccess != result)
                     {
-                        CHX_LOG_ERROR("HandleOutputNotificationPending failed with result: %d", result);
+                        XLOGE("HandleOutputNotificationPending failed with result: %d", result);
                     }
                     canExecute = FALSE;
                     break;
@@ -221,7 +226,7 @@ CDKResult ChiFeature2Base::ProcessRequest(
                         result = OnProcessRequest(pRequestObject, requestId);
                         if (CDKResultSuccess != result)
                         {
-                            CHX_LOG_ERROR("OnProcessRequest failed with result: %d", result);
+                            XLOGE("OnProcessRequest failed with result: %d", result);
                         }
                     }
                     break;
@@ -249,7 +254,7 @@ CDKResult ChiFeature2Base::ProcessRequest(
 
     if (CDKResultECancelledRequest == result)
     {
-        CHX_LOG_INFO("Flush is happening and thereby returning success");
+        XLOGI("Flush is happening and thereby returning success");
         result = CDKResultSuccess;
     }
 
@@ -299,7 +304,7 @@ CDKResult ChiFeature2Base::OnProcessRequest(
 
     if (NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pRequestObject");
+        XLOGE("Invalid argument: NULL pRequestObject");
         result = CDKResultEInvalidArg;
     }
 
@@ -310,7 +315,7 @@ CDKResult ChiFeature2Base::OnProcessRequest(
             pRequestObject->SetCurRequestId(requestId);
 
             requestState = pRequestObject->GetCurRequestState(requestId);
-            CHX_LOG_INFO("%s requestState:%s, requestId:%d",
+            XLOGI("%s requestState:%s, requestId:%d",
                          pRequestObject->IdentifierString(),
                          ChiFeature2RequestStateStrings[static_cast<UINT8>(requestState)],
                          requestId);
@@ -323,7 +328,7 @@ CDKResult ChiFeature2Base::OnProcessRequest(
                     if ((NULL != pSessionData) &&
                         (TRUE == pSessionData->isFlushInProgress))
                     {
-                        CHX_LOG_WARN("%s requestId:%d has been dropped as flush is in progress",
+                        XLOGW("%s requestId:%d has been dropped as flush is in progress",
                             pRequestObject->IdentifierString(), requestId);
                         result = CDKResultECancelledRequest;
                     }
@@ -332,7 +337,7 @@ CDKResult ChiFeature2Base::OnProcessRequest(
                         result = HandlePrepareRequest(pRequestObject);
                         if (CDKResultSuccess != result)
                         {
-                            CHX_LOG_ERROR("HandlePrepareRequest returned error: %d", result);
+                            XLOGE("HandlePrepareRequest returned error: %d", result);
                         }
                     }
                     break;
@@ -350,11 +355,11 @@ CDKResult ChiFeature2Base::OnProcessRequest(
                         result = HandleExecuteProcessRequest(pRequestObject);
                         if (CDKResultENoMore == result)
                         {
-                            CHX_LOG_WARN("HandleExecuteProcessRequest is not continuing due to errors");
+                            XLOGW("HandleExecuteProcessRequest is not continuing due to errors");
                         }
                         else if (CDKResultSuccess != result)
                         {
-                            CHX_LOG_ERROR("HandleExecuteProcessRequest returned error: %d", result);
+                            XLOGE("HandleExecuteProcessRequest returned error: %d", result);
                         }
                     }
                     break;
@@ -364,10 +369,10 @@ CDKResult ChiFeature2Base::OnProcessRequest(
                     // OutputResourcePending -> OutputErrorResourcePending and is placeholder
                     break;
                 case ChiFeature2RequestState::Complete:
-                    CHX_LOG_INFO("Already in complete state for requestId: %d", requestId);
+                    XLOGI("Already in complete state for requestId: %d", requestId);
                     break;
                 default:
-                    CHX_LOG_INFO("Move to State: %d", requestState);
+                    XLOGI("Move to State: %d", requestState);
                     break;
             }
         } while ((CDKResultSuccess == result) && (TRUE == CanRequestContinue(pRequestObject->GetCurRequestState(requestId))));
@@ -405,14 +410,14 @@ VOID ChiFeature2Base::FlushThreadHandler()
         m_pFlushThreadMutex->Lock();
         if (TRUE == m_shouldWaitFlush)
         {
-            CHX_LOG_INFO("ChiFeature2Base::Flush WAIT featureId: %d", m_featureId);
+            XLOGI("ChiFeature2Base::Flush WAIT featureId: %d", m_featureId);
             m_pFlushRequestAvailable->Wait(m_pFlushThreadMutex->GetNativeHandle());
         }
-        CHX_LOG_INFO("ChiFeature2Base::Flush GO featureId: %d", m_featureId);
+        XLOGI("ChiFeature2Base::Flush GO featureId: %d", m_featureId);
 
         if (m_flushRequestProcessTerminate == TRUE)
         {
-            CHX_LOG_INFO("ChiFeature2Base::TERMINATE Flush Thread featureId: %d", m_featureId);
+            XLOGI("ChiFeature2Base::TERMINATE Flush Thread featureId: %d", m_featureId);
             m_pFlushThreadMutex->Unlock();
             break;
         }
@@ -434,7 +439,7 @@ VOID ChiFeature2Base::ExecuteFlush()
 
     m_pThreadManager->FlushJob(m_hFeatureJob, TRUE);
 
-    CHX_LOG_INFO("ChiFeature2Base::Flush Executing featureid: %d p: %p", m_featureId, m_pSessionData[0]);
+    XLOGI("ChiFeature2Base::Flush Executing featureid: %d p: %p", m_featureId, m_pSessionData[0]);
     for (auto pSessionData : m_pSessionData)
     {
         // If there're more than one sesion in the feature, use the last feature's cb data.
@@ -450,7 +455,7 @@ VOID ChiFeature2Base::ExecuteFlush()
         }
     }
 
-    CHX_LOG_INFO("ChiFeature2Base::Flush Done. featureid: %d", m_featureId);
+    XLOGI("ChiFeature2Base::Flush Done. featureid: %d", m_featureId);
 
     if ((NULL != pPrivate) && (NULL != pCbSessionData))
     {
@@ -470,19 +475,19 @@ CDKResult ChiFeature2Base::ExecuteFlushHelper(
     {
         Session* pSession = pSessionData->pSession;
         ChxUtils::AtomicStoreU32(&pSessionData->isFlushInProgress, TRUE);
-        CHX_LOG_CONFIG("pSessionData isFlushInProgress TRUE Feature %s Session %s",
+        XLOGI("pSessionData isFlushInProgress TRUE Feature %s Session %s",
                        m_pFeatureName, pSessionData->pSessionName);
         if (NULL != pSession)
         {
             result = ExtensionModule::GetInstance()->Flush(pSession->GetSessionHandle());
             if (CDKResultSuccess != result)
             {
-                CHX_LOG_WARN("Flush ERROR for session: %s", pSessionData->pSessionName);
+                XLOGW("Flush ERROR for session: %s", pSessionData->pSessionName);
             }
             DoFlush();
         }
         ChxUtils::AtomicStoreU32(&pSessionData->isFlushInProgress, FALSE);
-        CHX_LOG_CONFIG("pSessionData isFlushInProgress FALSE Feature %s Session %s",
+        XLOGI("pSessionData isFlushInProgress FALSE Feature %s Session %s",
                        m_pFeatureName, pSessionData->pSessionName);
     }
 
@@ -507,7 +512,7 @@ CDKResult ChiFeature2Base::Flush(
             result = ExecuteFlushHelper(pSessionData);
             if (CDKResultSuccess != result)
             {
-                CHX_LOG_WARN("Flush ERROR for session: %s", pSessionData->pSessionName);
+                XLOGW("Flush ERROR for session: %s", pSessionData->pSessionName);
                 flushResult = result;
             }
         }
@@ -584,7 +589,7 @@ const ChiFeature2PortDescriptor* ChiFeature2Base::GetPortDescriptorFromPortId(
     }
     else
     {
-        CHX_LOG_ERROR("pPortId is NULL");
+        XLOGE("pPortId is NULL");
     }
 
     return pPortDescriptor;
@@ -636,7 +641,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
 
         if (NULL == pSessionData)
         {
-            CHX_LOG_ERROR("NULL: Session data is NULL for sessionId = %d",
+            XLOGE("NULL: Session data is NULL for sessionId = %d",
                 pSessionConfigInfo->sessionId);
             result = CDKResultENoSuch;
             break;
@@ -686,7 +691,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
 
                         if (NULL == pFeaturePipelineData)
                         {
-                            CHX_LOG_ERROR("NULL: Pipeline data is NULL for sessionId = %d, pipelineId = %d",
+                            XLOGE("NULL: Pipeline data is NULL for sessionId = %d, pipelineId = %d",
                                 pSessionConfigInfo->sessionId, pPipelineConfigInfo->pipelineId);
                             result = CDKResultENoSuch;
                             break;
@@ -695,7 +700,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                         pPipeline = pFeaturePipelineData->pPipeline;
                         if (NULL == pPipeline)
                         {
-                            CHX_LOG_ERROR("pPipeline is NULL");
+                            XLOGE("pPipeline is NULL");
                             result = CDKResultEInvalidPointer;
                             break;
                         }
@@ -706,7 +711,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                 reinterpret_cast<ChiFeature2DependencyConfigInfo*>(pPipelineConfigInfo->handle);
                             if (NULL == pDependencyConfigInfo)
                             {
-                                CHX_LOG_ERROR("pDependencyConfigInfo is NULL");
+                                XLOGE("pDependencyConfigInfo is NULL");
                                 result = CDKResultEInvalidPointer;
                                 break;
                             }
@@ -737,7 +742,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                 }
                                 else
                                 {
-                                    CHX_LOG_ERROR("Sensor mode info is Null");
+                                    XLOGE("Sensor mode info is Null");
                                 }
 
                                 // Use setting TBM for final meta
@@ -753,7 +758,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                 }
                                 else
                                 {
-                                    CHX_LOG_ERROR("Input Metadata is Null!");
+                                    XLOGE("Input Metadata is Null!");
                                 }
 
                                 UINT32 numInputImg   = 0;
@@ -796,7 +801,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                             }
                                             else
                                             {
-                                                CHX_LOG_ERROR("GetPortData returned NULL");
+                                                XLOGE("GetPortData returned NULL");
                                                 result = CDKResultEInvalidPointer;
                                                 break;
                                             }
@@ -806,7 +811,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                         }
                                         else
                                         {
-                                            CHX_LOG_ERROR("GetStreamBuffer() failed for port %s",
+                                            XLOGE("GetStreamBuffer() failed for port %s",
                                                 pDependencyConfigInfo->inputConfig.pPortDescriptor[inputIndex].pPortName);
                                             break;
                                         }
@@ -839,7 +844,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
 
                                             if (CDKResultSuccess != result)
                                             {
-                                                CHX_LOG_ERROR("GetMetadataBuffer() failed with result=%d", result);
+                                                XLOGE("GetMetadataBuffer() failed with result=%d", result);
                                             }
                                         }
                                         else
@@ -860,7 +865,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                             }
                                             else
                                             {
-                                                CHX_LOG_ERROR("pPortData is NULL");
+                                                XLOGE("pPortData is NULL");
                                             }
 
                                         }
@@ -874,7 +879,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                         if (CDKResultSuccess != result)
                                         {
                                             UINT8 port = (NULL == pPortData) ? 0xFF : pPortData->globalId.port;
-                                            CHX_LOG_ERROR("%s - Error configuring output port: %u - Code: %u",
+                                            XLOGE("%s - Error configuring output port: %u - Code: %u",
                                                           pPipeline->GetPipelineName(),
                                                           port,
                                                           result);
@@ -908,7 +913,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                             }
                             else
                             {
-                                CHX_LOG_ERROR("No memory: numInputs = %d, numOutputs = %d",
+                                XLOGE("No memory: numInputs = %d, numOutputs = %d",
                                     numInputs, numOutputs);
                                 result = CDKResultENoMemory;
                                 break;
@@ -933,7 +938,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                     }
                                     else
                                     {
-                                        CHX_LOG_ERROR("%s pPortDescriptor is NULL, pFrameData->pOutputPorts aren't populated "
+                                        XLOGE("%s pPortDescriptor is NULL, pFrameData->pOutputPorts aren't populated "
                                                       "correctly! Expect issues with request error!",
                                                       pRequestObject->IdentifierString());
                                     }
@@ -953,7 +958,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                         auto   hPipeline   = pPipeline->GetPipelineHandle();
                         BINARY_LOG(LogEvent::FT2_Base_SubmitSessionRequest, appFrameNum, chiFrameNum, numOutputs, hFroHandle,
                             hSession, hPipeline, requestId, stageInfo);
-                        CHX_LOG_INFO("%s Submitting Request:%" PRIu64 " with numOutputs:%d",
+                        XLOGI("%s Submitting Request:%" PRIu64 " with numOutputs:%d",
                                      pRequestObject->IdentifierString(),
                                      pRequest[pipelineIdx].frameNumber,
                                      numOutputs);
@@ -997,7 +1002,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                                 }
                                 else
                                 {
-                                    CHX_LOG_WARN("Request: %" PRIu64 " has been dropped as flush is in progress",
+                                    XLOGW("Request: %" PRIu64 " has been dropped as flush is in progress",
                                         pPipelineRequest->pCaptureRequests->frameNumber);
                                     // Clean up allocations
                                     for (UINT32 requestIndex = 0; requestIndex < pPipelineRequest->numRequests; ++requestIndex)
@@ -1052,7 +1057,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
                             }
                             else
                             {
-                                CHX_LOG_WARN("Request: %" PRIu64 " has been dropped as flush is in progress",
+                                XLOGW("Request: %" PRIu64 " has been dropped as flush is in progress",
                                         pPipelineRequest->pCaptureRequests->frameNumber);
                                 result = CDKResultECancelledRequest;
 
@@ -1086,7 +1091,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
 
                         if ((CDKResultSuccess != result) && (CDKResultECancelledRequest != result))
                         {
-                            CHX_LOG_ERROR("Submit request: %d failure for pipeline:%s",
+                            XLOGE("Submit request: %d failure for pipeline:%s",
                                 pRequestData->frameNumber, pPipeline->GetPipelineName());
                             break;
                         }
@@ -1125,7 +1130,7 @@ CDKResult ChiFeature2Base::SubmitRequestToSession(
             }
             else
             {
-                CHX_LOG_ERROR("No memory, numPipelines = %d", numPipelines);
+                XLOGE("No memory, numPipelines = %d", numPipelines);
             }
             if (NULL != ppInputBuffers)
             {
@@ -1175,13 +1180,13 @@ UINT32 ChiFeature2Base::GetSensorModeIndex(
             }
             else
             {
-                CHX_LOG_ERROR("Sensor mode info is Null");
+                XLOGE("Sensor mode info is Null");
             }
         }
     }
     else
     {
-        CHX_LOG_ERROR("Invalid session Data");
+        XLOGE("Invalid session Data");
     }
 
     return modeIndex;
@@ -1224,7 +1229,7 @@ VOID* ChiFeature2Base::ThreadCallback(
                         result = pFeature->OnProcessRequest(pRequestObject, curRequestId);
                         if (CDKResultSuccess != result)
                         {
-                            CHX_LOG_ERROR("%s Failed to process request", pRequestObject->IdentifierString());
+                            XLOGE("%s Failed to process request", pRequestObject->IdentifierString());
                         }
                         else
                         {
@@ -1236,14 +1241,14 @@ VOID* ChiFeature2Base::ThreadCallback(
                                 result = pFeature->ProcessDependency(pRequestObject);
                                 if (CDKResultSuccess != result)
                                 {
-                                    CHX_LOG_ERROR("%s Failed to Process dependency!", pRequestObject->IdentifierString());
+                                    XLOGE("%s Failed to Process dependency!", pRequestObject->IdentifierString());
                                 }
                             }
                         }
                     }
                     else
                     {
-                        CHX_LOG_ERROR("%s Failed to get feature", pRequestObject->IdentifierString());
+                        XLOGE("%s Failed to get feature", pRequestObject->IdentifierString());
                     }
                     break;
                 }
@@ -1252,7 +1257,7 @@ VOID* ChiFeature2Base::ThreadCallback(
     }
     else
     {
-        CHX_LOG_ERROR("Failed to get requestObject");
+        XLOGE("Failed to get requestObject");
     }
 
     return NULL;
@@ -1290,12 +1295,12 @@ CDKResult ChiFeature2Base::ProcessInFlightBufferCallBack(
         }
         else
         {
-            CHX_LOG_ERROR("PipelineData %p or PortData is NULL %p", pPipelineData, pPortData);
+            XLOGE("PipelineData %p or PortData is NULL %p", pPipelineData, pPortData);
         }
     }
     else
     {
-        CHX_LOG_ERROR("Null callback data");
+        XLOGE("Null callback data");
         result = CDKResultEInvalidArg;
     }
     return result;
@@ -1315,7 +1320,7 @@ CDKResult ChiFeature2Base::ValidateRequest(
 
     if (NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pRequestObject");
+        XLOGE("Invalid argument: NULL pRequestObject");
         result = CDKResultEInvalidArg;
     }
 
@@ -1346,13 +1351,13 @@ CDKResult ChiFeature2Base::ValidateRequest(
                         {
                             pBufferMetaInfo->bufferSkipped = TRUE;
 
-                            CHX_LOG_VERBOSE("mark framework buffer as skipped for pipeline:%s, port[%d]:%s",
+                            XLOGV("mark framework buffer as skipped for pipeline:%s, port[%d]:%s",
                                 pPipelineData->pPipelineName, i, pPortData->pPortName);
                         }
                     }
                     else
                     {
-                        CHX_LOG_ERROR("No TBM for port %s (CHI internal output buffer).",
+                        XLOGE("No TBM for port %s (CHI internal output buffer).",
                             pPortData->pPortName);
                         result = CDKResultEInvalidArg;
                         break;
@@ -1400,12 +1405,12 @@ CDKResult ChiFeature2Base::HandlePrepareRequest(
                                                         pRequestObject->GetCurRequestId());
             if (CDKResultSuccess != result)
             {
-                CHX_LOG_ERROR("SetCurRequestState to ReadyToExecute returned error: %d", result);
+                XLOGE("SetCurRequestState to ReadyToExecute returned error: %d", result);
             }
         }
         else
         {
-            CHX_LOG_ERROR("OnPrepareRequest returned error: %d", result);
+            XLOGE("OnPrepareRequest returned error: %d", result);
         }
     }
 
@@ -1477,7 +1482,7 @@ CDKResult ChiFeature2Base::HandleExecuteProcessRequest(
                     }
                     else
                     {
-                        CHX_LOG_ERROR("InitializeSequenceData(pRequestObject) returned error: %d", result);
+                        XLOGE("InitializeSequenceData(pRequestObject) returned error: %d", result);
                     }
                 }
                 else
@@ -1497,13 +1502,13 @@ CDKResult ChiFeature2Base::HandleExecuteProcessRequest(
                 resultState = pRequestObject->SetCurRequestState(ChiFeature2RequestState::InvalidMax, requestId);
                 if (CDKResultSuccess != resultState)
                 {
-                    CHX_LOG_ERROR("Request state change failed");
+                    XLOGE("Request state change failed");
                 }
             }
         }
         else
         {
-            CHX_LOG_ERROR("OnExecuteProcessRequest returned error: %d", result);
+            XLOGE("OnExecuteProcessRequest returned error: %d", result);
             result = pRequestObject->SetCurRequestState(ChiFeature2RequestState::InvalidMax, requestId);
         }
     }
@@ -1524,7 +1529,7 @@ CDKResult ChiFeature2Base::HandleInputResourcePending(
 
     OnInputResourcePending(pRequestObject);
 
-    CHX_LOG_INFO("%s requestState:%s, requestId:%d",
+    XLOGI("%s requestState:%s, requestId:%d",
         pRequestObject->IdentifierString(),
         ChiFeature2RequestStateStrings[static_cast<UINT8>(pRequestObject->GetCurRequestState(requestId))],
         requestId);
@@ -1556,7 +1561,7 @@ CDKResult ChiFeature2Base::HandleInputResourcePending(
             // Do nothing
             break;
         default:
-            CHX_LOG_WARN("Hit unhandled case:%d", inputDependencyStatus);
+            XLOGW("Hit unhandled case:%d", inputDependencyStatus);
             break;
     }
 
@@ -1592,7 +1597,7 @@ CDKResult ChiFeature2Base::HandleOutputNotificationPending(
 
     if (0 == numRequestOutputs || NULL == pRequestOutputInfo)
     {
-        CHX_LOG_ERROR("No output ports requested numOutput %d pRequestOutputInfo %p", numRequestOutputs, pRequestOutputInfo);
+        XLOGE("No output ports requested numOutput %d pRequestOutputInfo %p", numRequestOutputs, pRequestOutputInfo);
         result = CDKResultEFailed;
     }
 
@@ -1623,7 +1628,7 @@ CDKResult ChiFeature2Base::HandleOutputNotificationPending(
             }
             else
             {
-                CHX_LOG_ERROR("Invalid info in output index %d pPortDescriptor %p pBufferMetaInfo %p", portIndex,
+                XLOGE("Invalid info in output index %d pPortDescriptor %p pBufferMetaInfo %p", portIndex,
                                                                                            pPortDescriptor, pBufferMetaInfo);
                 result = CDKResultEFailed;
                 break;
@@ -1701,7 +1706,7 @@ CDKResult ChiFeature2Base::HandleOutputResourcePending(
         pRequestObject->GetCurRequestId());
     if (CDKResultSuccess != result)
     {
-        CHX_LOG_ERROR("SetCurRequestState to Complete returned error: %d", result);
+        XLOGE("SetCurRequestState to Complete returned error: %d", result);
     }
 
     return result;
@@ -1726,7 +1731,7 @@ CDKResult ChiFeature2Base::CompleteRequest(
 
         if (CDKResultSuccess != result)
         {
-            CHX_LOG_ERROR("SetCurRequestState to Complete returned error: %d", result);
+            XLOGE("SetCurRequestState to Complete returned error: %d", result);
         }
         else
         {
@@ -1741,7 +1746,7 @@ CDKResult ChiFeature2Base::CompleteRequest(
 
             if (TRUE == allRequestsComplete)
             {
-                CHX_LOG_INFO("%s All %d requests complete, initiate cleanup", pRequestObject->IdentifierString(),
+                XLOGI("%s All %d requests complete, initiate cleanup", pRequestObject->IdentifierString(),
                     pRequestObject->GetNumRequests());
 
                 pRequestObject->LockRequestObject();
@@ -1798,7 +1803,7 @@ CDKResult ChiFeature2Base::PropagateError(
     }
     else
     {
-        CHX_LOG_ERROR("%s request data is NULL, unable to set frame number for error message",
+        XLOGE("%s request data is NULL, unable to set frame number for error message",
                      pRequestObject->IdentifierString());
         result = CDKResultEFailed;
     }
@@ -1841,21 +1846,21 @@ CDKResult ChiFeature2Base::PropagateError(
                             }
                             else
                             {
-                                CHX_LOG_ERROR("%s Unable to get the target for Error Stream, cannot propagate error",
+                                XLOGE("%s Unable to get the target for Error Stream, cannot propagate error",
                                               pRequestObject->IdentifierString());
                                 result = CDKResultEFailed;
                             }
                         }
                         else
                         {
-                            CHX_LOG_ERROR("%s Port data is NULL, cannot propagate error", pRequestObject->IdentifierString());
+                            XLOGE("%s Port data is NULL, cannot propagate error", pRequestObject->IdentifierString());
                             result = CDKResultEFailed;
                         }
                     }
                 }
                 else
                 {
-                    CHX_LOG_ERROR("%s final buffer metadata null, cannot propagate error",
+                    XLOGE("%s final buffer metadata null, cannot propagate error",
                                   pRequestObject->IdentifierString());
                     result = CDKResultEFailed;
                 }
@@ -1868,7 +1873,7 @@ CDKResult ChiFeature2Base::PropagateError(
                     featureMessage.chiNotification.requestIndex     = requestId;
                     featureMessage.pFeatureMessages                 = NULL;
 
-                    CHX_LOG_INFO("%s Error being sent for [%d %d %d %d %d]",
+                    XLOGI("%s Error being sent for [%d %d %d %d %d]",
                                  pRequestObject->IdentifierString(),
                                  featureMessage.chiNotification.pIdentifier->session,
                                  featureMessage.chiNotification.pIdentifier->pipeline,
@@ -1880,7 +1885,7 @@ CDKResult ChiFeature2Base::PropagateError(
             }
         }
     }
-    CHX_LOG_INFO("%s Release Dependencies for requestID:[%d]",
+    XLOGI("%s Release Dependencies for requestID:[%d]",
         pRequestObject->IdentifierString(),
         requestId);
     ProcessReleaseDependency(pRequestObject, requestId, 0, NULL);
@@ -1959,7 +1964,7 @@ CDKResult ChiFeature2Base::Initialize(
     }
     else
     {
-        CHX_LOG_VERBOSE("pOwnedStreams is NULL or size is 0");
+        XLOGV("pOwnedStreams is NULL or size is 0");
     }
 
     // Copy CamX stream info to target streams
@@ -2047,7 +2052,7 @@ CDKResult ChiFeature2Base::SetFeaturePrivContext(
 
     if (NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("Invalid argument: pRequestObject: %p", pRequestObject);
+        XLOGE("Invalid argument: pRequestObject: %p", pRequestObject);
         result = CDKResultEInvalidArg;
     }
 
@@ -2061,7 +2066,7 @@ CDKResult ChiFeature2Base::SetFeaturePrivContext(
         }
         else
         {
-            CHX_LOG_ERROR("No valid Context available");
+            XLOGE("No valid Context available");
             result = CDKResultEInvalidArg;
         }
     }
@@ -2082,7 +2087,7 @@ VOID* ChiFeature2Base::GetFeaturePrivContext(
 
     if (NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("Invalid argument: pRequestObject: %p", pRequestObject);
+        XLOGE("Invalid argument: pRequestObject: %p", pRequestObject);
         result = CDKResultEInvalidArg;
     }
 
@@ -2096,7 +2101,7 @@ VOID* ChiFeature2Base::GetFeaturePrivContext(
         }
         else
         {
-            CHX_LOG_ERROR("No valid Context available");
+            XLOGE("No valid Context available");
             result = CDKResultEInvalidArg;
         }
     }
@@ -2135,7 +2140,7 @@ BOOL ChiFeature2Base::IsPortEnabledInFinalOutput(
     }
     else
     {
-        CHX_LOG_ERROR("Unable to get any output from request object");
+        XLOGE("Unable to get any output from request object");
     }
 
     return isEnabled;
@@ -2153,7 +2158,7 @@ CDKResult ChiFeature2Base::ValidateFeatureDesc(
 
     if ((NULL == pCreateInputInfo) || (NULL == pCreateInputInfo->pClientCallbacks))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pCreateInputInfo->pClientCallbacks %p", pCreateInputInfo);
+        XLOGE("Invalid argument: NULL pCreateInputInfo->pClientCallbacks %p", pCreateInputInfo);
         result = CDKResultEInvalidArg;
     }
 
@@ -2162,7 +2167,7 @@ CDKResult ChiFeature2Base::ValidateFeatureDesc(
         pUsecaseDesc = pCreateInputInfo->pUsecaseDescriptor;
         if (NULL == pUsecaseDesc)
         {
-            CHX_LOG_ERROR("Invalid argument: NULL pCreateInputInfo->pUsecaseDescriptor");
+            XLOGE("Invalid argument: NULL pCreateInputInfo->pUsecaseDescriptor");
             result = CDKResultEInvalidArg;
         }
     }
@@ -2171,7 +2176,7 @@ CDKResult ChiFeature2Base::ValidateFeatureDesc(
     {
         if (NULL == pCreateInputInfo->pCameraInfo)
         {
-            CHX_LOG_ERROR("Invalid argument: NULL pCreateInputInfo->pCameraInfo");
+            XLOGE("Invalid argument: NULL pCreateInputInfo->pCameraInfo");
             result = CDKResultEInvalidArg;
         }
     }
@@ -2180,7 +2185,7 @@ CDKResult ChiFeature2Base::ValidateFeatureDesc(
     {
         if (NULL == pCreateInputInfo->pFeatureDescriptor)
         {
-            CHX_LOG_ERROR("Invalid argument: NULL pCreateInputInfo->pFeatureDescriptor");
+            XLOGE("Invalid argument: NULL pCreateInputInfo->pFeatureDescriptor");
             result = CDKResultEInvalidArg;
         }
     }
@@ -2192,7 +2197,7 @@ CDKResult ChiFeature2Base::ValidateFeatureDesc(
             const ChiFeature2Descriptor* pFeatureDesc = pCreateInputInfo->pFeatureDescriptor;
             if (sessionIdx != pFeatureDesc->pSession[sessionIdx].sessionId)
             {
-                CHX_LOG_ERROR("Invalid argument: sessionIdx = %d: sessionId = %d",
+                XLOGE("Invalid argument: sessionIdx = %d: sessionId = %d",
                     sessionIdx, pFeatureDesc->pSession[sessionIdx].sessionId);
                 result = CDKResultEInvalidArg;
                 break;
@@ -2204,7 +2209,7 @@ CDKResult ChiFeature2Base::ValidateFeatureDesc(
                     &pFeatureDesc->pSession[sessionIdx].pPipeline[pipelineIdx];
                 if (pipelineIdx < pPipeline->pipelineId)
                 {
-                    CHX_LOG_ERROR("Invalid argument: sessionIdx = %d: sessionId = %d pipelineIdx = %d pipelineIdx = %d",
+                    XLOGE("Invalid argument: sessionIdx = %d: sessionId = %d pipelineIdx = %d pipelineIdx = %d",
                         sessionIdx, pFeatureDesc->pSession[sessionIdx].sessionId, pipelineIdx, pPipeline->pipelineId);
                     result = CDKResultEInvalidArg;
                     break;
@@ -2391,7 +2396,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
 
     if (NULL == pFeatureDesc || NULL == pUsecaseDesc)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pStreams pUsecaseDesc = %p pFeatureDesc = %p",
+        XLOGE("Invalid argument: NULL pStreams pUsecaseDesc = %p pFeatureDesc = %p",
                       pUsecaseDesc,
                       pFeatureDesc);
         result = CDKResultEInvalidArg;
@@ -2416,7 +2421,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
             }
         }
 
-        CHX_LOG_INFO("FeatureName = %s, numSessions = %d, numPipelines = %d numPorts = %d",
+        XLOGI("FeatureName = %s, numSessions = %d, numPipelines = %d numPorts = %d",
                      pFeatureDesc->pFeatureName, numSessions, numPipelines, numPorts);
 
         // In theory, a pure virtual feature will have no pipelines so don't treat this as an error
@@ -2425,7 +2430,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
             pPipelineDescIdx = static_cast<UINT32*>(CHX_CALLOC(sizeof(UINT32) * numPipelines));
             if (NULL == pPipelineDescIdx)
             {
-                CHX_LOG_ERROR("Allocation Failed");
+                XLOGE("Allocation Failed");
                 result = CDKResultENoMemory;
             }
         }
@@ -2440,7 +2445,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
 
             if (NULL == pSessionData)
             {
-                CHX_LOG_ERROR("Allocation Failed");
+                XLOGE("Allocation Failed");
                 result = CDKResultENoMemory;
                 break;
             }
@@ -2490,7 +2495,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
 
                 if (NULL != pSkipReason)
                 {
-                    CHX_LOG_VERBOSE("Skipping: %s", pSkipReason);
+                    XLOGV("Skipping: %s", pSkipReason);
                     continue;
                 }
 
@@ -2507,7 +2512,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
 
                     if (NULL == pPipelineData)
                     {
-                        CHX_LOG_ERROR("Allocation Failed");
+                        XLOGE("Allocation Failed");
                         result = CDKResultENoMemory;
                         break;
                     }
@@ -2520,7 +2525,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
                     };
                     pPipelineData->pPipelineName = pPipelineDesc->pPipelineName;
 
-                    CHX_LOG_INFO("session: %d, name: %s, pipeline: %d, name: %s",
+                    XLOGI("session: %d, name: %s, pipeline: %d, name: %s",
                                  pFeatureDesc->pSession[sessionIdx].sessionId, pSessionData->pSessionName,
                                  pPipelineDesc->pipelineId,
                                  pPipelineData->pPipelineName);
@@ -2587,7 +2592,7 @@ CDKResult ChiFeature2Base::PrepareFeatureData(
 
                 if (CDKResultSuccess != result || (NULL == m_pUsecaseDesc))
                 {
-                    CHX_LOG_ERROR("Error pruning cloned usecase: %s Code: %u", m_pClonedUsecase->pUsecaseName, result);
+                    XLOGE("Error pruning cloned usecase: %s Code: %u", m_pClonedUsecase->pUsecaseName, result);
                     result = CDKResultEInvalidPointer;
                 }
             }
@@ -2619,7 +2624,7 @@ CDKResult ChiFeature2Base::PrepareStageData(
 
     if (NULL == pFeatureDesc->pStages)
     {
-        CHX_LOG_ERROR("Input stage descriptor is NULL");
+        XLOGE("Input stage descriptor is NULL");
         result = CDKResultEInvalidArg;
     }
 
@@ -2634,7 +2639,7 @@ CDKResult ChiFeature2Base::PrepareStageData(
 
         if (NULL == pStageData)
         {
-            CHX_LOG_ERROR("Out of memory");
+            XLOGE("Out of memory");
             result = CDKResultEFailed;
             break;
         }
@@ -2660,7 +2665,7 @@ CDKResult ChiFeature2Base::PrepareStageData(
 
             if (INVALID_INDEX == sessionDescIdx)
             {
-                CHX_LOG_ERROR("%s Could not find session id: %u for dependency: %u",
+                XLOGE("%s Could not find session id: %u for dependency: %u",
                               rFeatureDescriptor.pFeatureName,
                               rSessionInfo.sessionId,
                               dependencyIdx);
@@ -2671,7 +2676,7 @@ CDKResult ChiFeature2Base::PrepareStageData(
             const ChiFeature2SessionDescriptor&   rSessionDesc      = rFeatureDescriptor.pSession[sessionDescIdx];
             std::vector<ChiFeaturePipelineData*>& rPipelineDataList = m_pSessionData[sessionDescIdx]->pPipelineData;
 
-            CHX_LOG_VERBOSE("%s Session: %s %u (%u / %u)",
+            XLOGV("%s Session: %s %u (%u / %u)",
                             pCreateInputInfo->pFeatureDescriptor->pFeatureName,
                             rSessionDesc.pSessionName,
                             rSessionDesc.sessionId,
@@ -2700,7 +2705,7 @@ CDKResult ChiFeature2Base::PrepareStageData(
 
                 if (rPipelineDataList.end() == pipelineData)
                 {
-                    CHX_LOG_WARN("Could not find Session: %u Pipeline: %u", rSessionInfo.sessionId, pipelineInfo.pipelineId);
+                    XLOGW("Could not find Session: %u Pipeline: %u", rSessionInfo.sessionId, pipelineInfo.pipelineId);
                     continue;
                 }
 
@@ -2722,7 +2727,7 @@ CDKResult ChiFeature2Base::PrepareStageData(
                     }
                     else
                     {
-                        CHX_LOG_INFO("%10s] %5s tbm: %33s %u:%u:%u - %s, %p (%u / %u)",
+                        XLOGI("%10s] %5s tbm: %33s %u:%u:%u - %s, %p (%u / %u)",
                                      pCreateInputInfo->pFeatureDescriptor->pFeatureName,
                                      (NULL != pPortData->pOutputBufferTbm) ? "valid" : "null",
                                      pPortData->pPortName,
@@ -2754,7 +2759,7 @@ CDKResult ChiFeature2Base::ClassifyStream (
 
     if (NULL == pStreams)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pStreams");
+        XLOGE("Invalid argument: NULL pStreams");
         result = CDKResultEInvalidArg;
     }
     else
@@ -2773,7 +2778,7 @@ CDKResult ChiFeature2Base::ClassifyStream (
             }
             m_configStreams.push_back(pStream);
 
-            CHX_LOG_INFO("Name = %s: Res: %d X %d Format = 0x%x Type = %d",
+            XLOGI("Name = %s: Res: %d X %d Format = 0x%x Type = %d",
                 m_pFeatureName, pStream->width, pStream->height, pStream->format,
                 pStream->streamType);
         }
@@ -2819,7 +2824,7 @@ CDKResult ChiFeature2Base::OnSessionCreate(
 
     if (NULL == pKey)
     {
-        CHX_LOG_ERROR("invalid pKey! pKey is NULL");
+        XLOGE("invalid pKey! pKey is NULL");
         result = CDKResultEInvalidArg;
     }
 
@@ -2850,7 +2855,7 @@ CDKResult ChiFeature2Base::OnSessionCreate(
             }
             else
             {
-                CHX_LOG_ERROR("pPipeline=%p, pMetadataManager=%p", pPipeline, pMetadataManager);
+                XLOGE("pPipeline=%p, pMetadataManager=%p", pPipeline, pMetadataManager);
             }
         }
     }
@@ -2923,7 +2928,7 @@ VOID ChiFeature2Base::ProcessPartialResult(
     if (NULL == pCaptureResult || NULL == pCaptureResult->pPrivData)
     {
         result = CDKResultEInvalidArg;
-        CHX_LOG_ERROR("ERROR Processing Partial Result pCaptureResult: %p, pCaptureResult->pPrivData: %p",
+        XLOGE("ERROR Processing Partial Result pCaptureResult: %p, pCaptureResult->pPrivData: %p",
                       pCaptureResult,
                      (pCaptureResult != NULL) ? pCaptureResult->pPrivData : NULL);
     }
@@ -2950,7 +2955,7 @@ VOID ChiFeature2Base::ProcessPartialResult(
                 pFeatureReqObj = static_cast<ChiFeature2RequestObject*>(pFrameCbData->pRequestObj);
                 if (NULL == pFeatureReqObj)
                 {
-                    CHX_LOG_ERROR("No Request Object sequenceId = %d batchRequestId = %d",
+                    XLOGE("No Request Object sequenceId = %d batchRequestId = %d",
                         pFrameCbData->sequenceId, pFrameCbData->requestId);
                     result = CDKResultEFailed;
                 }
@@ -2962,7 +2967,7 @@ VOID ChiFeature2Base::ProcessPartialResult(
                             pFrameCbData->requestId));
                     if (NULL == pRequestData)
                     {
-                        CHX_LOG_ERROR("No sequence private data sequenceId = %d batchRequestId = %d",
+                        XLOGE("No sequence private data sequenceId = %d batchRequestId = %d",
                             pFrameCbData->sequenceId, pFrameCbData->requestId);
                         result = CDKResultEFailed;
                     }
@@ -2991,7 +2996,7 @@ VOID ChiFeature2Base::ProcessPartialResult(
 
                             if (FALSE == sendMetadata)
                             {
-                                CHX_LOG_WARN("External PortId %d %d %d not requested for frame %d", portIdentifier.session,
+                                XLOGW("External PortId %d %d %d not requested for frame %d", portIdentifier.session,
                                     portIdentifier.pipeline, portIdentifier.port, pCaptureResult->frameworkFrameNum);
                             }
 
@@ -3051,7 +3056,7 @@ CDKResult ChiFeature2Base::SendSubmitRequestMessage(
             ChiCaptureRequest* pRequest = const_cast<ChiCaptureRequest*>(&pPipelineRequest->pCaptureRequests[requestIndex]);
             if (NULL != pRequest)
             {
-                CHX_LOG_VERBOSE("%s Instantiating submit request callback for request:%" PRIu64,
+                XLOGV("%s Instantiating submit request callback for request:%" PRIu64,
                     pFrameData->pCombinedCallbackData[0]->pRequestObj->IdentifierString(),
                     pRequest->frameNumber);
 
@@ -3082,7 +3087,7 @@ VOID ChiFeature2Base::ProcessMessage(
 
     if ((NULL == m_clientCallbacks.ChiFeature2ProcessMessage) || (NULL == pMessageDescriptor) || (NULL == pCallbackData))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL m_clientCallbacks.ChiFeature2ProcessMessage = %p, pMessageDescriptor = %p"
+        XLOGE("Invalid argument: NULL m_clientCallbacks.ChiFeature2ProcessMessage = %p, pMessageDescriptor = %p"
                       "pCallbackData = %p",
                       m_clientCallbacks.ChiFeature2ProcessMessage,
                       pMessageDescriptor,
@@ -3116,7 +3121,7 @@ VOID ChiFeature2Base::ProcessMessage(
 
                 if (NULL == pFrameCbData)
                 {
-                    CHX_LOG_ERROR("pFrameCbData is NULL for frame %d pCombinedCallback %p",
+                    XLOGE("pFrameCbData is NULL for frame %d pCombinedCallback %p",
                         pMessageDescriptor->message.shutterMessage.frameworkFrameNum,
                         pCombinedCbData);
                 }
@@ -3135,7 +3140,7 @@ VOID ChiFeature2Base::ProcessMessage(
                             m_clientCallbacks.ChiFeature2ProcessMessage(pFeatureReqObj, &results);
                             break;
                         default:
-                            CHX_LOG_ERROR("Need Implementation: %d", pMessageDescriptor->messageType);
+                            XLOGE("Need Implementation: %d", pMessageDescriptor->messageType);
                             break;
                     }
                 }
@@ -3153,7 +3158,7 @@ VOID ChiFeature2Base::ProcessMessage(
         }
         else
         {
-            CHX_LOG_ERROR("pCombinedCbData is null for message type:%d; not propagating any notification",
+            XLOGE("pCombinedCbData is null for message type:%d; not propagating any notification",
                           pMessageDescriptor->messageType);
         }
     }
@@ -3205,7 +3210,7 @@ VOID ChiFeature2Base::ReleaseDependenciesOnInputResourcePending(
 
                                     if (NULL != hSetting)
                                     {
-                                        CHX_LOG_INFO("Release Dependency meta: %s: %d %p %d requestId:%d",
+                                        XLOGI("Release Dependency meta: %s: %d %p %d requestId:%d",
                                             m_pFeatureName, listIndex,
                                             hSetting, portidentifier.port,
                                             requestId);
@@ -3248,7 +3253,7 @@ VOID ChiFeature2Base::ReleaseDependenciesOnDriverError(
         {
             if (pPortData->globalId == *pIdentifier)
             {
-                CHX_LOG_VERBOSE("%s erasing GID: [%d %d %d %d] from FrameCbData output ports",
+                XLOGV("%s erasing GID: [%d %d %d %d] from FrameCbData output ports",
                                 pFeatureReqObj->IdentifierString(),
                                 pPortData->globalId.session,
                                 pPortData->globalId.pipeline,
@@ -3313,14 +3318,14 @@ VOID ChiFeature2Base::ProcessErrorMessageFromDriver(
         {
             if (FALSE == flushInProgress)
             {
-                CHX_LOG_ERROR("%s Base received error type:%s",
+                XLOGE("%s Base received error type:%s",
                               pFeatureReqObj->IdentifierString(),
                               ChxUtils::ErrorMessageCodeToString(
                                   pMessageDescriptor->message.errorMessage.errorMessageCode));
             }
             else
             {
-                CHX_LOG_INFO("Flushing %s, servicing error type:%s",
+                XLOGI("Flushing %s, servicing error type:%s",
                               pFeatureReqObj->IdentifierString(),
                               ChxUtils::ErrorMessageCodeToString(
                                   pMessageDescriptor->message.errorMessage.errorMessageCode));
@@ -3329,7 +3334,7 @@ VOID ChiFeature2Base::ProcessErrorMessageFromDriver(
         }
         else
         {
-            CHX_LOG_ERROR("%s Unable to find feature identifier", pFeatureReqObj->IdentifierString());
+            XLOGE("%s Unable to find feature identifier", pFeatureReqObj->IdentifierString());
         }
     }
     else
@@ -3339,11 +3344,11 @@ VOID ChiFeature2Base::ProcessErrorMessageFromDriver(
             case MessageCodeRequest:
                 if (FALSE == flushInProgress)
                 {
-                    CHX_LOG_ERROR("%s Base received a request error", pFeatureReqObj->IdentifierString());
+                    XLOGE("%s Base received a request error", pFeatureReqObj->IdentifierString());
                 }
                 else
                 {
-                    CHX_LOG_INFO("Flushing %s, servicing error type:%s",
+                    XLOGI("Flushing %s, servicing error type:%s",
                                  pFeatureReqObj->IdentifierString(),
                                  ChxUtils::ErrorMessageCodeToString(
                                      pMessageDescriptor->message.errorMessage.errorMessageCode));
@@ -3354,13 +3359,13 @@ VOID ChiFeature2Base::ProcessErrorMessageFromDriver(
             case MessageCodeTriggerRecovery:
                 if (FALSE == flushInProgress)
                 {
-                    CHX_LOG_ERROR("Base received error type:%s",
+                    XLOGE("Base received error type:%s",
                                   ChxUtils::ErrorMessageCodeToString(
                                       pMessageDescriptor->message.errorMessage.errorMessageCode));
                 }
                 else
                 {
-                    CHX_LOG_INFO("servicing error type:%s",
+                    XLOGI("servicing error type:%s",
                                  ChxUtils::ErrorMessageCodeToString(
                                      pMessageDescriptor->message.errorMessage.errorMessageCode));
                 }
@@ -3369,7 +3374,7 @@ VOID ChiFeature2Base::ProcessErrorMessageFromDriver(
                 m_clientCallbacks.ChiFeature2ProcessMessage(pFeatureReqObj, &results);
                 break;
             default:
-                CHX_LOG_WARN("Unhandled error message type:%d, not propagating message",
+                XLOGW("Unhandled error message type:%d, not propagating message",
                              pMessageDescriptor->message.errorMessage.errorMessageCode);
                 break;
         }
@@ -3430,7 +3435,7 @@ VOID ChiFeature2Base::HandleRequestError(
     }
     else
     {
-        CHX_LOG_ERROR("FrameCb Data is NULL! cannot process request error");
+        XLOGE("FrameCb Data is NULL! cannot process request error");
     }
 }
 
@@ -3461,7 +3466,7 @@ CDKResult ChiFeature2Base::GenerateErrorFromIdentifiers(
 
                 if (NULL != pPortData->pTarget)
                 {
-                    CHX_LOG_VERBOSE("%s Creating buffer error from GID: [%d %d %d %d] using using "
+                    XLOGV("%s Creating buffer error from GID: [%d %d %d %d] using using "
                                     "stream:%p, format:%d",
                                     pFeatureReqObj->IdentifierString(),
                                     pPortIdentifier->session,
@@ -3475,14 +3480,14 @@ CDKResult ChiFeature2Base::GenerateErrorFromIdentifiers(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("%s Port data target is NULL! Not creating error!",
+                    XLOGE("%s Port data target is NULL! Not creating error!",
                                   pFeatureReqObj->IdentifierString());
                     result = CDKResultEInvalidPointer;
                 }
             }
             else if (ChiFeature2PortType::MetaData == pPortData->globalId.portType)
             {
-                CHX_LOG_VERBOSE("%s Creating metadata error from GID: [%d %d %d %d]",
+                XLOGV("%s Creating metadata error from GID: [%d %d %d %d]",
                                 pFeatureReqObj->IdentifierString(),
                                 pPortIdentifier->session,
                                 pPortIdentifier->pipeline,
@@ -3494,7 +3499,7 @@ CDKResult ChiFeature2Base::GenerateErrorFromIdentifiers(
             }
             else
             {
-                CHX_LOG_ERROR("%s Unexpected port type:%d, not generating error",
+                XLOGE("%s Unexpected port type:%d, not generating error",
                               pFeatureReqObj->IdentifierString(),
                               pPortData->globalId.portType);
                 result = CDKResultEInvalidArg;
@@ -3511,7 +3516,7 @@ CDKResult ChiFeature2Base::GenerateErrorFromIdentifiers(
 
             if (CDKResultSuccess == result)
             {
-                CHX_LOG_VERBOSE("%s erasing GID: [%d %d %d %d]",
+                XLOGV("%s erasing GID: [%d %d %d %d]",
                                 pFeatureReqObj->IdentifierString(),
                                 pPortIdentifier->session,
                                 pPortIdentifier->pipeline,
@@ -3522,7 +3527,7 @@ CDKResult ChiFeature2Base::GenerateErrorFromIdentifiers(
         }
         else
         {
-            CHX_LOG_ERROR("%s Port data is NULL! Not creating error!", pFeatureReqObj->IdentifierString());
+            XLOGE("%s Port data is NULL! Not creating error!", pFeatureReqObj->IdentifierString());
             result = CDKResultENoMore;
         }
     } while ((CDKResultSuccess == result) && (TRUE != identifierList.empty()));
@@ -3573,7 +3578,7 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                     }
                     else
                     {
-                        CHX_LOG_ERROR("%s pBufferManager is NULL! cannot update target on error",
+                        XLOGE("%s pBufferManager is NULL! cannot update target on error",
                                       pFeatureReqObj->IdentifierString());
                         result = CDKResultEInvalidPointer;
                     }
@@ -3589,7 +3594,7 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                                                               NULL);
                         if (CDKResultSuccess == result)
                         {
-                            CHX_LOG_VERBOSE("%s OutputMetaTbm setting port release acknowledged for identifier [%d %d %d %d]",
+                            XLOGV("%s OutputMetaTbm setting port release acknowledged for identifier [%d %d %d %d]",
                                             pFeatureReqObj->IdentifierString(),
                                             pMessage->chiNotification.pIdentifier->session,
                                             pMessage->chiNotification.pIdentifier->pipeline,
@@ -3601,21 +3606,21 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                     }
                     else
                     {
-                        CHX_LOG_ERROR("%s pBufferManager is NULL! cannot update target on error",
+                        XLOGE("%s pBufferManager is NULL! cannot update target on error",
                                       pFeatureReqObj->IdentifierString());
                         result = CDKResultEInvalidPointer;
                     }
                 }
                 else
                 {
-                    CHX_LOG_ERROR("%s pRequestData is NULL! Cannot update target on error",
+                    XLOGE("%s pRequestData is NULL! Cannot update target on error",
                                   pFeatureReqObj->IdentifierString());
                     result = CDKResultEInvalidPointer;
                 }
             }
             else
             {
-                CHX_LOG_ERROR("%s Pipeline data is NULL, cannot update target for metadata error",
+                XLOGE("%s Pipeline data is NULL, cannot update target for metadata error",
                               pFeatureReqObj->IdentifierString());
                 result = CDKResultEInvalidPointer;
             }
@@ -3647,7 +3652,7 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                                                   &pPortData->globalId,
                                                   pFrameCbData->requestId);
 
-                                    CHX_LOG_VERBOSE("%s OutputBufferTbm setting port release acknowledged for identifier "
+                                    XLOGV("%s OutputBufferTbm setting port release acknowledged for identifier "
                                                     "[%d %d %d %d]",
                                                     pFeatureReqObj->IdentifierString(),
                                                     pMessage->chiNotification.pIdentifier->session,
@@ -3661,7 +3666,7 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                             }
                             else
                             {
-                                CHX_LOG_ERROR("%s pBufferManager is NULL! cannot update target on error",
+                                XLOGE("%s pBufferManager is NULL! cannot update target on error",
                                               pFeatureReqObj->IdentifierString());
                                 result = CDKResultEInvalidPointer;
                             }
@@ -3669,13 +3674,13 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                     }
                     else
                     {
-                        CHX_LOG_WARN("%s Port Target is NULL, cannot create buffer error for this port",
+                        XLOGW("%s Port Target is NULL, cannot create buffer error for this port",
                                       pFeatureReqObj->IdentifierString());
                     }
                 }
                 else
                 {
-                    CHX_LOG_ERROR("%s Port data is NULL, cannot check if buffer error corresponds to this port",
+                    XLOGE("%s Port data is NULL, cannot check if buffer error corresponds to this port",
                                   pFeatureReqObj->IdentifierString());
                     result = CDKResultEInvalidPointer;
                 }
@@ -3698,7 +3703,7 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
                                                            pFrameCbData->requestId);
                 if (NULL != pBufferMetaInfo)
                 {
-                    CHX_LOG_INFO("%s, in final stage. Setting %s in final buffer/meta info and "
+                    XLOGI("%s, in final stage. Setting %s in final buffer/meta info and "
                                  "propagating error to graph",
                                  pFeatureReqObj->IdentifierString(),
                                  ChxUtils::ErrorMessageCodeToString(errorMessage));
@@ -3714,7 +3719,7 @@ CDKResult ChiFeature2Base::HandleBufferAndResultError(
     }
     else
     {
-        CHX_LOG_ERROR("Could not propagate error type:%s, encountered NULL parameter: pFeatureReqObj:%p, pFrameCbData:%p, ",
+        XLOGE("Could not propagate error type:%s, encountered NULL parameter: pFeatureReqObj:%p, pFrameCbData:%p, ",
                       ChxUtils::ErrorMessageCodeToString(errorMessage), pFeatureReqObj, pFrameCbData);
         result = CDKResultEInvalidArg;
     }
@@ -3740,7 +3745,7 @@ CDKResult ChiFeature2Base::CheckAndReturnSkippedBufferAsError(
 
     if (NULL == pRequestData)
     {
-        CHX_LOG_ERROR("pRequestData is NULL");
+        XLOGE("pRequestData is NULL");
         result = CDKResultEInvalidArg;
     }
 
@@ -3761,7 +3766,7 @@ CDKResult ChiFeature2Base::CheckAndReturnSkippedBufferAsError(
                 (NULL != pRequestOutputInfo[i].bufferMetadataInfo.hBuffer) &&
                 (TRUE == pRequestOutputInfo[i].bufferMetadataInfo.bufferSkipped))
             {
-                CHX_LOG_VERBOSE("pipeline:%s, port[%d]:%s, buffer is skipped, return as error to framework",
+                XLOGV("pipeline:%s, port[%d]:%s, buffer is skipped, return as error to framework",
                     pPipelineData->pPipelineName, i, pPortData->pPortName);
 
                 ChiFeature2Identifier portId = pRequestOutputInfo[i].pPortDescriptor->globalId;
@@ -3832,7 +3837,7 @@ ChiFeature2Identifier* ChiFeature2Base::GetMatchingIdentifier(
                     }
                     break;
                 default:
-                    CHX_LOG_WARN("Not handling message type:%d, should only be called for buffer/result error",
+                    XLOGW("Not handling message type:%d, should only be called for buffer/result error",
                                  pMessageDescriptor->message.errorMessage.errorMessageCode);
                     break;
             }
@@ -3857,7 +3862,7 @@ CDKResult ChiFeature2Base::HandlePostJob(
     {
         UINT64 jobFrameNum = static_cast<UINT64>(pUsecaseRequestObj->GetAppFrameNumber() + requestId);
 
-        CHX_LOG_VERBOSE("%s Post a job, handle %" PRIx64" requestId %d jobFrameNum %" PRIu64,
+        XLOGV("%s Post a job, handle %" PRIx64" requestId %d jobFrameNum %" PRIu64,
             pRequestObject->IdentifierString(),
             m_hFeatureJob,
             requestId,
@@ -3870,7 +3875,7 @@ CDKResult ChiFeature2Base::HandlePostJob(
 
         if (CDKResultSuccess != result)
         {
-            CHX_LOG_ERROR("%s Failed to post a job, handle %" PRIx64", result %d jobFrameNum %" PRIu64,
+            XLOGE("%s Failed to post a job, handle %" PRIx64", result %d jobFrameNum %" PRIu64,
                 pRequestObject->IdentifierString(),
                 m_hFeatureJob,
                 result,
@@ -3879,7 +3884,7 @@ CDKResult ChiFeature2Base::HandlePostJob(
     }
     else
     {
-        CHX_LOG_ERROR("%s Failed to post a job, handle %" PRIx64" requestId %d",
+        XLOGE("%s Failed to post a job, handle %" PRIx64" requestId %d",
             pRequestObject->IdentifierString(),
             m_hFeatureJob,
             requestId);
@@ -3904,7 +3909,7 @@ VOID ChiFeature2Base::ProcessResult(
     if ((NULL == m_clientCallbacks.ChiFeature2ProcessMessage) ||
         (NULL == pChiResult))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL m_clientCallbacks.ChiFeature2ProcessMessage = %p, pChiResult = %p",
+        XLOGE("Invalid argument: NULL m_clientCallbacks.ChiFeature2ProcessMessage = %p, pChiResult = %p",
             m_clientCallbacks.ChiFeature2ProcessMessage, pChiResult);
         result = CDKResultEInvalidArg;
     }
@@ -3914,7 +3919,7 @@ VOID ChiFeature2Base::ProcessResult(
         ChiFeatureCombinedCallbackData* pCombinedCbData = static_cast<ChiFeatureCombinedCallbackData*>(pChiResult->pPrivData);
         if (NULL == pCombinedCbData)
         {
-            CHX_LOG_ERROR("Cannot get frame callback data");
+            XLOGE("Cannot get frame callback data");
             result = CDKResultEInvalidArg;
         }
 
@@ -3950,7 +3955,7 @@ VOID ChiFeature2Base::ProcessResult(
 
                 if (TRUE == hasMetadata)
                 {
-                    CHX_LOG_CONFIG("%s Result from Request:%d with metadata:%p",
+                    XLOGI("%s Result from Request:%d with metadata:%p",
                         pFeatureReqObj->IdentifierString(),
                         frameNumber,
                         pChiResult->pOutputMetadata);
@@ -3960,7 +3965,7 @@ VOID ChiFeature2Base::ProcessResult(
 
                 if (TRUE == hasBuffers)
                 {
-                    CHX_LOG_CONFIG("%s Result from Request:%d with %d buffer(s)",
+                    XLOGI("%s Result from Request:%d with %d buffer(s)",
                         pFeatureReqObj->IdentifierString(),
                         chiFrameNumber,
                         pChiResult->numOutputBuffers);
@@ -3989,7 +3994,7 @@ CDKResult ChiFeature2Base::ProcessFeatureMessage(
     if ((NULL == m_clientCallbacks.ChiFeature2ProcessMessage) ||
         (NULL == pFeatureMessage))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL m_clientCallbacks.ChiFeature2ProcessMessage = %p, pFeatureMessage = %p",
+        XLOGE("Invalid argument: NULL m_clientCallbacks.ChiFeature2ProcessMessage = %p, pFeatureMessage = %p",
                       m_clientCallbacks.ChiFeature2ProcessMessage, pFeatureMessage);
         result = CDKResultEInvalidArg;
     }
@@ -4138,7 +4143,7 @@ CDKResult ChiFeature2Base::PopulatePortConfiguration(
             }
             else
             {
-                CHX_LOG_ERROR("Failed to set port descriptor for port %s", pPortDescriptor->pPortName);
+                XLOGE("Failed to set port descriptor for port %s", pPortDescriptor->pPortName);
             }
         }
     }
@@ -4152,7 +4157,7 @@ CDKResult ChiFeature2Base::PopulatePortConfiguration(
             ChiFeature2Identifier               portidentifier  = pOutputList->pPorts[outputIndex];
             const ChiFeature2PortDescriptor*    pPortDescriptor = GetPortDescriptorFromPortId(&portidentifier);
 
-            CHX_LOG_VERBOSE("Set output port config for port %s numPorts %d", pPortDescriptor->pPortName,
+            XLOGV("Set output port config for port %s numPorts %d", pPortDescriptor->pPortName,
                     pOutputList->numPorts);
 
             if (CDKResultSuccess == result)
@@ -4172,7 +4177,7 @@ CDKResult ChiFeature2Base::PopulatePortConfiguration(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("Invalid Pointer pPortData: %p pOutputBufferTbm: %p",
+                    XLOGE("Invalid Pointer pPortData: %p pOutputBufferTbm: %p",
                                   pPortData,
                                   (NULL == pPortData) ? NULL : pPortData->pOutputBufferTbm);
                     result = CDKResultEFailed;
@@ -4204,7 +4209,7 @@ CDKResult ChiFeature2Base::PopulatePortConfiguration(
                                     pSequenceData->frameNumber, targetId, pBuffer);
                                 if (CDKResultSuccess != result)
                                 {
-                                    CHX_LOG_ERROR("Import buffer failed Port = %d",
+                                    XLOGE("Import buffer failed Port = %d",
                                         portidentifier.port);
                                 }
                             }
@@ -4213,7 +4218,7 @@ CDKResult ChiFeature2Base::PopulatePortConfiguration(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("result: %u pSequenceData: %p",
+                    XLOGE("result: %u pSequenceData: %p",
                                   result,
                                   pSequenceData);
                     result = CDKResultEFailed;
@@ -4247,13 +4252,13 @@ CDKResult ChiFeature2Base::PopulatePortConfiguration(
             }
             else
             {
-                CHX_LOG_ERROR("Failed to set port descriptor for port %s", pPortDescriptor->pPortName);
+                XLOGE("Failed to set port descriptor for port %s", pPortDescriptor->pPortName);
             }
         }
     }
     else
     {
-        CHX_LOG_ERROR("Output list is NULL");
+        XLOGE("Output list is NULL");
         result = CDKResultEInvalidArg;
     }
 
@@ -4295,25 +4300,25 @@ const ChiFeature2InputDependency* ChiFeature2Base::GetDependencyListFromStageDes
                 }
                 else
                 {
-                    CHX_LOG_ERROR("listIndex %d is greater than total number of lists %d", listIndex,
+                    XLOGE("listIndex %d is greater than total number of lists %d", listIndex,
                         pDescriptorList->numInputDependency);
                 }
             }
             else
             {
-                CHX_LOG_ERROR("Pipeline index %d is greater than total number of pipelines %d", pipelineIndex,
+                XLOGE("Pipeline index %d is greater than total number of pipelines %d", pipelineIndex,
                     sessionInfo.numPipelines);
             }
         }
         else
         {
-            CHX_LOG_ERROR("Session index %d is greater than total number of sessions %d", sessionIndex,
+            XLOGE("Session index %d is greater than total number of sessions %d", sessionIndex,
                 pStageDescriptor->numDependencyConfigDescriptor);
         }
     }
     else
     {
-        CHX_LOG_ERROR("Stage descriptor is NULL!");
+        XLOGE("Stage descriptor is NULL!");
     }
     return pDependency;
 }
@@ -4353,7 +4358,7 @@ CDKResult ChiFeature2Base::ProcessDependency(
         (ChxUtils::Calloc(sizeof(ChiFeature2DependencyBatch) * pRequestObject->GetNumRequests()));
     if (NULL == pBatches)
     {
-        CHX_LOG_ERROR("Out Of memory: NumBatch = %d", pRequestObject->GetNumRequests());
+        XLOGE("Out Of memory: NumBatch = %d", pRequestObject->GetNumRequests());
         result = CDKResultENoMemory;
     }
 
@@ -4384,7 +4389,7 @@ CDKResult ChiFeature2Base::ProcessDependency(
 
                     if (NULL == pDependencies)
                     {
-                        CHX_LOG_ERROR("Out Of memory: numInputsDependencyList = %d", numDependencies);
+                        XLOGE("Out Of memory: numInputsDependencyList = %d", numDependencies);
                         result = CDKResultENoMemory;
                     }
 
@@ -4399,7 +4404,7 @@ CDKResult ChiFeature2Base::ProcessDependency(
                                 (ChxUtils::Calloc(sizeof(ChiFeature2Identifier) * numPorts));
                             if (NULL == pPorts)
                             {
-                                CHX_LOG_ERROR("Out Of memory: numPorts = %d", numPorts);
+                                XLOGE("Out Of memory: numPorts = %d", numPorts);
                                 result = CDKResultENoMemory;
                             }
 
@@ -4491,7 +4496,7 @@ CDKResult ChiFeature2Base::ProcessReleaseDependency(
         if (NULL == pConfigInfo)
         {
             result = CDKResultEFailed;
-            CHX_LOG_ERROR("Cannot get Dependency Config for request = %d Sequence = %d", requestId, curSequenceId);
+            XLOGE("Cannot get Dependency Config for request = %d Sequence = %d", requestId, curSequenceId);
         }
 
         if (CDKResultSuccess == result)
@@ -4514,7 +4519,7 @@ CDKResult ChiFeature2Base::ProcessReleaseDependency(
                         (ChxUtils::Calloc(sizeof(ChiFeature2Dependency) * numDependencies));
                     if (NULL == pDependencies)
                     {
-                        CHX_LOG_ERROR("Out Of memory: numInputsDependencyList = %d", numDependencies);
+                        XLOGE("Out Of memory: numInputsDependencyList = %d", numDependencies);
                         result = CDKResultENoMemory;
                     }
 
@@ -4528,7 +4533,7 @@ CDKResult ChiFeature2Base::ProcessReleaseDependency(
                                 (ChxUtils::Calloc(sizeof(ChiFeature2Identifier) * numPorts));
                             if (NULL == pPorts)
                             {
-                                CHX_LOG_ERROR("Out Of memory: numPorts = %d", numPorts);
+                                XLOGE("Out Of memory: numPorts = %d", numPorts);
                                 result = CDKResultENoMemory;
                             }
 
@@ -4559,7 +4564,7 @@ CDKResult ChiFeature2Base::ProcessReleaseDependency(
                                                 pPorts[pDependencies[batch.numDependencies].numPorts] = *pKey;
                                                 pDependencies[batch.numDependencies].numPorts++;
 
-                                                CHX_LOG_INFO("%s Release external dependency for port %s index %d",
+                                                XLOGI("%s Release external dependency for port %s index %d",
                                                              pRequestObject->IdentifierString(),
                                                              dependencyList.pPortDescriptor[portIndex].pPortName,
                                                              listIndex);
@@ -4578,7 +4583,7 @@ CDKResult ChiFeature2Base::ProcessReleaseDependency(
                                                 CHITARGETBUFFERINFOHANDLE hBuffer =
                                                     dependencyList.phTargetBufferHandle[portIndex];
 
-                                                CHX_LOG_INFO("%s Release internal dependency for port %s hBuffer %p",
+                                                XLOGI("%s Release internal dependency for port %s hBuffer %p",
                                                     pRequestObject->IdentifierString(),
                                                     dependencyList.pPortDescriptor[portIndex].pPortName,
                                                     hBuffer);
@@ -4620,7 +4625,7 @@ CDKResult ChiFeature2Base::ProcessReleaseDependency(
 
             if ((0 < batch.numDependencies) && (CDKResultSuccess == result))
             {
-                CHX_LOG_INFO("%s %s: numDependencies = %d requestId = %d SequenceId = %d",
+                XLOGI("%s %s: numDependencies = %d requestId = %d SequenceId = %d",
                              pRequestObject->IdentifierString(),
                              m_pFeatureName, batch.numDependencies, requestId, curSequenceId);
 
@@ -4680,7 +4685,7 @@ CDKResult ChiFeature2Base::ProcessMetadataCallback(
 
     if (NULL == pRequestData)
     {
-        CHX_LOG_ERROR("Cannot get request data from request object");
+        XLOGE("Cannot get request data from request object");
         result = CDKResultEInvalidArg;
     }
 
@@ -4726,7 +4731,7 @@ CDKResult ChiFeature2Base::ProcessMetadataCallback(
 
                 if (FALSE == sendMetadata)
                 {
-                    CHX_LOG_WARN("External PortId %d %d %d not requested for frame %d", metadataPortIdentifier.session,
+                    XLOGW("External PortId %d %d %d not requested for frame %d", metadataPortIdentifier.session,
                         metadataPortIdentifier.pipeline, metadataPortIdentifier.port, pRequestData->frameNumber);
                 }
             }
@@ -4794,7 +4799,7 @@ CDKResult ChiFeature2Base::ProcessBufferCallback(
 
         if (NULL == pRequestData)
         {
-            CHX_LOG_ERROR("No sequence private data sequenceId = %d batchRequestId = %d",
+            XLOGE("No sequence private data sequenceId = %d batchRequestId = %d",
                 pFrameCbData->sequenceId, pFrameCbData->requestId);
             result = CDKResultEFailed;
         }
@@ -4833,7 +4838,7 @@ CDKResult ChiFeature2Base::ProcessBufferCallback(
 
                     if (FALSE == found)
                     {
-                        CHX_LOG_ERROR("Cannot Match Buffer and Ports BufId = %d", bufIdx);
+                        XLOGE("Cannot Match Buffer and Ports BufId = %d", bufIdx);
                     }
                 }
                 else
@@ -4866,7 +4871,7 @@ CDKResult ChiFeature2Base::ProcessBufferCallback(
             }
             else
             {
-                CHX_LOG_INFO("Buffer callback had:%u errors, not propagating buffer callback, error handling will take care",
+                XLOGI("Buffer callback had:%u errors, not propagating buffer callback, error handling will take care",
                               numBufferErrors);
             }
 
@@ -5028,7 +5033,7 @@ const ChiFeature2PortDescriptor* ChiFeature2Base::GetSourcePort(
 
     if (NULL == pSrcPortDescriptor)
     {
-        CHX_LOG_ERROR("No source port found for sink %s", pSinkPortDescriptor->pPortName);
+        XLOGE("No source port found for sink %s", pSinkPortDescriptor->pPortName);
     }
 
     return pSrcPortDescriptor;
@@ -5076,13 +5081,13 @@ std::vector<INT32> ChiFeature2Base::GetZSLOffsets(
             ChxUtils::GetVendorTagValue(pSettings, VendorTag::ZSLTimestampRange, reinterpret_cast<VOID**>(&pZSLTimeRange));
             if (NULL != pZSLTimeRange)
             {
-                CHX_LOG_INFO("ZSL TimeRange vendor tag set %" PRIu64 " %" PRIu64, pZSLTimeRange[0], pZSLTimeRange[1]);
+                XLOGI("ZSL TimeRange vendor tag set %" PRIu64 " %" PRIu64, pZSLTimeRange[0], pZSLTimeRange[1]);
                 startTime = pZSLTimeRange[0];
                 endTime   = pZSLTimeRange[1];
             }
         }
     }
-    CHX_LOG_INFO("NumNonZSL requests %d NumZSL requests %d", numNonZSLRequests, numZSLRequests);
+    XLOGI("NumNonZSL requests %d NumZSL requests %d", numNonZSLRequests, numZSLRequests);
 
     // If we have a NON ZSL request, we need to pick ZSL requests from the producer list
     INT32 offset = 0;
@@ -5143,7 +5148,7 @@ std::vector<INT32> ChiFeature2Base::GetZSLOffsets(
                                     (*pSensorTimestamp <= (lastShutter - startTime)) &&
                                     (*pSensorTimestamp > (lastShutter - endTime)))
                                 {
-                                    CHX_LOG_INFO("Matching offset found %d lastZSLFrame %d", offset,
+                                    XLOGI("Matching offset found %d lastZSLFrame %d", offset,
                                         lastZSLFrameNumber);
                                     offsets.push_back(offset);
                                     --numZSLRequests;
@@ -5157,7 +5162,7 @@ std::vector<INT32> ChiFeature2Base::GetZSLOffsets(
                             }
                             else
                             {
-                                CHX_LOG_ERROR("Unable to get timestamp for frame %d", frameNumber);
+                                XLOGE("Unable to get timestamp for frame %d", frameNumber);
                             }
                         }
                         pPortData->pOutputBufferTbm->ReleaseTargetBuffer(hBuffer[0]);
@@ -5169,7 +5174,7 @@ std::vector<INT32> ChiFeature2Base::GetZSLOffsets(
                     }
                     else
                     {
-                        CHX_LOG_ERROR("Unable to get metadata buffer for frame %d", frameNumber);
+                        XLOGE("Unable to get metadata buffer for frame %d", frameNumber);
                     }
                 }
                 if (0 == numZSLRequests)
@@ -5198,7 +5203,7 @@ std::vector<INT32> ChiFeature2Base::GetZSLOffsets(
             }
             else
             {
-                CHX_LOG_ERROR("Cannot find port data for provided settings port");
+                XLOGE("Cannot find port data for provided settings port");
             }
         }
         else
@@ -5267,7 +5272,7 @@ CDKResult ChiFeature2Base::GetZSLQueueForPort(
         }
         if (NULL == *ppQueue)
         {
-            CHX_LOG_WARN("No queue found for port %d %d %d", pIdentifier->session, pIdentifier->pipeline, pIdentifier->port);
+            XLOGW("No queue found for port %d %d %d", pIdentifier->session, pIdentifier->pipeline, pIdentifier->port);
             result = CDKResultENoSuch;
         }
     }
@@ -5304,7 +5309,7 @@ BOOL ChiFeature2Base::CanRequestContinue(
             continueRequest = FALSE;
             break;
     }
-    CHX_LOG_INFO("Feature2RequestState %s continueRequest is %d ",
+    XLOGI("Feature2RequestState %s continueRequest is %d ",
         ChiFeature2RequestStateStrings[static_cast<UINT8>(requestState)], continueRequest);
     return continueRequest;
 }
@@ -5321,7 +5326,7 @@ CHISTREAM* ChiFeature2Base::CreateStream()
     }
     else
     {
-        CHX_LOG_ERROR("Feature %s - Stream Allocation Failed", m_pFeatureName);
+        XLOGE("Feature %s - Stream Allocation Failed", m_pFeatureName);
     }
 
     return pStream;
@@ -5357,7 +5362,7 @@ CDKResult ChiFeature2Base::OnInitializeStream(
 
     if ((NULL == pPortDesc) || (NULL == pTargetDesc) || (NULL == pOutputStreamData))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pTargetDesc = %p pPortDesc = %p pOutputStream = %p",
+        XLOGE("Invalid argument: NULL pTargetDesc = %p pPortDesc = %p pOutputStream = %p",
             pTargetDesc, pPortDesc, pOutputStreamData);
         result = CDKResultEInvalidArg;
     }
@@ -5366,7 +5371,7 @@ CDKResult ChiFeature2Base::OnInitializeStream(
     {
         if (NULL == pOutputStreamData->pStream)
         {
-            CHX_LOG_ERROR("Invalid argument: NULL pOutputStreamData->pStream");
+            XLOGE("Invalid argument: NULL pOutputStreamData->pStream");
             result = CDKResultEInvalidArg;
         }
     }
@@ -5397,7 +5402,7 @@ CDKResult ChiFeature2Base::InitializeTargetStream(
     result = OnInitializeStream(pTargetDesc, pPortDesc, pOutputStreamData);
     if (CDKResultSuccess != result)
     {
-        CHX_LOG_ERROR("Cannot match Stream: target Name = %s, PortKey = %d:%d:%d:%d",
+        XLOGE("Cannot match Stream: target Name = %s, PortKey = %d:%d:%d:%d",
             pTargetDesc->pTargetName, pPortDesc->globalId.session, pPortDesc->globalId.pipeline,
             pPortDesc->globalId.port, pPortDesc->globalId.portDirectionType);
     }
@@ -5417,7 +5422,7 @@ CDKResult ChiFeature2Base::AssignStreams(
 
     if ((NULL == pTargetDesc) || (NULL == pPortDesc))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pTargetDesc = %p, portDesc = %p", pTargetDesc, pPortDesc);
+        XLOGE("Invalid argument: NULL pTargetDesc = %p, portDesc = %p", pTargetDesc, pPortDesc);
         result = CDKResultEInvalidArg;
     }
 
@@ -5437,7 +5442,7 @@ CDKResult ChiFeature2Base::AssignStreams(
         }
         else
         {
-            CHX_LOG_ERROR("Create Stream Failed: Target = %s", pTargetDesc->pTargetName);
+            XLOGE("Create Stream Failed: Target = %s", pTargetDesc->pTargetName);
             result = CDKResultENoMemory;
         }
     }
@@ -5456,7 +5461,7 @@ CDKResult ChiFeature2Base::AssignTargets(
 
     if ((NULL == pTargetDesc) || (NULL == ppPortData))
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pTargetDesc = %p, ppPortData = %p", pTargetDesc, ppPortData);
+        XLOGE("Invalid argument: NULL pTargetDesc = %p, ppPortData = %p", pTargetDesc, ppPortData);
         result = CDKResultEInvalidArg;
     }
 
@@ -5481,7 +5486,7 @@ CDKResult ChiFeature2Base::AssignTargets(
 
         if (FALSE == hasAssigned)
         {
-            CHX_LOG_WARN("Unassigned Target: %s", pTargetDesc->pTargetName);
+            XLOGW("Unassigned Target: %s", pTargetDesc->pTargetName);
         }
     }
 
@@ -5501,7 +5506,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
 
     if ((NULL == pPipelineDesc) || (NULL == pPipelineData))
     {
-        CHX_LOG_ERROR("Invalid Argument: pPipelineDesc = %p pPipelineData = %p",
+        XLOGE("Invalid Argument: pPipelineDesc = %p pPipelineData = %p",
             pPipelineDesc, pPipelineData);
         result = CDKResultEInvalidArg;
     }
@@ -5579,7 +5584,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
                             &m_pUsecaseDesc->pPipelineTargetCreateDesc[pipelineIdx].pipelineCreateDesc);
                         pPipeline->SetPipelineName(m_pUsecaseDesc ->pPipelineTargetCreateDesc[pipelineIdx].pPipelineName);
 
-                        CHX_LOG_INFO("Creating pipeline %s", pPipeline->GetPipelineName());
+                        XLOGI("Creating pipeline %s", pPipeline->GetPipelineName());
 
                         if (CDKResultSuccess == result)
                         {
@@ -5590,7 +5595,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
                                 (TRUE == pInstanceProps->instanceFlags.isNZSLSnapshot) &&
                                 (TRUE == pPipeline->IsRealTime()))
                             {
-                                CHX_LOG_INFO("set defer finalize flag for non-zsl rt snapshot pipeline");
+                                XLOGI("set defer finalize flag for non-zsl rt snapshot pipeline");
                                 pPipeline->SetDeferFinalizeFlag(TRUE);
                             }
 
@@ -5605,7 +5610,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
                                 m_sensorModePickHint.postSensorUpscale        = FALSE;
                                 m_sensorModePickHint.sensorModeCaps.u.QuadCFA = TRUE;
 
-                                CHX_LOG_INFO("set sensor mode pick hint for qcfa sensor");
+                                XLOGI("set sensor mode pick hint for qcfa sensor");
                                 pPipeline->SetSensorModePickHint(&m_sensorModePickHint);
                             }
                         }
@@ -5619,7 +5624,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("No memory: numSinkTarget = %d, numSrcTarget = %d",
+                    XLOGE("No memory: numSinkTarget = %d, numSrcTarget = %d",
                         pSinkTarget->numTargets, pSrcTarget->numTargets);
                     result = CDKResultENoMemory;
                 }
@@ -5629,7 +5634,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
                     result = pPipeline->CreateDescriptor();
                     if (CDKResultSuccess != result)
                     {
-                        CHX_LOG_ERROR("Create pipeline %s descriptor failed!",
+                        XLOGE("Create pipeline %s descriptor failed!",
                             m_pUsecaseDesc->pPipelineTargetCreateDesc[pipelineIdx].pPipelineName);
                     }
                 }
@@ -5661,7 +5666,7 @@ CHIPIPELINEHANDLE ChiFeature2Base::CreatePipeline(
             }
             else
             {
-                CHX_LOG_ERROR("Pipeline creation failed pipeline");
+                XLOGE("Pipeline creation failed pipeline");
                 result = CDKResultEFailed;
             }
         }
@@ -5693,13 +5698,13 @@ CDKResult ChiFeature2Base::CreateSession(
         }
         else
         {
-            CHX_LOG_ERROR("NULL pSessionData");
+            XLOGE("NULL pSessionData");
             result = CDKResultEInvalidArg;
         }
     }
     else
     {
-        CHX_LOG_ERROR("NULL pSessionDesc");
+        XLOGE("NULL pSessionDesc");
         result = CDKResultEInvalidArg;
     }
 
@@ -5731,7 +5736,7 @@ CDKResult ChiFeature2Base::CreateSession(
                     else
                     {
                         result = CDKResultEFailed;
-                        CHX_LOG_ERROR("Failed to Create feature = %s", pSessionDesc->pSessionName);
+                        XLOGE("Failed to Create feature = %s", pSessionDesc->pSessionName);
                         break;
                     }
                 }
@@ -5754,7 +5759,7 @@ CDKResult ChiFeature2Base::CreateSession(
             }
             else
             {
-                CHX_LOG_ERROR("Failed to Create Session = %s", pSessionDesc->pSessionName);
+                XLOGE("Failed to Create Session = %s", pSessionDesc->pSessionName);
                 result = CDKResultEFailed;
             }
         }
@@ -5764,7 +5769,7 @@ CDKResult ChiFeature2Base::CreateSession(
     }
     else
     {
-        CHX_LOG_ERROR("Invalid Argument: ppPipelines = %p pSessionData = %p pSessionDesc = %p",
+        XLOGE("Invalid Argument: ppPipelines = %p pSessionData = %p pSessionDesc = %p",
             ppPipelines, pSessionData, pSessionDesc);
         result = CDKResultENoMemory;
     }
@@ -5782,7 +5787,7 @@ CDKResult ChiFeature2Base::CreateFeatureData(
 
     if (NULL == pFeatureDesc)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pFeatureDesc");
+        XLOGE("Invalid argument: NULL pFeatureDesc");
         result = CDKResultEInvalidArg;
     }
 
@@ -5793,7 +5798,7 @@ CDKResult ChiFeature2Base::CreateFeatureData(
             result = CreateSession(&pFeatureDesc->pSession[sessionIdx]);
             if (CDKResultSuccess != result)
             {
-                CHX_LOG_ERROR("Failed to Create feature = %s", pFeatureDesc->pFeatureName);
+                XLOGE("Failed to Create feature = %s", pFeatureDesc->pFeatureName);
             }
         }
     }
@@ -5840,7 +5845,7 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
             }
             else
             {
-                CHX_LOG_ERROR("Failed to create metadata TBM for pipeline %s", pPipelineData->pPipelineName);
+                XLOGE("Failed to create metadata TBM for pipeline %s", pPipelineData->pPipelineName);
                 result = CDKResultEFailed;
                 break;
             }
@@ -5859,12 +5864,12 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
             }
             else
             {
-                CHX_LOG_ERROR("Failed to create setting TBM for pipeline %s", pPipelineData->pPipelineName);
+                XLOGE("Failed to create setting TBM for pipeline %s", pPipelineData->pPipelineName);
                 result = CDKResultEFailed;
                 break;
             }
 
-            CHX_LOG_VERBOSE("metamanagerName:%s pSettingMetaTbm:%p",
+            XLOGV("metamanagerName:%s pSettingMetaTbm:%p",
                             metamanagerName,
                             pPipelineData->pSettingMetaTbm);
 
@@ -5902,11 +5907,11 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
                         if (NULL != pTargetBufferManager)
                         {
                             pPortData->pOutputBufferTbm = pTargetBufferManager;
-                            CHX_LOG_CONFIG("metamanagerName:%s pMetaPortTBM:%p", metamanagerName, pPortData->pOutputBufferTbm);
+                            XLOGI("metamanagerName:%s pMetaPortTBM:%p", metamanagerName, pPortData->pOutputBufferTbm);
                         }
                         else
                         {
-                            CHX_LOG_ERROR("Failed to create setting TBM for pipeline %s", pPipelineData->pPipelineName);
+                            XLOGE("Failed to create setting TBM for pipeline %s", pPipelineData->pPipelineName);
                             result = CDKResultEFailed;
                             break;
                         }
@@ -5949,7 +5954,7 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
                     //   1) A virtual pipeline such as Anchor Picking for MFNR
                     //   2) After usecase pruning
                     // We don't want to proceed here in the pruning case
-                    CHX_LOG_WARN("Null pTarget on %s", pPortData->pPortName);
+                    XLOGW("Null pTarget on %s", pPortData->pPortName);
                 }
                 else if (NULL == pOutputBufferTBM)
                 {
@@ -5973,7 +5978,7 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
                     CHAR bufferManagerName[100] = {0};
                     CdkUtils::SNPrintF(bufferManagerName, sizeof(bufferManagerName),
                                        "PortTargetBuffer_%s:%s", m_pFeatureName, pPortData->pPortName);
-                    CHX_LOG_CONFIG("Pipeline[%s], port:%s port idx:%d, Create CHI buffers, chistream:%p, "
+                    XLOGI("Pipeline[%s], port:%s port idx:%d, Create CHI buffers, chistream:%p, "
                                     "format:%d, w x h: %d x %d",
                             pPipelineData->pPipelineName,
                             pPortData->pPortName,
@@ -6008,7 +6013,7 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
 
                     if (NULL != pTargetBufferManager)
                     {
-                        CHX_LOG_INFO("isChiFenceEnabled:%d, %s: %s: Res: %dX%d Format = 0X%x, Min Buffer = %d, Max Buffer = %d",
+                        XLOGI("isChiFenceEnabled:%d, %s: %s: Res: %dX%d Format = 0X%x, Min Buffer = %d, Max Buffer = %d",
                                      targetBuffercreateData.isChiFenceEnabled,
                                      m_pFeatureName, bufferManagerName,
                                      createData.width, createData.height, createData.format,
@@ -6017,14 +6022,14 @@ CDKResult ChiFeature2Base::CreateTargetBufferManagers()
                     }
                     else
                     {
-                        CHX_LOG_ERROR("Failed to create outbuffer TBM for port %s", pPortData->pPortName);
+                        XLOGE("Failed to create outbuffer TBM for port %s", pPortData->pPortName);
                         result = CDKResultEFailed;
                         break;
                     }
                 }
                 else
                 {
-                    CHX_LOG_INFO("Feature: %s Sharing TBM for port %s", m_pFeatureName, pPortData->pPortName);
+                    XLOGI("Feature: %s Sharing TBM for port %s", m_pFeatureName, pPortData->pPortName);
                     pPortData->pOutputBufferTbm = pOutputBufferTBM;
                 }
             }
@@ -6113,7 +6118,7 @@ CDKResult ChiFeature2Base::InitializeFeatureContext(
 
     if (NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("Invalid argument: NULL pRequestObject");
+        XLOGE("Invalid argument: NULL pRequestObject");
         result = CDKResultEInvalidArg;
     }
 
@@ -6175,13 +6180,13 @@ CDKResult ChiFeature2Base::GetFeatureRequestOpsData (
                     break;
                 }
                 default:
-                    CHX_LOG_ERROR("Invalid handleType = %d. Need Implementation", handleType);
+                    XLOGE("Invalid handleType = %d. Need Implementation", handleType);
                     break;
             }
             break;
         }
         default:
-            CHX_LOG_ERROR("Invalid opsType = %d. Need Implementation", opsType);
+            XLOGE("Invalid opsType = %d. Need Implementation", opsType);
             break;
     }
     return result;
@@ -6201,7 +6206,7 @@ CDKResult ChiFeature2Base::GetBufferData(
 
     if ((NULL == pOutputBuffer) || (NULL == pOutputBuffer->pBufferMeta))
     {
-        CHX_LOG_ERROR("Invalid Argument: numData = %d", numData);
+        XLOGE("Invalid Argument: numData = %d", numData);
         result = CDKResultEInvalidArg;
     }
 
@@ -6217,7 +6222,7 @@ CDKResult ChiFeature2Base::GetBufferData(
             if ((NULL == pPortData)     || (NULL == pPortData->pOutputBufferTbm) ||
                 (NULL == pPipelinedata) || (NULL == pPipelinedata->pOutputMetaTbm))
             {
-                CHX_LOG_ERROR("Invalid Argument: port = %d pPortData = %p",
+                XLOGE("Invalid Argument: port = %d pPortData = %p",
                     pOutputBuffer[numPorts].globalId.port, pPortData);
                 result = CDKResultEInvalidArg;
                 break;
@@ -6242,7 +6247,7 @@ CDKResult ChiFeature2Base::GetBufferData(
                     {
                         latestAvailableSequenceId = pZSLQueueData->frameNumbers.front();
                         pZSLQueueData->frameNumbers.pop();
-                        CHX_LOG_INFO("Found ZSL Q for port %s %p popping frame %d", pPortData->pPortName,
+                        XLOGI("Found ZSL Q for port %s %p popping frame %d", pPortData->pPortName,
                             pZSLQueueData, latestAvailableSequenceId);
                         pCallbackData = CHX_NEW ChiTargetBufferCallbackData;
                         if (NULL != pCallbackData)
@@ -6257,7 +6262,7 @@ CDKResult ChiFeature2Base::GetBufferData(
                         latestAvailableSequenceId = submitSequenceIdOnPort.back();
                     }
 
-                    CHX_LOG_INFO("%s, [%u, %u, %u, %d, %d] : latestAvailableSequenceId = %d",
+                    XLOGI("%s, [%u, %u, %u, %d, %d] : latestAvailableSequenceId = %d",
                         pRequestObject->IdentifierString(),
                         pOutputBuffer[numPorts].globalId.session,
                         pOutputBuffer[numPorts].globalId.pipeline,
@@ -6379,14 +6384,14 @@ CDKResult ChiFeature2Base::InitializeThreadService()
 
         if ((CDKResultSuccess == result) && (0 != m_hFeatureJob))
         {
-            CHX_LOG_INFO("ThreadManager %p feature %s job handle %" PRIx64,
+            XLOGI("ThreadManager %p feature %s job handle %" PRIx64,
                 m_pThreadManager,
                 m_pFeatureName,
                 m_hFeatureJob);
         }
         else
         {
-            CHX_LOG_ERROR("Faild to register a job, ThreadManager %p feature %s job handle %" PRIx64", result %d",
+            XLOGE("Faild to register a job, ThreadManager %p feature %s job handle %" PRIx64", result %d",
                 m_pThreadManager,
                 m_pFeatureName,
                 m_hFeatureJob,
@@ -6397,7 +6402,7 @@ CDKResult ChiFeature2Base::InitializeThreadService()
     }
     else
     {
-        CHX_LOG_ERROR("Faild to get ThreadManager %p feature %s", m_pThreadManager, m_pFeatureName);
+        XLOGE("Faild to get ThreadManager %p feature %s", m_pThreadManager, m_pFeatureName);
     }
 
     return result;
@@ -6461,7 +6466,7 @@ VOID ChiFeature2Base::DebugDataCopy(
                         }
                         else
                         {
-                            CHX_LOG_WARN("DebugDataAll: Fail to allocate offline debug-data (non-fatal error)");
+                            XLOGW("DebugDataAll: Fail to allocate offline debug-data (non-fatal error)");
                             allocDone       = FALSE;
                             indexDebugData  = i;
                         }
@@ -6475,7 +6480,7 @@ VOID ChiFeature2Base::DebugDataCopy(
                     // Copy from source to offline debug-data buffer, but skip copy if already offline data
                     if (pOfflineDebugData[indexDebugData].pData != pDebug->pData)
                     {
-                        CHX_LOG_INFO("DebugDataAll: Offline debug-data: %p, copy data source: %p",
+                        XLOGI("DebugDataAll: Offline debug-data: %p, copy data source: %p",
                                      pOfflineDebugData[indexDebugData].pData,
                                      pDebug->pData);
                         ChxUtils::Memcpy(pOfflineDebugData[indexDebugData].pData, pDebug->pData, pDebug->size);
@@ -6489,13 +6494,13 @@ VOID ChiFeature2Base::DebugDataCopy(
                     if (CDKResultSuccess != result)
                     {
                         // Non-fatal error
-                        CHX_LOG_WARN("DebugDataAll: fail to set DebugDataTag");
+                        XLOGW("DebugDataAll: fail to set DebugDataTag");
                     }
                 }
                 else
                 {
                     // Non-fatal error
-                    CHX_LOG_WARN("DebugDataAll: buffer not available or size does not match");
+                    XLOGW("DebugDataAll: buffer not available or size does not match");
                 }
             }
         }
@@ -6542,7 +6547,7 @@ VOID ChiFeature2Base::DumpDebugData(
     metadataHeader.featureDesignator[0]    = 'R';
     metadataHeader.featureDesignator[1]    = 'C';
 
-    CHX_LOG_INFO("DebugDataAll: dumpFilename: %s, pDebugData: %p, sizeDebugData: %zu, sizeMeta: %u [0x%x]",
+    XLOGI("DebugDataAll: dumpFilename: %s, pDebugData: %p, sizeDebugData: %zu, sizeMeta: %u [0x%x]",
                  dumpFilename, pDebugData, sizeDebugData, metadataHeader.dataSize, metadataHeader.dataSize);
 
     FILE* pFile = CdkUtils::FOpen(dumpFilename, "wb");
@@ -6555,7 +6560,7 @@ VOID ChiFeature2Base::DumpDebugData(
     }
     else
     {
-        CHX_LOG_WARN("DebugDataAll: Debug data failed to open for writing: %s", dumpFilename);
+        XLOGW("DebugDataAll: Debug data failed to open for writing: %s", dumpFilename);
     }
 }
 
@@ -6576,7 +6581,7 @@ VOID ChiFeature2Base::ProcessDebugData(
     if ((NULL == pRequestObject) || (NULL == pStageInfo) ||
         (NULL == pPortIdentifier) || (NULL == pMetadata))
     {
-        CHX_LOG_WARN("Invalid Argument pRequestObject = %p pStageInfo = %p"
+        XLOGW("Invalid Argument pRequestObject = %p pStageInfo = %p"
                       "pPortIdentifier = %p pStreamBuffer = %p",
                       pRequestObject, pStageInfo, pPortIdentifier, pMetadata);
         result = CDKResultEFailed;
@@ -6607,20 +6612,20 @@ VOID ChiFeature2Base::ProcessDebugData(
             }
             else
             {
-                CHX_LOG_WARN("%s: Null DebugData tag",
+                XLOGW("%s: Null DebugData tag",
                              pRequestObject->IdentifierString());
             }
         }
         else
         {
-            CHX_LOG_WARN("%s: Missing DebugData",
+            XLOGW("%s: Missing DebugData",
                          pRequestObject->IdentifierString());
         }
     }
 
     if (CDKResultSuccess != result)
     {
-        CHX_LOG_WARN("%s: Fail to process debug-data",
+        XLOGW("%s: Fail to process debug-data",
                      pRequestObject->IdentifierString());
     }
 }
@@ -6652,19 +6657,19 @@ UINT8 ChiFeature2Base::GetNumDependencyListsFromStageDescriptor(
             }
             else
             {
-                CHX_LOG_ERROR("Pipeline index %d is greater than total number of pipelines %d", pipelineIndex,
+                XLOGE("Pipeline index %d is greater than total number of pipelines %d", pipelineIndex,
                     sessionInfo.numPipelines);
             }
         }
         else
         {
-            CHX_LOG_ERROR("Session index %d is greater than total number of sessions %d", sessionIndex,
+            XLOGE("Session index %d is greater than total number of sessions %d", sessionIndex,
                 pStageDescriptor->numDependencyConfigDescriptor);
         }
     }
     else
     {
-        CHX_LOG_ERROR("Stage descriptor is NULL!");
+        XLOGE("Stage descriptor is NULL!");
     }
     return numDependencyLists;
 }
@@ -6708,7 +6713,7 @@ CDKResult ChiFeature2Base::PopulateDependencyPorts(
                 ChiFeature2RequestObjectOpsType::InputDependency,
                 &portidentifier, &portDescriptor, requestId, dependencyIndex);
 
-            CHX_LOG_INFO("%s: Set dependency on port %s, requestId %d, dependencyIndex %d", pRequestObject->IdentifierString(),
+            XLOGI("%s: Set dependency on port %s, requestId %d, dependencyIndex %d", pRequestObject->IdentifierString(),
                      portDescriptor.pPortName, requestId,
                      dependencyIndex);
 
@@ -6721,7 +6726,7 @@ CDKResult ChiFeature2Base::PopulateDependencyPorts(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("Alloc memory failed");
+                    XLOGE("Alloc memory failed");
                     result = CDKResultENoMemory;
                 }
             }
@@ -6751,7 +6756,7 @@ CDKResult ChiFeature2Base::PopulateDependencySettings(
         CHIMETAHANDLE  hSetting = pFeatureSettings->GetHandle();
         if (NULL != hSetting)
         {
-            CHX_LOG_INFO("Add Dependency: %s: %d %p %d, pSetting:%p ", m_pFeatureName, dependencyIndex,
+            XLOGI("Add Dependency: %s: %d %p %d, pSetting:%p ", m_pFeatureName, dependencyIndex,
                 hSetting, pSettingPortId->port, pFeatureSettings);
             pRequestObject->SetRequestInputInfo(
                 ChiFeature2SequenceOrder::Next, pSettingPortId,
@@ -6759,12 +6764,12 @@ CDKResult ChiFeature2Base::PopulateDependencySettings(
         }
         else
         {
-            CHX_LOG_WARN("%s, hSetting is NULL", pRequestObject->IdentifierString());
+            XLOGW("%s, hSetting is NULL", pRequestObject->IdentifierString());
         }
     }
     else
     {
-        CHX_LOG_WARN("%s OnPopulateDependencySettings failed!", pRequestObject->IdentifierString());
+        XLOGW("%s OnPopulateDependencySettings failed!", pRequestObject->IdentifierString());
     }
 
     return result;
@@ -6794,14 +6799,14 @@ CDKResult ChiFeature2Base::PrepareZSLQueue(
 
         for (UINT32 index = 0; index < consumerlist.size(); ++index)
         {
-            CHX_LOG_INFO("Current Consumer list %d", consumerlist.at(index));
+            XLOGI("Current Consumer list %d", consumerlist.at(index));
         }
 
         std::vector<UINT32> producerList = pManager->GetAllSequenceId(SearchOption::SearchProducerList);
 
         for (UINT32 index = 0; index < producerList.size(); ++index)
         {
-            CHX_LOG_INFO("Current Producer list %d", producerList.at(index));
+            XLOGI("Current Producer list %d", producerList.at(index));
         }
 
         std::vector<INT32> offsets = GetZSLOffsets(pRequestObject, producerList, consumerlist, pSettingsPort);
@@ -6821,7 +6826,7 @@ CDKResult ChiFeature2Base::PrepareZSLQueue(
             {
                 finalList.push(producerList.at(offset));
             }
-            CHX_LOG_INFO("Pushing element to ZSL Queue %d", finalList.back());
+            XLOGI("Pushing element to ZSL Queue %d", finalList.back());
         }
 
         pRequestContext = static_cast<ChiFeatureRequestContext*>(pRequestObject->GetPrivContext());
@@ -6841,12 +6846,12 @@ CDKResult ChiFeature2Base::PrepareZSLQueue(
                 pPortZSLQueue->globalId     = pList->pPorts[portIndex];
                 pPortZSLQueue->frameNumbers = finalList;
 
-                CHX_LOG_INFO("Assigning final list for port %d %p", pList->pPorts[portIndex].port, &finalList);
+                XLOGI("Assigning final list for port %d %p", pList->pPorts[portIndex].port, &finalList);
                 pRequestContext->pPortZSLQueues.push_back(pPortZSLQueue);
             }
             else
             {
-                CHX_LOG_ERROR("Out of memory");
+                XLOGE("Out of memory");
             }
 
         }
@@ -6975,7 +6980,7 @@ CDKResult ChiFeature2Base::OnPopulateDependencySettings(
 
     if (NULL == pFeatureSettings || NULL == pRequestObject)
     {
-        CHX_LOG_ERROR("pFeatureSettings=%p, pRequestObject=%p",
+        XLOGE("pFeatureSettings=%p, pRequestObject=%p",
             pFeatureSettings, pRequestObject);
         result = CDKResultEInvalidArg;
     }
@@ -7019,7 +7024,7 @@ VOID ChiFeature2Base::OnProcessingDependenciesComplete(
         if ((TRUE == pRequestObject->AllOutputPortsProcessingComplete()) &&
             ((pRequestObject->GetNumRequests() - 1) == requestId))
         {
-            CHX_LOG_VERBOSE("%s All ports are done processing; generating processing dependencies complete feature message",
+            XLOGV("%s All ports are done processing; generating processing dependencies complete feature message",
                             pRequestObject->IdentifierString());
 
             ChiFeature2MessageDescriptor featurePortMessage;
@@ -7049,7 +7054,7 @@ CDKResult ChiFeature2Base::MergeAppSettings(
 
     if (NULL == pResultMetadata)
     {
-        CHX_LOG_ERROR("Get result metadata from setting TBM failed");
+        XLOGE("Get result metadata from setting TBM failed");
         result = CDKResultEInvalidPointer;
     }
     else
@@ -7059,7 +7064,7 @@ CDKResult ChiFeature2Base::MergeAppSettings(
         pRequestObject->GetAppRequestSetting(&pAppMeta);
         if (NULL == pAppMeta)
         {
-            CHX_LOG_ERROR("APP metadata is NULL");
+            XLOGE("APP metadata is NULL");
             result = CDKResultEInvalidPointer;
         }
         else
@@ -7190,7 +7195,7 @@ CDKResult ChiFeature2Base::OnExecuteProcessRequest(
 
     flowtype = OnSelectFlowToExecuteRequest(pRequestObject);
 
-    CHX_LOG_INFO("%s Executing base request flow %d", pRequestObject->IdentifierString(), flowtype);
+    XLOGI("%s Executing base request flow %d", pRequestObject->IdentifierString(), flowtype);
 
     ExecuteBaseRequestFlow(pRequestObject, flowtype);
 
@@ -7218,30 +7223,30 @@ CDKResult ChiFeature2Base::DeActivatePipeline(
             Pipeline*  pPipeline = pPipelineData->pPipeline;
             if ((NULL != pSession) && (NULL != pPipeline))
             {
-                CHX_LOG_INFO("DeActivatePipeline name %s", pPipeline->GetPipelineName());
+                XLOGI("DeActivatePipeline name %s", pPipeline->GetPipelineName());
                 result = pExtensionModule->DeactivatePipeline(pSession->GetSessionHandle(),
                     pPipeline->GetPipelineHandle(),
                     modeBitmask);
                 if (CDKResultSuccess != result)
                 {
-                    CHX_LOG_ERROR("Deactivate %s failed!", pPipeline->GetPipelineName());
+                    XLOGE("Deactivate %s failed!", pPipeline->GetPipelineName());
                 }
             }
             else
             {
-                CHX_LOG_ERROR("Invalid session or pipeline handles");
+                XLOGE("Invalid session or pipeline handles");
                 result = CDKResultEFailed;
             }
         }
         else
         {
-            CHX_LOG_ERROR("Invalid session or pipeline data");
+            XLOGE("Invalid session or pipeline data");
             result = CDKResultEFailed;
         }
     }
     else
     {
-        CHX_LOG_ERROR("Invalid Argument ChiFeature2Identifier");
+        XLOGE("Invalid Argument ChiFeature2Identifier");
         result = CDKResultEFailed;
     }
 
@@ -7270,7 +7275,7 @@ BOOL ChiFeature2Base::OnBufferResult(
     if ((NULL == pRequestObject) || (NULL == pStageInfo) ||
         (NULL == pPortIdentifier) || (NULL == pStreamBuffer))
     {
-        CHX_LOG_ERROR("Invalid Argument pRequestObject = %p pStageInfo = %p"
+        XLOGE("Invalid Argument pRequestObject = %p pStageInfo = %p"
             "pPortIdentifier = %p pStreamBuffer = %p",
             pRequestObject, pStageInfo, pPortIdentifier, pStreamBuffer);
         result = CDKResultEFailed;
@@ -7301,7 +7306,7 @@ BOOL ChiFeature2Base::OnBufferResult(
     {
         CHITargetBufferManager*     pBufferManager  = pPortData->pOutputBufferTbm;
 
-        CHX_LOG_INFO("%s Result from Request:%d for port:%s stageId %d stageSequenceId %d stream width  height format "
+        XLOGI("%s Result from Request:%d for port:%s stageId %d stageSequenceId %d stream width  height format "
                      "%d %d %d ",
                      pRequestObject->IdentifierString(),
                      frameNumber,
@@ -7343,7 +7348,7 @@ BOOL ChiFeature2Base::OnBufferResult(
                                          phBuffer);
             if (CDKResultSuccess != result)
             {
-                CHX_LOG_ERROR("Unable to get target buffer for port %s", pPortData->pPortName);
+                XLOGE("Unable to get target buffer for port %s", pPortData->pPortName);
                 sendToGraph = FALSE;
             }
         }
@@ -7386,7 +7391,7 @@ BOOL ChiFeature2Base::OnPartialMetadataResult(
     if ((NULL == pFeatureReqObj) || (NULL == pStageInfo) ||
         (NULL == pPortIdentifier) || (NULL == pMetadata))
     {
-        CHX_LOG_ERROR("Invalid Argument pRequestObject = %p pStageInfo = %p"
+        XLOGE("Invalid Argument pRequestObject = %p pStageInfo = %p"
             "pPortIdentifier = %p pStreamBuffer = %p",
             pFeatureReqObj, pStageInfo, pPortIdentifier, pMetadata);
         result = CDKResultEFailed;
@@ -7408,7 +7413,7 @@ BOOL ChiFeature2Base::OnPartialMetadataResult(
         ChiFeatureSequenceData* pRequestData = NULL;
         BOOL                    resultStatus = TRUE;
 
-        CHX_LOG_INFO("%s : Request:%d for pipeline:%s stageId %d stageSequenceId %d pMetadata %p ",
+        XLOGI("%s : Request:%d for pipeline:%s stageId %d stageSequenceId %d pMetadata %p ",
             pFeatureReqObj->IdentifierString(),
             frameNumber,
             pPipelineData->pPipelineName,
@@ -7453,7 +7458,7 @@ BOOL ChiFeature2Base::OnPartialMetadataResult(
                     }
                     else
                     {
-                        CHX_LOG_INFO("%s Metadata already generated for frame %d",
+                        XLOGI("%s Metadata already generated for frame %d",
                             pFeatureReqObj->IdentifierString(),
                             frameNumber);
                         sendToGraph = FALSE;
@@ -7462,7 +7467,7 @@ BOOL ChiFeature2Base::OnPartialMetadataResult(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("Unable to get target buffer for pipeline %s",
+                    XLOGE("Unable to get target buffer for pipeline %s",
                         pPipelineData->pPipelineName);
                 }
             }
@@ -7492,7 +7497,7 @@ BOOL ChiFeature2Base::OnMetadataResult(
     if ((NULL == pRequestObject) || (NULL == pStageInfo) ||
         (NULL == pPortIdentifier) || (NULL == pMetadata))
     {
-        CHX_LOG_ERROR("Invalid Argument pRequestObject = %p pStageInfo = %p"
+        XLOGE("Invalid Argument pRequestObject = %p pStageInfo = %p"
             "pPortIdentifier = %p pStreamBuffer = %p",
             pRequestObject, pStageInfo, pPortIdentifier, pMetadata);
         result = CDKResultEFailed;
@@ -7523,7 +7528,7 @@ BOOL ChiFeature2Base::OnMetadataResult(
                 ChiTargetStatus::Ready;
         }
 
-        CHX_LOG_INFO("%s Result from Request:%d for pipeline:%s stageId %d stageSequenceId %d pMetadata %p ",
+        XLOGI("%s Result from Request:%d for pipeline:%s stageId %d stageSequenceId %d pMetadata %p ",
                  pRequestObject->IdentifierString(),
                  frameNumber,
                  pPipelineData->pPipelineName,
@@ -7560,7 +7565,7 @@ BOOL ChiFeature2Base::OnMetadataResult(
 
             if (CDKResultSuccess != result)
             {
-                CHX_LOG_ERROR("Unable to get target buffer for pipeline %s", pPipelineData->pPipelineName);
+                XLOGE("Unable to get target buffer for pipeline %s", pPipelineData->pPipelineName);
                 sendToGraph = FALSE;
             }
         }
@@ -7650,7 +7655,7 @@ VOID ChiFeature2Base::DumpInputMetaBuffer(
 
     if (CDKResultSuccess != result)
     {
-        CHX_LOG_ERROR("DumpInputMetaBuffer failed!");
+        XLOGE("DumpInputMetaBuffer failed!");
     }
 }
 
@@ -7690,7 +7695,7 @@ VOID ChiFeature2Base::DumpInputImageBuffer(
 
     if ((CDKResultSuccess == result) && (NULL != pStreamBuffer))
     {
-        CHX_LOG_INFO("Dump image format=%d, WxH=%dx%d, planeStride=%d, sliceHeight=%d",
+        XLOGI("Dump image format=%d, WxH=%dx%d, planeStride=%d, sliceHeight=%d",
                         pStreamBuffer->pStream->format,
                         pStreamBuffer->pStream->width,
                         pStreamBuffer->pStream->height,
@@ -7709,7 +7714,7 @@ VOID ChiFeature2Base::DumpInputImageBuffer(
 
     if (CDKResultSuccess != result)
     {
-        CHX_LOG_ERROR("DumpInputImageBuffer failed!");
+        XLOGE("DumpInputImageBuffer failed!");
     }
 }
 

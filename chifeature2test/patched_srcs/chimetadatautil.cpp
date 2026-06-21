@@ -13,6 +13,9 @@
 #include "chifeature2test.h"
 #include "camera_metadata.h"
 #include "chituningmodeparam.h"
+#undef  LOG_TAG
+#define LOG_TAG "Meta"
+#include <android/log.h>
 #include "cdkutils.h"
 
 ChiMetadataUtil* ChiMetadataUtil::m_pMetadataUtilInstance = NULL;
@@ -37,7 +40,7 @@ ChiMetadataUtil* ChiMetadataUtil::GetInstance()
     {
         if (m_pMetadataUtilInstance->ChiModuleInitialize() != CDKResultSuccess)
         {
-            CF2_LOG_ERROR("Failed to initialize ChiModule!");
+            XLOGE("Failed to initialize ChiModule!");
             return NULL;
         }
 
@@ -187,7 +190,7 @@ CDKResult ChiMetadataUtil::CreateInputMetabufferPool(int poolSize, const CHAR* p
                 }
                 else
                 {
-                    CF2_LOG_WARN("%s not found, fill with default Metadata", fileNameString);
+                    XLOGW("%s not found, fill with default Metadata", fileNameString);
                     CreateDefaultMetadata(0, &m_pInputMetabufferPool[poolIndex]);
                 }
             }
@@ -274,13 +277,13 @@ CDKResult ChiMetadataUtil::PatchingMetabufferPool(const CHAR* pFileName, bool mu
                     }
                     else
                     {
-                        CF2_LOG_ERROR("Zero bytes read for %s", fileNameString);
+                        XLOGE("Zero bytes read for %s", fileNameString);
                         result = CDKResultENoMemory;
                     }
                 }
                 else
                 {
-                    CF2_LOG_ERROR("Fail to alloc %d bytes", fileLen);
+                    XLOGE("Fail to alloc %d bytes", fileLen);
                     result = CDKResultENoMemory;
                 }
             }
@@ -288,12 +291,12 @@ CDKResult ChiMetadataUtil::PatchingMetabufferPool(const CHAR* pFileName, bool mu
         }
         else if (0 != CdkUtils::StrLen(lkgFileName))
         {
-            CF2_LOG_WARN("Cannot open file %s, loading %s instead", fileNameString, lkgFileName);
+            XLOGW("Cannot open file %s, loading %s instead", fileNameString, lkgFileName);
             pData = pLKGData;
         }
         else
         {
-            CF2_LOG_ERROR("File %s open failed!", fileNameString);
+            XLOGE("File %s open failed!", fileNameString);
             result = CDKResultENoSuch;
         }
 
@@ -716,7 +719,7 @@ CDKResult ChiMetadataUtil::CreateDefaultMetadata(int cameraId, ChiMetadata** ppC
     }
     else
     {
-        CF2_LOG_ERROR("Failed to create default metadata!");
+        XLOGE("Failed to create default metadata!");
         result = CDKResultEFailed;
     }
 
@@ -1288,20 +1291,20 @@ CDKResult ChiMetadataUtil::CreateRandomMetadata(CHIMETAHANDLE* hMetaHandle)
                 }
                 else
                 {
-                    CF2_LOG_ERROR("Fail to alloc %u bytes!", tag.size);
+                    XLOGE("Fail to alloc %u bytes!", tag.size);
                     result = CDKResultENoMemory;
                 }
             }
         }
         else
         {
-            CF2_LOG_ERROR("Could not get metadata table!");
+            XLOGE("Could not get metadata table!");
             retval = CDKResultEFailed;
         }
     }
     else
     {
-        CF2_LOG_ERROR("Could not get metadata entry count!");
+        XLOGE("Could not get metadata entry count!");
         retval = CDKResultEFailed;
     }
 

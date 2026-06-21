@@ -10,6 +10,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "genericbuffermanager.h"
+#undef  LOG_TAG
+#define LOG_TAG "GBuf"
+#include <android/log.h>
 
 CamxMemAllocFunc        GenericBufferManager::m_pCamxMemAlloc;
 CamxMemReleaseFunc      GenericBufferManager::m_pCamxMemRelease;
@@ -65,7 +68,7 @@ int GenericBufferManager::LoadBufferLibs(
     m_pCamxMemGetImageSize = reinterpret_cast<CamxMemGetImageSizeFunc>(ChxUtils::LibGetAddr(pLib, "CamxMemGetImageSize"));
     if (m_pCamxMemGetImageSize == NULL)
     {
-        CF2_LOG_ERROR("CamxMemGetImageSize not available in the library");
+        XLOGE("CamxMemGetImageSize not available in the library");
         return -1;
     }
 
@@ -74,14 +77,14 @@ int GenericBufferManager::LoadBufferLibs(
     m_pCamxMemAlloc = reinterpret_cast<CamxMemAllocFunc>(ChxUtils::LibGetAddr(pLib, "CamxMemAlloc"));
     if (m_pCamxMemAlloc)
     {
-        CF2_LOG_ERROR("CamxMemAllocFunc not available in the library");
+        XLOGE("CamxMemAllocFunc not available in the library");
         return -1;
     }
 
     m_pCamxMemRelease = reinterpret_cast<CamxMemReleaseFunc>(ChxUtils::LibGetAddr(pLib, "CamxMemRelease"));
     if (m_pCamxMemRelease)
     {
-        CF2_LOG_ERROR("CamxMemRelease not available in the library");
+        XLOGE("CamxMemRelease not available in the library");
         return -1;
     }
 #endif // _LINUX
@@ -133,7 +136,7 @@ int GenericBufferManager::GenerateBuffers(
 {
     if (pConfiguredStream == NULL)
     {
-        CF2_LOG_ERROR("Cannot create buffers for NULL stream");
+        XLOGE("Cannot create buffers for NULL stream");
         return -1;
     }
 
@@ -159,7 +162,7 @@ int GenericBufferManager::GenerateBuffers(
     uint32_t maxBuffers = GetMaxBuffersFromStream(pConfiguredStream);
     if (0 == maxBuffers)
     {
-        CF2_LOG_ERROR("Stream %d cannot have maxBuffers of 0!", streamId);
+        XLOGE("Stream %d cannot have maxBuffers of 0!", streamId);
         return -1;
     }
 
@@ -210,7 +213,7 @@ int GenericBufferManager::GenerateBuffers(
                 CdkUtils::SNPrintF(inputImageName, sizeof(inputImageName), "%s_%d.%s", nameBeforeDot, bufferIndex, extension);
                 if (0 == bufferIndex)
                 {
-                    CF2_LOG_INFO("Loading input image files %s_x.%s", nameBeforeDot, extension);
+                    XLOGI("Loading input image files %s_x.%s", nameBeforeDot, extension);
                 }
             }
             else
@@ -218,18 +221,18 @@ int GenericBufferManager::GenerateBuffers(
                 CdkUtils::SNPrintF(inputImageName, sizeof(inputImageName), "%s", inputFileName);
                 if (0 == bufferIndex)
                 {
-                    CF2_LOG_INFO("Loading input image files %s", inputImageName);
+                    XLOGI("Loading input image files %s", inputImageName);
                 }
             }
             if (-2 == GenerateInputBuffer(streamBuffer, pConfiguredStream, inputImageName))
             {
                 // Input image file not found, reuse last known good input image file
-                CF2_LOG_WARN("Load %s instead",
+                XLOGW("Load %s instead",
                     lkgInputImageName);
                 if (0 != GenerateInputBuffer(streamBuffer, pConfiguredStream, lkgInputImageName))
                 {
                     // Still fail, give up
-                    CF2_LOG_ERROR("Fail to import input image file !");
+                    XLOGE("Fail to import input image file !");
                     return -1;
                 }
             }
@@ -282,7 +285,7 @@ void* GenericBufferManager::GetOutputBufferForRequest()
 
         if (m_bBufferAvailable == false)
         {
-            CF2_LOG_ERROR("There is no buffer available to serve next request");
+            XLOGE("There is no buffer available to serve next request");
             statusCode = -1;
             break;
         }
@@ -293,7 +296,7 @@ void* GenericBufferManager::GetOutputBufferForRequest()
 
     if(pBuffer == NULL && bufferCount >= TIMEOUT_RETRIES)
     {
-        CF2_LOG_ERROR("All buffers in queue are NULL");
+        XLOGE("All buffers in queue are NULL");
         statusCode = -1;
     }
 
@@ -367,7 +370,7 @@ void* GenericBufferManager::GetInputBufferForRequest()
 
     if (NULL == pBuffer && retries >= TIMEOUT_RETRIES)
     {
-        CF2_LOG_ERROR("All buffers in queue are NULL");
+        XLOGE("All buffers in queue are NULL");
         statusCode = -1;
     }
 
@@ -409,7 +412,7 @@ int GenericBufferManager::ProcessBufferFromResult(
 
         if (NULL == pQueuedStreamBuffer)
         {
-            CF2_LOG_ERROR("Filled Queue has a NULL buffer!");
+            XLOGE("Filled Queue has a NULL buffer!");
             m_pQueueMutex->Unlock();
             return -1;
         }
@@ -452,7 +455,7 @@ int GenericBufferManager::ProcessBufferFromResult(
                         }
                         else
                         {
-                            CF2_LOG_ERROR("inputImage Queue is NULL!");
+                            XLOGE("inputImage Queue is NULL!");
                             result = -1;
                         }
                     }
@@ -462,19 +465,19 @@ int GenericBufferManager::ProcessBufferFromResult(
                 }
                 else
                 {
-                    CF2_LOG_ERROR("Release fence is not set for frame: %d!", frameNumber);
+                    XLOGE("Release fence is not set for frame: %d!", frameNumber);
                     result = -1;
                 }
             }
             else
             {
-                CF2_LOG_ERROR("Received buffer in error for frame: %d!", frameNumber);
+                XLOGE("Received buffer in error for frame: %d!", frameNumber);
                 result = -1;
             }
         }
         else
         {
-            CF2_LOG_ERROR("Received buffer in non-FIFO order for frame: %d!", frameNumber);
+            XLOGE("Received buffer in non-FIFO order for frame: %d!", frameNumber);
             result = -1;
         }
 
@@ -488,7 +491,7 @@ int GenericBufferManager::ProcessBufferFromResult(
     }
     else
     {
-        CF2_LOG_ERROR("Filled buffer queue is NULL!");
+        XLOGE("Filled buffer queue is NULL!");
         result = -1;
     }
 
@@ -685,7 +688,7 @@ std::string GenericBufferManager::GetFileExt(int format)
     case PRIVATE_PIXEL_FORMAT_PD10:
         return ".pd10";
     default:
-        CF2_LOG_ERROR("Unknown capture format: %d!", format);
+        XLOGE("Unknown capture format: %d!", format);
         return ".unknown";
     }
 }

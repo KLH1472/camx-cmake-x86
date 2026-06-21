@@ -10,6 +10,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
+#undef  LOG_TAG
+#define LOG_TAG "ChMd"
+#include <android/log.h>
 #include <chrono>
 #include <string>
 
@@ -24,6 +27,21 @@
 #endif
 
 // NOWHINE ENTIRE FILE - Temporarily bypassing for existing CHI files
+
+#undef  CHX_LOG
+#undef  CHX_LOG_ERROR
+#undef  CHX_LOG_WARN
+#undef  CHX_LOG_INFO
+#undef  CHX_LOG_DEBUG
+#undef  CHX_LOG_VERBOSE
+#undef  CHX_LOG_CONFIG
+#define CHX_LOG         XLOGI
+#define CHX_LOG_ERROR   XLOGE
+#define CHX_LOG_WARN    XLOGW
+#define CHX_LOG_INFO    XLOGI
+#define CHX_LOG_DEBUG   XLOGD
+#define CHX_LOG_VERBOSE XLOGV
+#define CHX_LOG_CONFIG  XLOGI
 
 // #define __ENABLE_META_PROFILING__
 
@@ -158,14 +176,14 @@ CDKResult ChiMetadata::ReadDataFromFile(
             }
             else
             {
-                 CHX_LOG_ERROR("[CMB_ERROR] Zero bytes read for %s", pMetadataFileName);
+                 XLOGE("[CMB_ERROR] Zero bytes read for %s", pMetadataFileName);
             }
         }
         CdkUtils::FClose(pFp);
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot open file %s", pMetadataFileName);
+        XLOGE("[CMB_ERROR] Cannot open file %s", pMetadataFileName);
     }
 
     return result;
@@ -213,13 +231,13 @@ CDKResult ChiMetadata::ParseAndSetMetadata(
                 break;
             }
         }
-        CHX_LOG_INFO("[CMB_DEBUG] Parsed tag count %d parsed_len %d buffer_size %zu",
+        XLOGI("[CMB_DEBUG] Parsed tag count %d parsed_len %d buffer_size %zu",
             tagCount, parsedLen, rBuffer.size());
     }
     else
     {
         result = CDKResultEInvalidArg;
-        CHX_LOG_ERROR("[CMB_ERROR] Invalid metadata buffer header");
+        XLOGE("[CMB_ERROR] Invalid metadata buffer header");
     }
     return result;
 }
@@ -260,18 +278,18 @@ ChiMetadata* ChiMetadata::Create(
                     }
                     else
                     {
-                        CHX_LOG_ERROR("[CMB_ERROR] Parsing failed");
+                        XLOGE("[CMB_ERROR] Parsing failed");
                     }
                 }
                 else
                 {
-                    CHX_LOG_ERROR("[CMB_ERROR] Initialize metadata ops failed");
+                    XLOGE("[CMB_ERROR] Initialize metadata ops failed");
                 }
             }
             else
             {
                 result = CDKResultENoMemory;
-                CHX_LOG_ERROR("[CMB_ERROR] NULL metadata");
+                XLOGE("[CMB_ERROR] NULL metadata");
             }
         }
 
@@ -379,7 +397,7 @@ CDKResult ChiMetadata::Destroy(
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Trying to delete the metadata owned by the manager this %p ops %p client %x frame %u",
+        XLOGE("[CMB_ERROR] Trying to delete the metadata owned by the manager this %p ops %p client %x frame %u",
             this,
             m_metaHandle,
             m_metadataClientId.clientIndex,
@@ -403,7 +421,7 @@ CDKResult ChiMetadata::DestroyInternal(
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot destroy metadata client %x frame %u",
+        XLOGE("[CMB_ERROR] Cannot destroy metadata client %x frame %u",
             m_metadataClientId.clientIndex,
             m_metadataClientId.frameNumber);
     }
@@ -678,7 +696,7 @@ CDKResult ChiMetadata::TranslateToCameraPartialMetadata(
 
             if (0 != status)
             {
-                CHX_LOG_ERROR("[CMB_ERROR] Update failed for tag %x count %d capacity %zd",
+                XLOGE("[CMB_ERROR] Update failed for tag %x count %d capacity %zd",
                               chiMetaEntry.tagID, chiMetaEntry.count,
                               get_camera_metadata_entry_capacity(pDstCameraMetadata));
                 break;
@@ -1021,7 +1039,7 @@ CDKResult ChiMetadataManager::MetaClient::ReleaseBuffers()
             if (CDKResultSuccess != resultLocal)
             {
                 result = resultLocal;
-                CHX_LOG_ERROR("[CMB_ERROR] Cannot release buffer at index %d", index);
+                XLOGE("[CMB_ERROR] Cannot release buffer at index %d", index);
             }
             else
             {
@@ -1074,7 +1092,7 @@ CDKResult ChiMetadataManager::MetaClient::AllocateBuffers(
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Buffer count %u pTags %p count %u",
+        XLOGE("[CMB_ERROR] Buffer count %u pTags %p count %u",
             bufferCount, pTags, tagCount);
         result = CDKResultEInvalidArg;
     }
@@ -1113,7 +1131,7 @@ ChiMetadataManager::AndroidMetadataHolder::~AndroidMetadataHolder()
 {
     if (NULL != pMetadata)
     {
-        CHX_LOG_INFO("Destroy FWO %p entry_cap %zd data_cap %zd", pMetadata,
+        XLOGI("Destroy FWO %p entry_cap %zd data_cap %zd", pMetadata,
                       get_camera_metadata_entry_capacity(pMetadata),
                       get_camera_metadata_data_capacity(pMetadata));
         ChxUtils::AndroidMetadata::FreeMetaData(pMetadata);
@@ -1307,13 +1325,13 @@ CDKResult ChiMetadataManager::InitializeFrameworkInputClient(
             }
             else
             {
-                CHX_LOG_ERROR("[CMB_ERROR] Error Allocatebuffers failed %d", result);
+                XLOGE("[CMB_ERROR] Error Allocatebuffers failed %d", result);
                 result = CDKResultENoMemory;
             }
         }
         else
         {
-            CHX_LOG_ERROR("[CMB_ERROR] Error GetAvailableRequestKeys failed %d", result);
+            XLOGE("[CMB_ERROR] Error GetAvailableRequestKeys failed %d", result);
             result = CDKResultENoMemory;
         }
 
@@ -1334,7 +1352,7 @@ CDKResult ChiMetadataManager::InitializeFrameworkInputClient(
             }
             if (NULL == m_stickyInput)
             {
-                CHX_LOG_ERROR("[CMB_ERROR] Cannot create sticky input");
+                XLOGE("[CMB_ERROR] Cannot create sticky input");
                 result = CDKResultENoMemory;
             }
         }
@@ -1496,7 +1514,7 @@ UINT32 ChiMetadataManager::RegisterExclusiveClient(
 
     if (InvalidClientId == clientId)
     {
-        CHX_LOG_ERROR("Register failed index %u", index);
+        XLOGE("Register failed index %u", index);
     }
     else
     {
@@ -1586,7 +1604,7 @@ UINT32 ChiMetadataManager::RegisterSharedClient(
 
     if (InvalidClientId == clientId)
     {
-        CHX_LOG_ERROR("Register failed index %u", index);
+        XLOGE("Register failed index %u", index);
     }
     else
     {
@@ -1615,7 +1633,7 @@ CDKResult ChiMetadataManager::UnregisterClient(
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Unregister failed clientId %u", clientId);
+        XLOGE("[CMB_ERROR] Unregister failed clientId %u", clientId);
     }
 
     return result;
@@ -1672,12 +1690,12 @@ CDKResult ChiMetadataManager::SetPipelineId(
         }
         else
         {
-            CHX_LOG_ERROR("SetPipelineId failed clientId %u subclient not used", clientId);
+            XLOGE("SetPipelineId failed clientId %u subclient not used", clientId);
         }
     }
     else
     {
-        CHX_LOG_WARN("SetPipelineId failed clientId %u", clientId);
+        XLOGW("SetPipelineId failed clientId %u", clientId);
     }
     return result;
 }
@@ -1817,13 +1835,13 @@ ChiMetadata* ChiMetadataManager::GetFreeHolder(
         }
         else
         {
-            CHX_LOG_ERROR("[CMB_ERROR] Cannot get metadata client %d subclient %d frameNumber %d",
+            XLOGE("[CMB_ERROR] Cannot get metadata client %d subclient %d frameNumber %d",
                 index, subIndex, frameNumber);
         }
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot get metadata client %d subclient %d frameNumber %d",
+        XLOGE("[CMB_ERROR] Cannot get metadata client %d subclient %d frameNumber %d",
             index, subIndex, frameNumber);
     }
     return pMetadata;
@@ -1848,7 +1866,7 @@ ChiMetadata* ChiMetadataManager::Get(
     }
     else
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot get metadata index %d subindex %d frameNumber %d",
+        XLOGE("[CMB_ERROR] Cannot get metadata index %d subindex %d frameNumber %d",
             index, subIndex, frameNumber);
     }
 
@@ -1987,13 +2005,13 @@ ChiMetadata* ChiMetadataManager::GetInput(
         else
         {
             result = CDKResultEFailed;
-            CHX_LOG_ERROR("[CMB_ERROR] Cannot set tags for frame %u copy failed", frameNumber);
+            XLOGE("[CMB_ERROR] Cannot set tags for frame %u copy failed", frameNumber);
         }
     }
     else
     {
         result = CDKResultEFailed;
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot get metadata for frame %u %d", frameNumber, m_InputFrameNumber);
+        XLOGE("[CMB_ERROR] Cannot get metadata for frame %u %d", frameNumber, m_InputFrameNumber);
     }
 
     if (m_enableTracking)
@@ -2017,7 +2035,7 @@ ChiMetadata* ChiMetadataManager::GetMetadataFromHandle(
 
     if (CDKResultSuccess != result)
     {
-        CHX_LOG_WARN("[CMB_ERROR] Cannot get metadata for handle %p", hMetaHandle);
+        XLOGW("[CMB_ERROR] Cannot get metadata for handle %p", hMetaHandle);
     }
 
     return pMetadata;
@@ -2190,7 +2208,7 @@ camera_metadata_t* ChiMetadataManager::GetAndroidFrameworkOutputMetadata(
 
     if (NULL == pAndMetadata)
     {
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot get metadata for index %d", index);
+        XLOGE("[CMB_ERROR] Cannot get metadata for index %d", index);
     }
 
     CHX_LOG_META_DBG("[CMB_DEBUG_AFWO] Get framework output index %u address %p sparse %d", index,
@@ -2227,7 +2245,7 @@ CDKResult ChiMetadataManager::ReleaseAndroidFrameworkOutputMetadata(
     else
     {
         result = CDKResultENoSuch;
-        CHX_LOG_ERROR("[CMB_ERROR] Cannot release metadata %p", pMetadata);
+        XLOGE("[CMB_ERROR] Cannot release metadata %p", pMetadata);
     }
 
     CHX_LOG_META_DBG("[CMB_DEBUG_AFWO] Release framework output index %u", index);
@@ -2261,7 +2279,7 @@ CDKResult ChiMetadataManager::PrintAllBuffers(
 
         holder.pMetadata->PrintDetails();
 
-        CHX_LOG_INFO("[CMB_TRACK] Print meta %d client %d subclient %d, frameNum %d refCount %d"
+        XLOGI("[CMB_TRACK] Print meta %d client %d subclient %d, frameNum %d refCount %d"
                      " allClients %s handle chi %p %p",
                      bufIndex,
                      index,

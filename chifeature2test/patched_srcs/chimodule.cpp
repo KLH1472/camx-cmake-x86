@@ -10,6 +10,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "chimodule.h"
+#undef  LOG_TAG
+#define LOG_TAG "ChiM"
+#include <android/log.h>
 #include "chxutils.h"
 
 ///@brief ChiModule singleton
@@ -32,7 +35,7 @@ ChiModule* ChiModule::GetInstance()
         m_pModuleInstance = CF2_NEW ChiModule();
         if (m_pModuleInstance->Initialize() != CDKResultSuccess)
         {
-            CF2_LOG_ERROR("Failed to initialize ChiModule singleton!");
+            XLOGE("Failed to initialize ChiModule singleton!");
             return NULL;
         }
     }
@@ -93,7 +96,7 @@ ChiModule::~ChiModule()
     {
         if (CloseContext() != CDKResultSuccess)
         {
-            CF2_LOG_ERROR("Failed to close camera context!");
+            XLOGE("Failed to close camera context!");
         }
     }
 
@@ -152,7 +155,7 @@ CDKResult ChiModule::Initialize()
     //}
 
     //m_numOfCameras = m_chiOps.pGetNumCameras(m_hContext);
-    //CF2_LOG_DEBUG("Number of cameras reported by device: %d", m_numOfCameras);
+    //XLOGD("Number of cameras reported by device: %d", m_numOfCameras);
 
     //m_pCameraInfo = CF2_NEW CHICAMERAINFO[m_numOfCameras];
     //m_pLegacyCameraInfo = CF2_NEW camera_info[m_numOfCameras];
@@ -170,11 +173,11 @@ CDKResult ChiModule::Initialize()
 
     //    m_chiOps.pEnumerateSensorModes(m_hContext, currCamera, numSensorModes, m_pSensorInfo[currCamera]);
 
-    //    CF2_LOG_DEBUG("Listing available sensor modes for camera %d...", currCamera)
+    //    XLOGD("Listing available sensor modes for camera %d...", currCamera)
 
     //    for (uint32_t sensorMode = 0; sensorMode < numSensorModes; sensorMode++)
     //    {
-    //        CF2_LOG_DEBUG("Camera %d sensormode %u:, width %u, height %u, framerate %u, bpp %u",
+    //        XLOGD("Camera %d sensormode %u:, width %u, height %u, framerate %u, bpp %u",
     //            currCamera,
     //            sensorMode,
     //            m_pSensorInfo[currCamera][sensorMode].frameDimension.width,
@@ -220,19 +223,19 @@ CDKResult ChiModule::LoadLibraries()
     hLibrary = ChxUtils::LibMap(m_libPath);
     if (hLibrary == NULL)
     {
-        CF2_LOG_ERROR("Failed to load android library");
+        XLOGE("Failed to load android library");
         return CDKResultEUnableToLoad;
     }
     pChiHalOpen = reinterpret_cast<PFNCHIENTRY>(ChxUtils::LibGetAddr(hLibrary, "ChiEntry"));
     if (pChiHalOpen == NULL)
     {
-        CF2_LOG_ERROR("ChiEntry missing in library");
+        XLOGE("ChiEntry missing in library");
         return CDKResultEUnableToLoad;
     }
     m_pCameraModule = reinterpret_cast<camera_module_t*>(ChxUtils::LibGetAddr(hLibrary, "HMI"));
     if (m_pCameraModule == NULL)
     {
-        CF2_LOG_ERROR("CameraModule missing in library");
+        XLOGE("CameraModule missing in library");
         return CDKResultEUnableToLoad;
     }
 
@@ -266,30 +269,30 @@ CDKResult ChiModule::OpenContext()
     UINT32 minorVersion = m_chiOps.minorVersion;
     UINT32 subVersion = m_chiOps.subVersion;
 
-    CF2_LOG_INFO("Checking CHI inteface compatibility: expected version %u.%u, queried version %u.%u",
+    XLOGI("Checking CHI inteface compatibility: expected version %u.%u, queried version %u.%u",
         EXPECT_CHI_API_MAJOR_VERSION, EXPECT_CHI_API_MINOR_VERSION, majorVersion, minorVersion);
 
     if (majorVersion != EXPECT_CHI_API_MAJOR_VERSION)
     {
-        CF2_LOG_ERROR("Major version mismatch: NativeChiTest is not compatible with this build!");
+        XLOGE("Major version mismatch: NativeChiTest is not compatible with this build!");
         return CDKResultEUnsupported;
     }
     if (minorVersion != EXPECT_CHI_API_MINOR_VERSION)
     {
-        CF2_LOG_WARN("Minor version mismatch: NativeChiTest may need to be recompiled to work with this build.");
+        XLOGW("Minor version mismatch: NativeChiTest may need to be recompiled to work with this build.");
     }
     if (subVersion != EXPECT_CHI_API_SUB_VERSION)
     {
-        CF2_LOG_WARN("Sub version mismatch: NativeChiTest may need to be recompiled to work with this build.");
+        XLOGW("Sub version mismatch: NativeChiTest may need to be recompiled to work with this build.");
     }
 
-    CF2_LOG_INFO("Opening chi context");
+    XLOGI("Opening chi context");
     m_hContext = m_chiOps.pOpenContext();
     m_chiOps.pTagOps(&m_chiVendorTagOps);
     m_chiOps.pGetFenceOps(&m_fenceOps);
     if (m_hContext == NULL)
     {
-        CF2_LOG_ERROR("Open context failed!");
+        XLOGE("Open context failed!");
         return CDKResultEFailed;
     }
     return CDKResultSuccess;
@@ -309,7 +312,7 @@ CDKResult ChiModule::CloseContext()
 {
     CDKResult result = CDKResultSuccess;
 
-    CF2_LOG_INFO("Closing Context: %p", m_hContext);
+    XLOGI("Closing Context: %p", m_hContext);
     if (m_hContext != NULL)
     {
         m_chiOps.pCloseContext(m_hContext);
@@ -317,7 +320,7 @@ CDKResult ChiModule::CloseContext()
     }
     else
     {
-        CF2_LOG_ERROR("Requested context %p is not open", m_hContext);
+        XLOGE("Requested context %p is not open", m_hContext);
         result = CDKResultEInvalidState;
     }
     return result;

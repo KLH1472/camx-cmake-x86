@@ -12,6 +12,9 @@
 // NOWHINE FILE CP006: Need vector to pass filtered port information
 
 #include "chithreadmanager.h"
+#undef  LOG_TAG
+#define LOG_TAG "ThMg"
+#include <android/log.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CHIThreadManager::Create
@@ -32,7 +35,7 @@ CDKResult CHIThreadManager::Create(
             CHX_DELETE pLocalInstance;
             pLocalInstance = NULL;
 
-            CHX_LOG_ERROR("Failed to create Chi threadmanager");
+            XLOGE("Failed to create Chi threadmanager");
         }
     }
 
@@ -72,7 +75,7 @@ CDKResult CHIThreadManager::RegisterJobFamily(
     if ((TRUE == jobAlreadyRegistered) ||
         (FALSE == freeSlotsAvailable))
     {
-        CHX_LOG_ERROR("Failed to registerJobFramily, jobAlreadyRegistered: %d freeSlotsAvailable %d",
+        XLOGE("Failed to registerJobFramily, jobAlreadyRegistered: %d freeSlotsAvailable %d",
             jobAlreadyRegistered,
             freeSlotsAvailable);
 
@@ -104,7 +107,7 @@ CDKResult CHIThreadManager::RegisterJobFamily(
             }
             else
             {
-                CHX_LOG_ERROR("Failed to get thread handle");
+                XLOGE("Failed to get thread handle");
                 result = CDKResultEFailed;
             }
         }
@@ -129,7 +132,7 @@ CDKResult CHIThreadManager::UnregisterJobFamily(
 
     if (TRUE != IsJobAlreadyRegistered(&hJob))
     {
-        CHX_LOG_ERROR("Failed to unregister job %s FuncAddr %p result %d",
+        XLOGE("Failed to unregister job %s FuncAddr %p result %d",
             pJobFuncName,
             jobFuncAddr,
             result);
@@ -150,11 +153,11 @@ CDKResult CHIThreadManager::UnregisterJobFamily(
 
             m_totalNumOfRegisteredJob--;
 
-            CHX_LOG_INFO("Feature name %s remaining jobfamily %d", pJobFuncName, m_totalNumOfRegisteredJob);
+            XLOGI("Feature name %s remaining jobfamily %d", pJobFuncName, m_totalNumOfRegisteredJob);
         }
         else
         {
-            CHX_LOG_ERROR("Failed to stop thread");
+            XLOGE("Failed to stop thread");
         }
     }
 
@@ -180,7 +183,7 @@ CDKResult CHIThreadManager::StartThreads(
     // since registeredJob and threadConfig are 1:1 mapped, same slot should be used for threadConfig as well.
     if ((NULL == pRegisteredJob) || (pCfg->isUsed == TRUE))
     {
-        CHX_LOG_ERROR("Slot %d is already occupied. totalNumOfRegisteredJob %d",
+        XLOGE("Slot %d is already occupied. totalNumOfRegisteredJob %d",
             slot,
             m_totalNumOfRegisteredJob);
 
@@ -205,7 +208,7 @@ CDKResult CHIThreadManager::StartThreads(
             (NULL == pCfg->ctrl.pFlushJobSubmitLock) ||
             (NULL == pCfg->ctrl.pQueueLock))
         {
-            CHX_LOG_ERROR("Couldn't create lock resources. slot %d m_totalNumOfRegisteredJob %d",
+            XLOGE("Couldn't create lock resources. slot %d m_totalNumOfRegisteredJob %d",
                 slot,
                 m_totalNumOfRegisteredJob);
 
@@ -230,7 +233,7 @@ CDKResult CHIThreadManager::StartThreads(
             }
             else
             {
-                CHX_LOG_ERROR("Couldn't create worker thread, logical threadId %d", pCfg->threadId);
+                XLOGE("Couldn't create worker thread, logical threadId %d", pCfg->threadId);
 
                 pCfg->isUsed = FALSE;
 
@@ -238,7 +241,7 @@ CDKResult CHIThreadManager::StartThreads(
             }
         }
 
-        CHX_LOG_INFO("ThreadId %d workThreadFunc %p hWorkThread %ld ReadOk %p, threadLock %p"
+        XLOGI("ThreadId %d workThreadFunc %p hWorkThread %ld ReadOk %p, threadLock %p"
             "flushjobsubmit lock %p queuelock %p context %p isUsed %d, slot %d NumOfRegisteredJob %d",
             pCfg->threadId,
             pCfg->workThreadFunc,
@@ -273,7 +276,7 @@ CDKResult CHIThreadManager::AddToPriorityQueue(
 
     if ((NULL == pData) || (NULL == pCtrl))
     {
-        CHX_LOG_ERROR("Failed to get threaddata %p or threadctrl %p",
+        XLOGE("Failed to get threaddata %p or threadctrl %p",
             pData,
             pCtrl);
 
@@ -325,7 +328,7 @@ VOID * CHIThreadManager::DoWork(
 
     if (NULL == pCtrl)
     {
-        CHX_LOG_ERROR("Failed to start");
+        XLOGE("Failed to start");
     }
     else
     {
@@ -377,7 +380,7 @@ CDKResult CHIThreadManager::Trigger(
 
     if (NULL == pCtrl)
     {
-        CHX_LOG_ERROR("Failed to get threadctrl %p", pCtrl);
+        XLOGE("Failed to get threadctrl %p", pCtrl);
 
         result = CDKResultEFailed;
     }
@@ -492,14 +495,14 @@ CDKResult CHIThreadManager::FlushJob(
 
     if (NULL == pCtrl)
     {
-        CHX_LOG_ERROR("pCtrl is null");
+        XLOGE("pCtrl is null");
         result = CDKResultEFailed;
     }
     else
     {
         if (Initialized != GetStatus(pCtrl))
         {
-            CHX_LOG_ERROR("Thread is not initialized");
+            XLOGE("Thread is not initialized");
 
             result = CDKResultEFailed;
         }
@@ -526,7 +529,7 @@ CDKResult CHIThreadManager::FlushJob(
                 }
                 else
                 {
-                    CHX_LOG_ERROR("Failed to trigger");
+                    XLOGE("Failed to trigger");
                 }
 
                 if (TRUE == forceFlush)
@@ -555,7 +558,7 @@ CamxResult CHIThreadManager::StopThreads(
 
     if ((NULL == pCfg) || (NULL == pData) || (NULL == pCtrl))
     {
-        CHX_LOG_ERROR("Failed cfg %p data %p ctrl %p",
+        XLOGE("Failed cfg %p data %p ctrl %p",
             pCfg,
             pData,
             pCtrl);
@@ -615,14 +618,14 @@ CDKResult CHIThreadManager::PostJob(
 
     if (NULL == pCtrl)
     {
-        CHX_LOG_ERROR("pCtrl is null");
+        XLOGE("pCtrl is null");
         result = CDKResultEFailed;
     }
     else
     {
         if (Initialized != GetStatus(pCtrl))
         {
-            CHX_LOG_ERROR("Thread is not initialized threadId");
+            XLOGE("Thread is not initialized threadId");
 
             result = CDKResultEFailed;
         }
@@ -642,7 +645,7 @@ CDKResult CHIThreadManager::PostJob(
 
                 if (CamxResultSuccess != result)
                 {
-                    CHX_LOG_ERROR("Couldn't add job to Priority Queue");
+                    XLOGE("Couldn't add job to Priority Queue");
                 }
                 else
                 {
@@ -650,13 +653,13 @@ CDKResult CHIThreadManager::PostJob(
 
                     if (CDKResultSuccess != result)
                     {
-                        CHX_LOG_ERROR("Failed to trigger");
+                        XLOGE("Failed to trigger");
                     }
                 }
             }
             else
             {
-                CHX_LOG_ERROR("Failed to create runtimejob out of memory");
+                XLOGE("Failed to create runtimejob out of memory");
                 result = CDKResultENoMemory;
             }
         }
@@ -681,7 +684,7 @@ CDKResult CHIThreadManager::RemoveJob(
 
     if ((NULL == pData) || (NULL == pCtrl))
     {
-        CHX_LOG_ERROR("Failed to get threaddata %p or threadctrl %p",
+        XLOGE("Failed to get threaddata %p or threadctrl %p",
             pData,
             pCtrl);
 
@@ -718,7 +721,7 @@ CDKResult CHIThreadManager::GetAllPostedJobs(JobHandle hJob, std::vector<VOID*>&
 
     if ((NULL == pData) || (NULL == pCtrl))
     {
-        CHX_LOG_ERROR("Failed to get threaddata %p or threadctrl %p",
+        XLOGE("Failed to get threaddata %p or threadctrl %p",
             pData,
             pCtrl);
 
@@ -770,7 +773,7 @@ CHIThreadManager::~CHIThreadManager()
 
                 if (CDKResultSuccess != result)
                 {
-                    CHX_LOG_ERROR("Failed to process UnregisterJob slot %d", pRegisteredJob->slot);
+                    XLOGE("Failed to process UnregisterJob slot %d", pRegisteredJob->slot);
                 }
             }
         }
@@ -798,7 +801,7 @@ CDKResult CHIThreadManager::Initialize(
 
     if (NULL == m_pRegisteredJobLock)
     {
-        CHX_LOG_ERROR("Failed to initialize %s", pName);
+        XLOGE("Failed to initialize %s", pName);
         result = CDKResultEFailed;
     }
     else
@@ -810,7 +813,7 @@ CDKResult CHIThreadManager::Initialize(
             new (&m_threadWorker[i].data.pq) std::deque<RuntimeJob*>();
         }
 
-        CHX_LOG_INFO("initialized %s", pName);
+        XLOGI("initialized %s", pName);
     }
 
     return result;
@@ -869,7 +872,7 @@ BOOL CHIThreadManager::IsFreeSlotAvailable(
             }
             else
             {
-                CHX_LOG_ERROR("Exceed MaxRegisteredJobs %d", m_totalNumOfRegisteredJob);
+                XLOGE("Exceed MaxRegisteredJobs %d", m_totalNumOfRegisteredJob);
             }
 
             break;
@@ -886,7 +889,7 @@ BOOL CHIThreadManager::IsFreeSlotAvailable(
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 VOID CHIThreadManager::Dump()
 {
-    CHX_LOG_VERBOSE("Remaining jobfamily and threads");
+    XLOGV("Remaining jobfamily and threads");
 
     RegisteredJob* pRegisteredJob = NULL;
 
@@ -896,7 +899,7 @@ VOID CHIThreadManager::Dump()
 
         if (0 != pRegisteredJob->isUsed)
         {
-            CHX_LOG_VERBOSE("job name %s flushStatus %d",
+            XLOGV("job name %s flushStatus %d",
                 pRegisteredJob->name,
                 pRegisteredJob->flushStatus);
         }
