@@ -13,6 +13,9 @@
 #include "feature2buffermanager.h"
 #include "chifeature2generic.h"
 #include "bayer2yuvinputdata.h"
+#undef  LOG_TAG
+#define LOG_TAG "Feature2Offline"
+#include <android/log.h>
 #include "bpsinputdata.h"
 #include "ipeinputdata.h"
 #include "yuv2jpeginputdata.h"
@@ -51,7 +54,7 @@ const CHAR*                 Feature2OfflineTest::m_testFullName;
 
 VOID Feature2OfflineTest::Setup()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     // Save instance so static functions can access later
     m_pTestObj = this;
@@ -62,17 +65,17 @@ VOID Feature2OfflineTest::Setup()
     // Parent class setup
     Feature2TestCase::Setup();
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 VOID Feature2OfflineTest::Teardown()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     // Parent class teardown
     Feature2TestCase::Teardown();
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 VOID Feature2OfflineTest::SetFeature2Interface()
@@ -91,7 +94,7 @@ VOID Feature2OfflineTest::SetFeature2Interface()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 VOID Feature2OfflineTest::OfflineFeatureTest(TestId testId)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     m_testSuiteName = "Feature2OfflineTest";
 
@@ -129,14 +132,14 @@ VOID Feature2OfflineTest::OfflineFeatureTest(TestId testId)
         }
         break;
     default:
-        CF2_LOG_ERROR("Unknown player Id!");
+        XLOGE("Unknown player Id!");
         break;
     }
 
     // Run the test
     RunFeature2Test();
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,7 +147,7 @@ VOID Feature2OfflineTest::OfflineFeatureTest(TestId testId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 VOID Feature2OfflineTest::InitializeFeature2Test()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     CDKResult result = CDKResultSuccess;
     ChiTargetBufferManagerCreateData inputImageTBMCreateData                       = { 0 };
@@ -324,10 +327,10 @@ VOID Feature2OfflineTest::InitializeFeature2Test()
     if (NULL == m_pInputImageTBM || NULL == m_pMetadataTBM)
     {
         result = CDKResultEFailed;
-        CF2_LOG_ERROR("TBM creation failed!");
+        XLOGE("TBM creation failed!");
     }
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -336,7 +339,7 @@ VOID Feature2OfflineTest::InitializeFeature2Test()
 VOID Feature2OfflineTest::GetGenericFeature2Descriptor(
     ChiFeature2CreateInputInfo* pFeature2CreateInputInfoOut)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     m_logicalCameraInfo = { 0 };
     const ChiFeature2Descriptor* pFeatureDescriptor = NULL;
@@ -374,12 +377,12 @@ VOID Feature2OfflineTest::GetGenericFeature2Descriptor(
     pFeature2CreateInputInfoOut->pInstanceProps = &m_instanceProps;
     pFeature2CreateInputInfoOut->pFeatureDescriptor = const_cast<ChiFeature2Descriptor*>(pFeatureDescriptor);
     pFeature2CreateInputInfoOut->pCameraInfo = &m_logicalCameraInfo;
-    CHX_LOG_ERROR("Result: GetFeature2Descriptor out numvam %d", pFeature2CreateInputInfoOut->pCameraInfo->numPhysicalCameras);
+    XLOGE("Result: GetFeature2Descriptor out numvam %d", pFeature2CreateInputInfoOut->pCameraInfo->numPhysicalCameras);
     pFeature2CreateInputInfoOut->pUsecaseDescriptor = g_pUsecaseZSL;//g_pUsecaseSAT;
     pFeature2CreateInputInfoOut->pStreamConfig = m_pStreamConfig;
-    CHX_LOG_ERROR("Result: GetFeature2Descriptor out");
+    XLOGE("Result: GetFeature2Descriptor out");
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,7 +394,7 @@ VOID Feature2OfflineTest::GetInputFeature2RequestObject(
     ChiFeature2RequestObject**  ppFeature2RequestObjectOut,
     VOID*                       pPrivateData)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     m_pMetadata = pMetadata;
     m_frameNumber++;
@@ -485,7 +488,7 @@ VOID Feature2OfflineTest::GetInputFeature2RequestObject(
                 else
                 {
                     m_hOutputImageBuffer[outputStreamIndex] = NULL;
-                    CF2_LOG_ERROR("Output image buffer import failed!");
+                    XLOGE("Output image buffer import failed!");
                 }
 
                 bufferMetaInfo.hBuffer = m_hOutputImageBuffer[outputStreamIndex];
@@ -522,7 +525,7 @@ VOID Feature2OfflineTest::GetInputFeature2RequestObject(
     }
     else
     {
-        CHX_LOG_ERROR("Create feature setting failed");
+        XLOGE("Create feature setting failed");
     }
     */
     // Example Code End
@@ -534,7 +537,7 @@ VOID Feature2OfflineTest::GetInputFeature2RequestObject(
 
     *ppFeature2RequestObjectOut = ChiFeature2RequestObject::Create(&feature2RequestObjInputInfo);
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -544,19 +547,19 @@ CDKResult Feature2OfflineTest::ProcessMessage(
     ChiFeature2RequestObject*   pFeatureRequestObj,
     ChiFeature2Messages*        pMessages)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     CDKResult result = CDKResultSuccess;
 
     if (NULL == pFeatureRequestObj)
     {
-        CF2_LOG_ERROR("Invalid argument: pFeatureRequestObj is NULL");
+        XLOGE("Invalid argument: pFeatureRequestObj is NULL");
         result = CDKResultEInvalidArg;
     }
 
     if (NULL == pMessages)
     {
-        CF2_LOG_ERROR("Invalid argument: pMessages is NULL");
+        XLOGE("Invalid argument: pMessages is NULL");
         result = CDKResultEInvalidArg;
     }
 
@@ -571,7 +574,7 @@ CDKResult Feature2OfflineTest::ProcessMessage(
                     result = ProcessGetInputDependencyMessage(pFeatureRequestObj, pMessages);
                     if (CDKResultSuccess != result)
                     {
-                        CF2_LOG_ERROR("Failed to process get input dependency message!");
+                        XLOGE("Failed to process get input dependency message!");
                     }
                     break;
                 }
@@ -580,7 +583,7 @@ CDKResult Feature2OfflineTest::ProcessMessage(
                     result = ProcessResultNotificationMessage(pFeatureRequestObj, pMessages);
                     if (CDKResultSuccess != result)
                     {
-                        CF2_LOG_ERROR("Failed to process result notification message!");
+                        XLOGE("Failed to process result notification message!");
                     }
                     break;
                 }
@@ -589,7 +592,7 @@ CDKResult Feature2OfflineTest::ProcessMessage(
                     result = ProcessReleaseInputDependencyMessage(pFeatureRequestObj, pMessages);
                     if (CDKResultSuccess != result)
                     {
-                        CF2_LOG_ERROR("Failed to process release input dependency message!");
+                        XLOGE("Failed to process release input dependency message!");
                     }
                     break;
                 }
@@ -604,19 +607,19 @@ CDKResult Feature2OfflineTest::ProcessMessage(
                     result = ProcessSubmitRequestMessage(pMessages);
                     if (CDKResultSuccess != result)
                     {
-                        CF2_LOG_ERROR("Failed to submit request with result:%d!", result);
+                        XLOGE("Failed to submit request with result:%d!", result);
                     }
                     break;
                 }
 
                 default:
-                    CF2_LOG_WARN("Unknown ChiFeature2MessageType %d", pMessages->pFeatureMessages->messageType);
+                    XLOGW("Unknown ChiFeature2MessageType %d", pMessages->pFeatureMessages->messageType);
                     break;
             }
         }
     }
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 
     return result;
 }
@@ -643,7 +646,7 @@ CDKResult Feature2OfflineTest::ProcessGetInputDependencyMessage(
 
         for (UINT32 portIndex = 0; portIndex < portIds.numPorts; portIndex++)
         {
-            CF2_LOG_DEBUG("portId session %d, pipline %d, port %d", portIds.pPorts[portIndex].session,
+            XLOGD("portId session %d, pipline %d, port %d", portIds.pPorts[portIndex].session,
                 portIds.pPorts[portIndex].pipeline, portIds.pPorts[portIndex].port);
             ChiFeature2Identifier portIdentifier = portIds.pPorts[portIndex];
 
@@ -667,7 +670,7 @@ CDKResult Feature2OfflineTest::ProcessGetInputDependencyMessage(
                 else
                 {
                     m_hInputImageBuffer = NULL;
-                    CF2_LOG_ERROR("Input image buffer import failed!");
+                    XLOGE("Input image buffer import failed!");
                 }
                 bufferMetaInfo.hBuffer = m_hInputImageBuffer;
                 bufferMetaInfo.key = (UINT64)(m_pInputStream);
@@ -688,13 +691,13 @@ CDKResult Feature2OfflineTest::ProcessGetInputDependencyMessage(
                     }
                     else
                     {
-                        CF2_LOG_ERROR("Fail to get ChiMetadata buffer from pool!");
+                        XLOGE("Fail to get ChiMetadata buffer from pool!");
                         result = CDKResultENoSuch;
                     }
                 }
                 else
                 {
-                    CF2_LOG_ERROR("Fail to get ChiMetadataUtil instance!");
+                    XLOGE("Fail to get ChiMetadataUtil instance!");
                     result = CDKResultENoSuch;
                 }
 
@@ -710,14 +713,14 @@ CDKResult Feature2OfflineTest::ProcessGetInputDependencyMessage(
                 else
                 {
                     m_hMetaBuffer = NULL;
-                    CF2_LOG_ERROR("Metadata buffer import failed!");
+                    XLOGE("Metadata buffer import failed!");
                 }
                 bufferMetaInfo.hBuffer = m_hMetaBuffer;
                 bufferMetaInfo.key = (UINT64)(m_pTestObj->GetMetadataClientId());
                 break;
             }
             default:
-                CF2_LOG_ERROR("Invalid port type! (%d)", portIdentifier.portType);
+                XLOGE("Invalid port type! (%d)", portIdentifier.portType);
                 break;
             }
 
@@ -725,7 +728,7 @@ CDKResult Feature2OfflineTest::ProcessGetInputDependencyMessage(
                 bufferMetaInfo.hBuffer, bufferMetaInfo.key, FALSE, 0, dependencyIndex);
             if (CDKResultSuccess != result)
             {
-                CF2_LOG_ERROR("Failed to set buffer info!");
+                XLOGE("Failed to set buffer info!");
             }
         }
     }
@@ -773,7 +776,7 @@ CDKResult Feature2OfflineTest::ProcessResultNotificationMessage(
 
                 if (pTargetBuffer == NULL)
                 {
-                    CHX_LOG_ERROR("Unable to get buffer info for handle %pK", pOutputBufferMetaInfo->hBuffer);
+                    XLOGE("Unable to get buffer info for handle %pK", pOutputBufferMetaInfo->hBuffer);
                     result = CDKResultENoSuch;
                 }
                 else
@@ -803,7 +806,7 @@ CDKResult Feature2OfflineTest::ProcessResultNotificationMessage(
             }
             else
             {
-                CF2_LOG_ERROR("Failed to get TargetBufferManager for ImageBuffer!");
+                XLOGE("Failed to get TargetBufferManager for ImageBuffer!");
                 result = CDKResultENoSuch;
             }
         }
@@ -831,7 +834,7 @@ CDKResult Feature2OfflineTest::ProcessReleaseInputDependencyMessage(
     ChiFeature2Dependency* pDependencies =
         pMessages->pFeatureMessages->message.releaseDependencyData.pDependencies;
 
-    CF2_LOG_DEBUG("ReleaseInputDependency numDependencies: %u", numDependencies);
+    XLOGD("ReleaseInputDependency numDependencies: %u", numDependencies);
 
     for (UINT8 dependencyIndex = 0; dependencyIndex < numDependencies; ++dependencyIndex)
     {
@@ -852,7 +855,7 @@ CDKResult Feature2OfflineTest::ProcessReleaseInputDependencyMessage(
                 m_pMetadataTBM->ReleaseTargetBuffer(m_hMetaBuffer);
                 break;
             default:
-                CF2_LOG_ERROR("Invalid port type! (%d)", pInputPorts[inputPortIndex].portType);
+                XLOGE("Invalid port type! (%d)", pInputPorts[inputPortIndex].portType);
                 break;
             }
             pFeatureRequestObj->SetOutputNotifiedForPort(pInputPorts[inputPortIndex], 0);
@@ -883,12 +886,12 @@ VOID Feature2OfflineTest::GetInputForPort(
     ChiFeature2Base*            pFeature2Base,
     ChiFeature2RequestObject*   pFeature2ResultObject)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     UNUSED_PARAM(pFeature2Base);
     UNUSED_PARAM(pFeature2ResultObject);
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -898,12 +901,12 @@ VOID Feature2OfflineTest::UpdateInputMetadata(
     ChiFeature2Base*            pFeature2Base,
     ChiFeature2RequestObject*   pFeature2ResultObject)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
 
     UNUSED_PARAM(pFeature2Base);
     UNUSED_PARAM(pFeature2ResultObject);
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -912,9 +915,9 @@ VOID Feature2OfflineTest::UpdateInputMetadata(
 ChiFeature2Base* Feature2OfflineTest::CreateFeature2(
     ChiFeature2CreateInputInfo* pFeature2CreateInputInfo)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY %s", __func__);
     ChiFeature2Base* pFeature2Base = NULL;
     pFeature2Base = ChiFeature2Generic::Create(pFeature2CreateInputInfo);
-    CF2_LOG_EXIT();
+    XLOGV("EXIT %s", __func__);
     return pFeature2Base;
 }
