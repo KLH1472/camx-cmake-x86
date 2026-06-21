@@ -28,7 +28,7 @@ UINT32 Feature2TestCase::m_frameNumber;
 
 VOID Feature2TestCase::Setup()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
 
     // Initialize member variables
     m_pChiModule = NULL;
@@ -56,7 +56,7 @@ VOID Feature2TestCase::Setup()
     CDKResult result = CreateMetadataManager();
     if (CDKResultSuccess != result)
     {
-        CF2_LOG_ERROR("Metadata manager creation failed!");
+        XLOGE("Metadata manager creation failed!");
     }
 
     // Get thread manager
@@ -65,7 +65,7 @@ VOID Feature2TestCase::Setup()
         result = CHIThreadManager::Create(&m_pThreadManager, "FeatureThreadManager");
         if (CDKResultSuccess != result)
         {
-            CF2_LOG_ERROR("Thread manager creation failed!");
+            XLOGE("Thread manager creation failed!");
         }
     }
 
@@ -77,12 +77,12 @@ VOID Feature2TestCase::Setup()
     m_pFeature2RequestStateMutex = Mutex::Create();
     m_pFeature2RequestStateComplete = Condition::Create();
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
 }
 
 VOID Feature2TestCase::Teardown()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
 
     m_pMetadataUtil->DestroyInstance();
     m_pMetadataUtil = NULL;
@@ -134,28 +134,28 @@ VOID Feature2TestCase::Teardown()
 
     ChiModule::DestroyInstance();
     m_pChiModule = NULL;
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
 }
 
 CDKResult Feature2TestCase::LoadChiOps()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
     m_pChiModule = ChiModule::GetInstance();
     if (NULL == m_pChiModule)
     {
-        CF2_LOG_ERROR("Could not initialize ChiModule!");
-        CF2_LOG_EXIT();
+        XLOGE("Could not initialize ChiModule!");
+        XLOGV("EXIT");
         return CDKResultEFailed;
     }
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
     return CDKResultSuccess;
 }
 
 // Queries the camera info to generate a context in the chioverride
 CDKResult Feature2TestCase::SetupCamera()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
 
     // Get number of cameras
     UINT32 numFwCameras;
@@ -189,7 +189,7 @@ CDKResult Feature2TestCase::SetupCamera()
         }
     }
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
     return CDKResultSuccess;
 }
 
@@ -212,7 +212,7 @@ CDKResult Feature2TestCase::InitializeInputMetaBufferPool(int cameraId, CHISTREA
     }
     else
     {
-        CF2_LOG_ERROR("Fail to get ChiMetadataUtil instance!");
+        XLOGE("Fail to get ChiMetadataUtil instance!");
         result = CDKResultENoSuch;
     }
 
@@ -227,7 +227,7 @@ CDKResult Feature2TestCase::InitializeBufferManagers(int cameraId, CHISTREAMCONF
 
     if (m_numStreams <= 0)
     {
-        CF2_LOG_ERROR("Cannot create buffermanagers with stream count: %d", m_numStreams);
+        XLOGE("Cannot create buffermanagers with stream count: %d", m_numStreams);
         return CDKResultENeedMore;
     }
 
@@ -249,7 +249,7 @@ CDKResult Feature2TestCase::InitializeBufferManagers(int cameraId, CHISTREAMCONF
 
         if (NULL == m_ppBufferManagers[streamIndex])
         {
-            CF2_LOG_ERROR("Failed to allocate memory for buffer manager for stream index: %d", streamIndex);
+            XLOGE("Failed to allocate memory for buffer manager for stream index: %d", streamIndex);
             return CDKResultENoMemory;
         }
 
@@ -271,7 +271,7 @@ CDKResult Feature2TestCase::PatchingMetadata(const CHAR* pFileName, bool multiFr
     }
     else
     {
-        CF2_LOG_ERROR("Failed to get ChiMetadataUtil instance!");
+        XLOGE("Failed to get ChiMetadataUtil instance!");
         result = CDKResultENoSuch;
     }
 
@@ -290,7 +290,7 @@ CDKResult Feature2TestCase::PatchingMetadata(const CHAR* pSection, const CHAR* p
     }
     else
     {
-        CF2_LOG_ERROR("Failed to get ChiMetadataUtil instance!");
+        XLOGE("Failed to get ChiMetadataUtil instance!");
         result = CDKResultENoSuch;
     }
 
@@ -322,7 +322,7 @@ CDKResult Feature2TestCase::PatchingTuningMode()
     }
     else
     {
-        CF2_LOG_ERROR("Failed to get ChiMetadataUtil instance!");
+        XLOGE("Failed to get ChiMetadataUtil instance!");
         result = CDKResultENoSuch;
     }
 
@@ -361,7 +361,7 @@ CDKResult Feature2TestCase::PatchingStreamConfig(CHISTREAMCONFIGINFO* pStreamCon
                 bidirectionStreamsNum++;
                 break;
             default:
-                CF2_LOG_WARN("Unsupported stream type %d", streamType);
+                XLOGW("Unsupported stream type %d", streamType);
                 break;
             }
         }
@@ -403,14 +403,14 @@ CDKResult Feature2TestCase::PatchingStreamConfig(CHISTREAMCONFIGINFO* pStreamCon
             case ChiStreamTypeBidirectional:
                 break;
             default:
-                CF2_LOG_WARN("Unsupported stream type %d", streamType);
+                XLOGW("Unsupported stream type %d", streamType);
                 break;
             }
         }
     }
     else
     {
-        CF2_LOG_DEBUG("stream config info = %pK, stream config initialized = %d",
+        XLOGD("stream config info = %pK, stream config initialized = %d",
                       pStreamConfigInfo, StreamConfigParser::IsInitialized());
     }
 
@@ -510,7 +510,7 @@ CDKResult Feature2TestCase::PatchingMetaConfig()
     }
     else
     {
-        CF2_LOG_DEBUG("ChiMetaUtil Instance = %pK, meta config initialized = %d",
+        XLOGD("ChiMetaUtil Instance = %pK, meta config initialized = %d",
                       pInstance, MetaConfigParser::IsInitialized());
     }
 
@@ -522,7 +522,7 @@ CDKResult Feature2TestCase::PatchingMetaConfig()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CDKResult Feature2TestCase::CreateMetadataManager()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
     CDKResult result = CDKResultSuccess;
 
     if (NULL == m_pMetadataManager)
@@ -548,7 +548,7 @@ CDKResult Feature2TestCase::CreateMetadataManager()
         result = CDKResultEFailed;
     }
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
     return result;
 }
 
@@ -590,19 +590,19 @@ CDKResult Feature2TestCase::ProcessMessage(
     ChiFeature2RequestObject*   pFeatureRequestObj,
     ChiFeature2Messages*        pMessages)
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
 
     CDKResult result = CDKResultSuccess;
 
     if (NULL == pFeatureRequestObj)
     {
-        CF2_LOG_DEBUG("Invalid argument: pFeatureRequestObj is NULL");
+        XLOGD("Invalid argument: pFeatureRequestObj is NULL");
         result = CDKResultEInvalidArg;
     }
 
     if (NULL == pMessages)
     {
-        CF2_LOG_ERROR("Invalid argument: pMessages is NULL");
+        XLOGE("Invalid argument: pMessages is NULL");
         result = CDKResultEInvalidArg;
     }
 
@@ -620,7 +620,7 @@ CDKResult Feature2TestCase::ProcessMessage(
         }
     }
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
 
     return result;
 }
@@ -656,7 +656,7 @@ VOID Feature2TestCase::FillDefaultMetadata(ChiMetadata* pMetaData)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 VOID Feature2TestCase::RunFeature2Test()
 {
-    CF2_LOG_ENTRY();
+    XLOGV("ENTRY");
     ChiFeature2CreateInputInfo feature2CreateInputInfo = { 0 };
     ChiFeature2Base*           pFeature2Base = NULL;
     //ChiFeature2RequestObject*  m_pFeature2RequestObject = NULL;
@@ -670,7 +670,7 @@ VOID Feature2TestCase::RunFeature2Test()
 
     //Add metadata manager
     feature2CreateInputInfo.pMetadataManager = m_pMetadataManager;
-    CF2_LOG_INFO("Feature2Descriptor number of cameras %d", feature2CreateInputInfo.pCameraInfo->numPhysicalCameras);
+    XLOGI("Feature2Descriptor number of cameras %d", feature2CreateInputInfo.pCameraInfo->numPhysicalCameras);
 
     //Add thread manager
     feature2CreateInputInfo.pThreadManager = m_pThreadManager;
@@ -713,7 +713,7 @@ VOID Feature2TestCase::RunFeature2Test()
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
                     case ChiFeature2RequestState::OutputErrorNotificationPending:
-                        CHX_LOG_ERROR("Pipeline reported OutputErrorNotification — marking failure");
+                        XLOGE("Pipeline reported OutputErrorNotification — marking failure");
                         _pipelineError = true;
                         pFeature2Base->ProcessRequest(m_pFeature2RequestObject);
                         break;
@@ -726,7 +726,7 @@ VOID Feature2TestCase::RunFeature2Test()
                         m_pFeature2RequestStateMutex->Unlock();
                         break;
                     default:
-                        CHX_LOG_INFO("Not waiting for state %d",
+                        XLOGI("Not waiting for state %d",
                             m_pFeature2RequestObject->GetCurRequestState(0));
                         break;
                     }
@@ -770,7 +770,7 @@ VOID Feature2TestCase::RunFeature2Test()
     //process output from the feature (check if it needs anything for next stage)
     //ValidateResult(pFeatureRequestObject); //TODO: validate result
 
-    CF2_LOG_EXIT();
+    XLOGV("EXIT");
 }
 
 UINT32 Feature2TestCase::GetMetadataClientId() const

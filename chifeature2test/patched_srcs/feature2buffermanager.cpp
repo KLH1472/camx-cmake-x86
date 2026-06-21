@@ -10,6 +10,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "feature2buffermanager.h"
+#undef  LOG_TAG
+#define LOG_TAG "Feature2BufMgr"
+#include <android/log.h>
 
 /*******************************************************************************************************************************
 *   Feature2BufferManager::GenerateOutputBuffer
@@ -57,7 +60,7 @@ int Feature2BufferManager::GenerateOutputBuffer(
     ANativeWindowBuffer *anbOutput = nativeBuffer->getNativeBuffer();
     if (anbOutput == NULL)
     {
-        CF2_LOG_ERROR("Native window buffer for output stream is NULL!");
+        XLOGE("Native window buffer for output stream is NULL!");
         return -1;
     }
     pRequiredBuffer->pChiBuffer->bufferInfo.phBuffer = &(anbOutput->handle);
@@ -92,7 +95,7 @@ int Feature2BufferManager::GenerateInputBuffer(
 {
     if (filename == NULL)
     {
-        CF2_LOG_ERROR("Filename is NULL!");
+        XLOGE("Filename is NULL!");
         return -1;
     }
 
@@ -110,13 +113,13 @@ int Feature2BufferManager::GenerateInputBuffer(
     FILE* pFile = CdkUtils::FOpen(completeFilePath.str().c_str(), "rb");
     if (pFile == NULL)
     {
-        CF2_LOG_WARN("%s open failed!", filename);
+        XLOGW("%s open failed!", filename);
         return -2;
     }
 
     CdkUtils::FSeek(pFile, 0L, SEEK_END);    // Seek to end of file
     long long fileSize = CdkUtils::FTell(pFile);
-    CF2_LOG_DEBUG("Input file %s: size is: %lld", completeFilePath.str().c_str(), fileSize);
+    XLOGD("Input file %s: size is: %lld", completeFilePath.str().c_str(), fileSize);
     CdkUtils::FSeek(pFile, 0L, SEEK_SET);    // Seek back to beginning of file
 
     int res = 0;
@@ -150,7 +153,7 @@ int Feature2BufferManager::GenerateInputBuffer(
     ANativeWindowBuffer *anbOutput = nativeBuffer->getNativeBuffer();
     if (anbOutput == NULL)
     {
-        CF2_LOG_ERROR("Native window buffer for input stream is NULL!");
+        XLOGE("Native window buffer for input stream is NULL!");
         return -1;
     }
 
@@ -158,7 +161,7 @@ int Feature2BufferManager::GenerateInputBuffer(
 
     if (res != 0)
     {
-        CF2_LOG_ERROR("Failed to lock the nativebuffer for reading!");
+        XLOGE("Failed to lock the nativebuffer for reading!");
         return -1;
     }
 
@@ -186,7 +189,7 @@ int Feature2BufferManager::GenerateInputBuffer(
     res = CdkUtils::FClose(pFile);
     if (static_cast<long>(bytesRead) != fileSize)
     {
-        CF2_LOG_ERROR("Failed to read file, read: %zu bytes!", bytesRead);
+        XLOGE("Failed to read file, read: %zu bytes!", bytesRead);
         // return -1;  // TODO fix issue with raw10 input image (needs more space than expected)
     }
 
@@ -230,13 +233,13 @@ int Feature2BufferManager::SaveImageToFile(
 
     if (m_GBmap.find(phBuffer) == m_GBmap.end())
     {
-        CF2_LOG_ERROR("Cannot find nativehandle for outputBuffer!");
+        XLOGE("Cannot find nativehandle for outputBuffer!");
         return -1;
     }
     res = m_GBmap.at(phBuffer)->lock(android::GraphicBuffer::USAGE_SW_READ_OFTEN, reinterpret_cast<void**>(&pData));
     if (res != 0)
     {
-        CF2_LOG_ERROR("outputNativeBuffer lock failed!");
+        XLOGE("outputNativeBuffer lock failed!");
         return -1;
     }
 
@@ -244,14 +247,14 @@ int Feature2BufferManager::SaveImageToFile(
     // Make upper camera folder first
     if (mkdir(inputImagePath.c_str(), 0777) != 0 && EEXIST != errno)
     {
-        CF2_LOG_ERROR("Failed to create capture camera folder, Error: %d", errno);
+        XLOGE("Failed to create capture camera folder, Error: %d", errno);
         return -1;
     }
 
     // Make lower nativetest folder second
     if (mkdir(outputImagePath.c_str(), 0777) != 0 && EEXIST != errno)
     {
-        CF2_LOG_ERROR("Failed to create capture root folder, Error: %d", errno);
+        XLOGE("Failed to create capture root folder, Error: %d", errno);
         return -1;
     }
 #else // _WINDOWS
@@ -260,7 +263,7 @@ int Feature2BufferManager::SaveImageToFile(
 
     if (pData == NULL)
     {
-        CF2_LOG_ERROR("Buffer data is NULL!");
+        XLOGE("Buffer data is NULL!");
         return -1;
     }
 
@@ -270,7 +273,7 @@ int Feature2BufferManager::SaveImageToFile(
         DWORD error = GetLastError();
         if (ERROR_ALREADY_EXISTS != error)
         {
-            CF2_LOG_ERROR("Failed to create capture folder, Error: %d", error);
+            XLOGE("Failed to create capture folder, Error: %d", error);
             return -1;
         }
     }
@@ -305,12 +308,12 @@ int Feature2BufferManager::SaveImageToFile(
 
     if (0 == imageSize)
     {
-        CF2_LOG_ERROR("Calculated gralloc image size should not be 0!");
+        XLOGE("Calculated gralloc image size should not be 0!");
         return -1;
     }
-    CF2_LOG_INFO("Image size to be saved is: %zu", imageSize);
+    XLOGI("Image size to be saved is: %zu", imageSize);
     filename.append(GetFileExt(format));
-    CF2_LOG_INFO("Saving image to file: %s", filename.c_str());
+    XLOGI("Saving image to file: %s", filename.c_str());
 
     char out_fname[256];
     CdkUtils::SNPrintF(out_fname, sizeof(out_fname), "%s", filename.c_str());
@@ -318,7 +321,7 @@ int Feature2BufferManager::SaveImageToFile(
     FILE* pFile = CdkUtils::FOpen(out_fname, "wb");
     if (pFile == NULL)
     {
-        CF2_LOG_ERROR("Output file creation failed!");
+        XLOGE("Output file creation failed!");
         return -1;
     }
 
@@ -326,7 +329,7 @@ int Feature2BufferManager::SaveImageToFile(
     written = CdkUtils::FWrite(reinterpret_cast<unsigned char *>(pData), 1, imageSize, pFile);
     if (written != imageSize)
     {
-        CF2_LOG_ERROR("Failed to write image: %s!", out_fname);
+        XLOGE("Failed to write image: %s!", out_fname);
         return -1;
     }
 
@@ -334,7 +337,7 @@ int Feature2BufferManager::SaveImageToFile(
     res = m_GBmap.at(phBuffer)->unlock();
     if (res != 0)
     {
-        CF2_LOG_ERROR("outputNativeBuffer unlock failed!");
+        XLOGE("outputNativeBuffer unlock failed!");
         return -1;
     }
 #endif // _LINUX
@@ -342,7 +345,7 @@ int Feature2BufferManager::SaveImageToFile(
     res = CdkUtils::FClose(pFile);
     if (res != 0)
     {
-        CF2_LOG_ERROR("Close file failed!");
+        XLOGE("Close file failed!");
         return -1;
     }
     return 0;
@@ -486,7 +489,7 @@ int Feature2BufferManager::GetReleaseFenceFromBuffer(GenericBuffer* pBuffer)
                 return -1;  // Fence not busy
             }
         }
-        CF2_LOG_ERROR("Failure when getting release fence status!");
+        XLOGE("Failure when getting release fence status!");
         return -1;  // TODO what to return for failure?
     }
     // If fence not valid, then assume no waiting
