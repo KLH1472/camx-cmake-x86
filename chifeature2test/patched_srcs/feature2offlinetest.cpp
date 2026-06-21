@@ -54,7 +54,7 @@ const CHAR*                 Feature2OfflineTest::m_testFullName;
 
 VOID Feature2OfflineTest::Setup()
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     // Save instance so static functions can access later
     m_pTestObj = this;
@@ -65,17 +65,17 @@ VOID Feature2OfflineTest::Setup()
     // Parent class setup
     Feature2TestCase::Setup();
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 VOID Feature2OfflineTest::Teardown()
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     // Parent class teardown
     Feature2TestCase::Teardown();
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 VOID Feature2OfflineTest::SetFeature2Interface()
@@ -94,7 +94,7 @@ VOID Feature2OfflineTest::SetFeature2Interface()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 VOID Feature2OfflineTest::OfflineFeatureTest(TestId testId)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     m_testSuiteName = "Feature2OfflineTest";
 
@@ -139,7 +139,7 @@ VOID Feature2OfflineTest::OfflineFeatureTest(TestId testId)
     // Run the test
     RunFeature2Test();
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ VOID Feature2OfflineTest::OfflineFeatureTest(TestId testId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 VOID Feature2OfflineTest::InitializeFeature2Test()
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     CDKResult result = CDKResultSuccess;
     ChiTargetBufferManagerCreateData inputImageTBMCreateData                       = { 0 };
@@ -330,7 +330,7 @@ VOID Feature2OfflineTest::InitializeFeature2Test()
         XLOGE("TBM creation failed!");
     }
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,7 +339,7 @@ VOID Feature2OfflineTest::InitializeFeature2Test()
 VOID Feature2OfflineTest::GetGenericFeature2Descriptor(
     ChiFeature2CreateInputInfo* pFeature2CreateInputInfoOut)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     m_logicalCameraInfo = { 0 };
     const ChiFeature2Descriptor* pFeatureDescriptor = NULL;
@@ -382,7 +382,7 @@ VOID Feature2OfflineTest::GetGenericFeature2Descriptor(
     pFeature2CreateInputInfoOut->pStreamConfig = m_pStreamConfig;
     XLOGE("Result: GetFeature2Descriptor out");
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -394,7 +394,7 @@ VOID Feature2OfflineTest::GetInputFeature2RequestObject(
     ChiFeature2RequestObject**  ppFeature2RequestObjectOut,
     VOID*                       pPrivateData)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     m_pMetadata = pMetadata;
     m_frameNumber++;
@@ -537,7 +537,7 @@ VOID Feature2OfflineTest::GetInputFeature2RequestObject(
 
     *ppFeature2RequestObjectOut = ChiFeature2RequestObject::Create(&feature2RequestObjInputInfo);
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -547,7 +547,7 @@ CDKResult Feature2OfflineTest::ProcessMessage(
     ChiFeature2RequestObject*   pFeatureRequestObj,
     ChiFeature2Messages*        pMessages)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     CDKResult result = CDKResultSuccess;
 
@@ -619,7 +619,7 @@ CDKResult Feature2OfflineTest::ProcessMessage(
         }
     }
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 
     return result;
 }
@@ -886,12 +886,12 @@ VOID Feature2OfflineTest::GetInputForPort(
     ChiFeature2Base*            pFeature2Base,
     ChiFeature2RequestObject*   pFeature2ResultObject)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     UNUSED_PARAM(pFeature2Base);
     UNUSED_PARAM(pFeature2ResultObject);
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -901,12 +901,12 @@ VOID Feature2OfflineTest::UpdateInputMetadata(
     ChiFeature2Base*            pFeature2Base,
     ChiFeature2RequestObject*   pFeature2ResultObject)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
 
     UNUSED_PARAM(pFeature2Base);
     UNUSED_PARAM(pFeature2ResultObject);
 
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -915,9 +915,9 @@ VOID Feature2OfflineTest::UpdateInputMetadata(
 ChiFeature2Base* Feature2OfflineTest::CreateFeature2(
     ChiFeature2CreateInputInfo* pFeature2CreateInputInfo)
 {
-    XLOGV("ENTRY %s", __func__);
+    XLOGV("ENTRY");
     ChiFeature2Base* pFeature2Base = NULL;
     pFeature2Base = ChiFeature2Generic::Create(pFeature2CreateInputInfo);
-    XLOGV("EXIT %s", __func__);
+    XLOGV("EXIT");
     return pFeature2Base;
 }

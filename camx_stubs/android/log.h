@@ -82,10 +82,10 @@ static inline void __camx_log_emit(int prio, const char* tag, const char* msg)
 
 #define XLOG_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-#define XLOGE(fmt, ...) __android_log_print(ANDROID_LOG_ERROR,   LOG_TAG, "%s:%d " fmt, XLOG_FILENAME, __LINE__, ##__VA_ARGS__)
-#define XLOGW(fmt, ...) __android_log_print(ANDROID_LOG_WARN,    LOG_TAG, "%s:%d " fmt, XLOG_FILENAME, __LINE__, ##__VA_ARGS__)
-#define XLOGI(fmt, ...) __android_log_print(ANDROID_LOG_INFO,    LOG_TAG, "%s:%d " fmt, XLOG_FILENAME, __LINE__, ##__VA_ARGS__)
-#define XLOGD(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG,   LOG_TAG, "%s:%d " fmt, XLOG_FILENAME, __LINE__, ##__VA_ARGS__)
-#define XLOGV(fmt, ...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "%s:%d " fmt, XLOG_FILENAME, __LINE__, ##__VA_ARGS__)
+#define XLOGE(fmt, ...) __android_log_print(ANDROID_LOG_ERROR,   LOG_TAG, "%s:%d %s() " fmt, XLOG_FILENAME, __LINE__, __func__, ##__VA_ARGS__)
+#define XLOGW(fmt, ...) __android_log_print(ANDROID_LOG_WARN,    LOG_TAG, "%s:%d %s() " fmt, XLOG_FILENAME, __LINE__, __func__, ##__VA_ARGS__)
+#define XLOGI(fmt, ...) __android_log_print(ANDROID_LOG_INFO,    LOG_TAG, "%s:%d %s() " fmt, XLOG_FILENAME, __LINE__, __func__, ##__VA_ARGS__)
+#define XLOGD(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG,   LOG_TAG, "%s:%d %s() " fmt, XLOG_FILENAME, __LINE__, __func__, ##__VA_ARGS__)
+#define XLOGV(fmt, ...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "%s:%d %s() " fmt, XLOG_FILENAME, __LINE__, __func__, ##__VA_ARGS__)
 
 #endif
