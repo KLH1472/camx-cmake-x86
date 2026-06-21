@@ -1,2 +1,3 @@
-generated/
 build/
+build_asan/
+compile_commands.json
