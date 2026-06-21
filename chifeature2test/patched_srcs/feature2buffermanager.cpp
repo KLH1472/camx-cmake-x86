@@ -11,7 +11,7 @@
 
 #include "feature2buffermanager.h"
 #undef  LOG_TAG
-#define LOG_TAG "Feature2BufMgr"
+#define LOG_TAG "FBuf"
 #include <android/log.h>
 
 /*******************************************************************************************************************************

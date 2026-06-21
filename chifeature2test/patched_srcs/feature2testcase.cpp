@@ -14,7 +14,7 @@
 #include "chxextensionmodule.h"
 #include "spectraconfigparser.h"
 #undef  LOG_TAG
-#define LOG_TAG "Feature2Test"
+#define LOG_TAG "FTst"
 #include <android/log.h>
 #include "chistatsproperty.h"
 #include "metaconfigparser.h"

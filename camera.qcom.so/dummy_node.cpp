@@ -4,7 +4,7 @@
 #include "camxcsl.h"
 #include "camxincs.h"
 #undef  LOG_TAG
-#define LOG_TAG "DummyNode"
+#define LOG_TAG "Node"
 #include <android/log.h>
 
 CAMX_NAMESPACE_BEGIN

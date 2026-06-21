@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <unistd.h>
 #undef  LOG_TAG
-#define LOG_TAG "CamXAdapter"
+#define LOG_TAG "Adpt"
 #include <android/log.h>
 
 CAMX_NAMESPACE_BEGIN

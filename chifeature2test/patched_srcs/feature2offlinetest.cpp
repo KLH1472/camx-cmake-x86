@@ -14,7 +14,7 @@
 #include "chifeature2generic.h"
 #include "bayer2yuvinputdata.h"
 #undef  LOG_TAG
-#define LOG_TAG "Feature2Offline"
+#define LOG_TAG "FOfl"
 #include <android/log.h>
 #include "bpsinputdata.h"
 #include "ipeinputdata.h"

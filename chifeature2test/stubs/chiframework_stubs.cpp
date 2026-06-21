@@ -11,7 +11,7 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #undef  LOG_TAG
-#define LOG_TAG "ChiStubs"
+#define LOG_TAG "Stub"
 #include <android/log.h>
 
 #include "chxfeature.h"
