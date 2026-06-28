@@ -201,7 +201,7 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxcmdbuffermanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxdeferredrequestqueue.cpp
     ${CAMX_ROOT}/camx/src/core/camxhwcontext.cpp
-    ${CAMX_ROOT}/camx/src/core/camxhwenvironment.cpp
+    ${CAMX_PATCHED_DIR}/camxhwenvironment.cpp
     ${CAMX_ROOT}/camx/src/core/camxhwfactory.cpp
     ${CAMX_ROOT}/camx/src/core/camximagebuffer.cpp
     ${CAMX_ROOT}/camx/src/core/camximagebuffermanager.cpp
@@ -210,7 +210,7 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxmempoolmgr.cpp
     ${CAMX_ROOT}/camx/src/core/camxmetabuffer.cpp
     ${CAMX_ROOT}/camx/src/core/camxmetadatapool.cpp
-    ${CMAKE_SOURCE_DIR}/camx_patched_srcs/camxnode.cpp
+    ${CAMX_ROOT}/camx/src/core/camxnode.cpp
     ${CAMX_ROOT}/camx/src/core/camxoverridesettingsfile.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacket.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacketbuilder.cpp
