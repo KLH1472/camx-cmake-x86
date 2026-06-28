@@ -1871,6 +1871,18 @@ const ImageSensorModuleData* HwEnvironment::GetImageSensorModuleData(
 {
     CAMX_ASSERT(cameraID < m_numberSensors);
 
+    if (0 == m_numberSensors)
+    {
+        static ImageSensorModuleData* s_pDummy = NULL;
+        if (NULL == s_pDummy)
+        {
+            ImageSensorModuleDataCreateData createData = {};
+            ImageSensorModuleData::Create(&createData);
+            s_pDummy = createData.pImageSensorModuleData;
+        }
+        return s_pDummy;
+    }
+
     return m_sensorInfoTable[cameraID].pData;
 }
 

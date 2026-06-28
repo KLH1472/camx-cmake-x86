@@ -5,6 +5,7 @@
 #include "camximageformatutils.h"
 #include "camximagesensormoduledata.h"
 #include "camximagesensordata.h"
+#include "camxmoduleconfig.h"
 #include "camxeebindata.h"
 #include "camxhwenvironment.h"
 #include "camxthermalmanager.h"
@@ -201,8 +202,19 @@ VOID ImageFormatUtils::InitializeFormatParams(ImageFormat* pFormat, FormatParamI
 
 CamxResult ImageSensorModuleData::Create(ImageSensorModuleDataCreateData* pCreateData)
 {
-    CAMX_UNREFERENCED_PARAM(pCreateData);
-    return CamxResultEUnsupported;
+    if (NULL == pCreateData) return CamxResultEInvalidArg;
+
+    ImageSensorModuleData* pModule = static_cast<ImageSensorModuleData*>(
+        CAMX_CALLOC(sizeof(ImageSensorModuleData)));
+    if (NULL == pModule) return CamxResultENoMemory;
+
+    static char s_dummySensorData[sizeof(ImageSensorData)] = {};
+    pModule->m_pSensorData             = reinterpret_cast<ImageSensorData*>(s_dummySensorData);
+    pModule->m_pDataManager            = pCreateData->pDataManager;
+    pModule->m_pSensorModuleManagerObj = pCreateData->pSensorModuleManagerObj;
+
+    pCreateData->pImageSensorModuleData = pModule;
+    return CamxResultSuccess;
 }
 
 VOID ImageSensorModuleData::Destroy()
@@ -258,7 +270,8 @@ CamxResult ImageSensorModuleData::GetOverrideSensorMount(UINT32* pRoll, UINT32* 
 
 const CSIInformation* ImageSensorModuleData::GetCSIInfo() const
 {
-    return NULL;
+    static CSIInformation s_dummy = {};
+    return &s_dummy;
 }
 
 const LensInformation* ImageSensorModuleData::GetLensInfo()
@@ -544,6 +557,15 @@ void* CamXAdapter_CreatePipelineDescriptor(
     unsigned int numInputs, void* pInputBufferOptions)
 {
     if (g_pChiContext == nullptr) return nullptr;
+
+    ChiPipelineCreateDescriptor* pChiDesc =
+        static_cast<ChiPipelineCreateDescriptor*>(pDescriptor);
+    if ((NULL != pChiDesc) && (NULL == pChiDesc->hPipelineMetadata))
+    {
+        pChiDesc->hPipelineMetadata = reinterpret_cast<CHIMETAHANDLE>(
+            CamX::MetaBuffer::Create(NULL));
+    }
+
     CamX::PipelineDescriptor* pDesc = g_pChiContext->CreatePipelineDescriptor(
         pPipelineName,
         static_cast<const ChiPipelineCreateDescriptor*>(pDescriptor),

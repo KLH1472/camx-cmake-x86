@@ -215,7 +215,7 @@ set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxpacket.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacketbuilder.cpp
     ${CAMX_ROOT}/camx/src/core/camxpacketresource.cpp
-    ${CAMX_PATCHED_DIR}/camxpipeline.cpp
+    ${CAMX_ROOT}/camx/src/core/camxpipeline.cpp
     ${CAMX_ROOT}/camx/src/core/camxresourcemanager.cpp
     ${CAMX_ROOT}/camx/src/core/camxsession.cpp
     ${CAMX_ROOT}/camx/src/core/camxsettingsmanager.cpp
