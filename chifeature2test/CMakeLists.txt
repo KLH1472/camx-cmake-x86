@@ -169,6 +169,8 @@ target_compile_definitions(chifeature2test PRIVATE
 #    available before chxutils.h is parsed
 target_compile_options(chifeature2test PRIVATE
     -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs/chiframework_types.h
+    -Wno-missing-field-initializers
+    -Wno-invalid-offsetof
 )
 
 # ── Include paths: stubs BEFORE real dirs so they override ──
