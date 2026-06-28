@@ -111,6 +111,45 @@ add_executable(chifeature2test
     ${F2_COMPAT_SOURCES}
 )
 
+# ── Dummy test data generation ──
+set(TESTDATA_DIR "${CMAKE_BINARY_DIR}/testdata")
+
+# RAW10 4656x3496: ceil(4656/4)*5*3496 = 20346720 bytes
+math(EXPR RAW10_SIZE "1164 * 5 * 3496")
+# P010 4656x3496: w*h*3 ≈ 48832128 bytes
+math(EXPR P010_SIZE "4656 * 3496 * 3")
+# YUV420 VGA 640x480
+math(EXPR YUV420_SIZE "640 * 480 * 3 / 2")
+
+add_custom_command(
+    OUTPUT
+        ${TESTDATA_DIR}/Bayer2Yuv_image_4656x3496_0.raw
+        ${TESTDATA_DIR}/bps-idealraw-input.raw
+        ${TESTDATA_DIR}/IPE_image_4656x3496_0.p010
+        ${TESTDATA_DIR}/ipe-unittest-input_full_vga_colorbar-1.yuv
+        ${TESTDATA_DIR}/B2Y_Metadata_0.bin
+        ${TESTDATA_DIR}/ParsedTintlessBGStats_0.tint
+        ${TESTDATA_DIR}/ParsedAWBBGStats_0.awbbg
+        ${TESTDATA_DIR}/ParsedBHISTStats_0.bhist
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TESTDATA_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TESTDATA_DIR}/output
+    COMMAND dd if=/dev/zero of=${TESTDATA_DIR}/Bayer2Yuv_image_4656x3496_0.raw bs=${RAW10_SIZE} count=1 status=none
+    COMMAND dd if=/dev/zero of=${TESTDATA_DIR}/bps-idealraw-input.raw bs=${RAW10_SIZE} count=1 status=none
+    COMMAND dd if=/dev/zero of=${TESTDATA_DIR}/IPE_image_4656x3496_0.p010 bs=${P010_SIZE} count=1 status=none
+    COMMAND dd if=/dev/zero of=${TESTDATA_DIR}/ipe-unittest-input_full_vga_colorbar-1.yuv bs=${YUV420_SIZE} count=1 status=none
+    COMMAND dd if=/dev/zero of=${TESTDATA_DIR}/B2Y_Metadata_0.bin bs=4096 count=1 status=none
+    COMMAND touch ${TESTDATA_DIR}/ParsedTintlessBGStats_0.tint ${TESTDATA_DIR}/ParsedAWBBGStats_0.awbbg ${TESTDATA_DIR}/ParsedBHISTStats_0.bhist
+    COMMENT "Generating dummy test data (skipped if up-to-date)"
+)
+add_custom_target(generate_testdata DEPENDS
+    ${TESTDATA_DIR}/Bayer2Yuv_image_4656x3496_0.raw
+    ${TESTDATA_DIR}/bps-idealraw-input.raw
+    ${TESTDATA_DIR}/IPE_image_4656x3496_0.p010
+    ${TESTDATA_DIR}/ipe-unittest-input_full_vga_colorbar-1.yuv
+    ${TESTDATA_DIR}/B2Y_Metadata_0.bin
+)
+add_dependencies(chifeature2test generate_testdata)
+
 # ── Compile definitions ──
 target_compile_definitions(chifeature2test PRIVATE
     _LINUX

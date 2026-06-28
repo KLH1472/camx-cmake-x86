@@ -173,8 +173,28 @@ set(CAMX_GENERATED_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy_node.cpp
 )
 
-file(GLOB CAMX_SENSOR_GEN_SOURCES ${CAMX_GENERATED_DIR}/g_sensor/*.cpp)
-file(GLOB CAMX_PARSER_GEN_SOURCES ${CAMX_GENERATED_DIR}/g_parser/*.cpp)
+set(CAMX_SENSOR_GEN_SOURCES
+    ${CAMX_GENERATED_DIR}/g_sensor/camxactuatordriver.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxeebindriver.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxeepromdriver.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxflashdriver.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxmoduleconfig.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxoisdriver.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxpdafconfig.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxsensorcommon.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/camxsensordriver.cpp
+    ${CAMX_GENERATED_DIR}/g_sensor/imagesensormodulesetmanager.cpp
+)
+set_source_files_properties(${CAMX_SENSOR_GEN_SOURCES} PROPERTIES GENERATED TRUE)
+set(CAMX_PARSER_GEN_SOURCES
+    ${CAMX_GENERATED_DIR}/g_parser/parameterfilesymboltable.cpp
+    ${CAMX_GENERATED_DIR}/g_parser/parameterfilesymboltableentry.cpp
+    ${CAMX_GENERATED_DIR}/g_parser/parametermodule.cpp
+    ${CAMX_GENERATED_DIR}/g_parser/parametersetmanager.cpp
+    ${CAMX_GENERATED_DIR}/g_parser/parametertypes.cpp
+    ${CAMX_GENERATED_DIR}/g_parser/parameterutils.cpp
+)
+set_source_files_properties(${CAMX_PARSER_GEN_SOURCES} PROPERTIES GENERATED TRUE)
 
 set(CAMX_CORE_SOURCES
     ${CAMX_ROOT}/camx/src/core/camxcmdbuffer.cpp
